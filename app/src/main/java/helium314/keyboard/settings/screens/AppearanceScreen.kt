@@ -28,6 +28,7 @@ import helium314.keyboard.settings.preferences.ListPreference
 import helium314.keyboard.settings.SettingsWithoutKey
 import helium314.keyboard.settings.Setting
 import helium314.keyboard.settings.preferences.Preference
+import helium314.keyboard.settings.preferences.StylePreview
 import helium314.keyboard.settings.SearchSettingsScreen
 import helium314.keyboard.settings.SettingsActivity
 import helium314.keyboard.settings.preferences.SliderPreference
@@ -111,7 +112,8 @@ fun createAppearanceSettings(context: Context) = listOf(
         ListPreference(
             setting,
             items,
-            Defaults.PREF_THEME_STYLE
+            Defaults.PREF_THEME_STYLE,
+            itemPreview = { StylePreview(it) }
         ) {
             if (it != KeyboardTheme.STYLE_HOLO) {
                 if (prefs.getString(Settings.PREF_THEME_COLORS, Defaults.PREF_THEME_COLORS) == KeyboardTheme.THEME_HOLO_WHITE)
@@ -133,7 +135,8 @@ fun createAppearanceSettings(context: Context) = listOf(
             setting,
             items,
             Defaults.PREF_ICON_STYLE(ctx.prefs()),
-            { ctx.prefs().edit { remove(Settings.PREF_ICON_STYLE) } }
+            { ctx.prefs().edit { remove(Settings.PREF_ICON_STYLE) } },
+            itemPreview = { StylePreview(it) }
         ) {
             KeyboardIconsSet.needsReload = true // only relevant for Settings.PREF_CUSTOM_ICON_NAMES
             KeyboardSwitcher.getInstance().setThemeNeedsReload()

@@ -3,6 +3,8 @@ package helium314.keyboard.settings.dialogs
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
@@ -42,6 +44,8 @@ fun <T: Any> ListPickerDialog(
     confirmImmediately: Boolean = true,
     showRadioButtons: Boolean = true,
     onDefault: (() -> Unit)? = null,
+    /** Optional preview drawn under each option, so choices can be compared in place. */
+    itemPreview: (@Composable (T) -> Unit)? = null,
 ) {
     var selected by remember { mutableStateOf(selectedItem) }
     val state = rememberLazyListState()
@@ -90,10 +94,11 @@ fun <T: Any> ListPickerDialog(
                                         selected = item
                                     }
                                 )
-                            Text(
-                                text = getItemName(item),
-                                modifier = Modifier.weight(1f),
-                            )
+                            Column(Modifier.weight(1f).padding(vertical = 4.dp)) {
+                                Text(text = getItemName(item))
+                                if (itemPreview != null)
+                                    Box(Modifier.padding(top = 6.dp)) { itemPreview(item) }
+                            }
                         }
                     }
                 }

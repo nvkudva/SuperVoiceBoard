@@ -135,8 +135,11 @@ val toolbarKeyStrings = entries.associateWithTo(EnumMap(ToolbarKey::class.java))
 
 val defaultToolbarPref by lazy {
     // SuperVoiceBoard: AI_FIX is on by default — it is the fork's reason to exist,
-    // and a key nobody can find is a feature nobody has (W5.1).
-    val default = listOf(SETTINGS, AI_FIX, VOICE, CLIPBOARD, UNDO, REDO, SELECT_WORD, COPY, PASTE, LEFT, RIGHT)
+    // and a key nobody can find is a feature nobody has (W5.1). It and VOICE sit at
+    // the end, so in LTR they land under the thumb on the right, with VOICE outermost.
+    // LEFT/RIGHT are off by default: single-character cursor nudges earn their place
+    // on few keyboards, and the arrow keys remain one toggle away in settings.
+    val default = listOf(SETTINGS, CLIPBOARD, UNDO, REDO, SELECT_WORD, COPY, PASTE, AI_FIX, VOICE)
     val others = entries.filterNot { it in default || it == CLOSE_HISTORY }
     default.joinToString(Separators.ENTRY) { it.name + Separators.KV + true } + Separators.ENTRY +
             others.joinToString(Separators.ENTRY) { it.name + Separators.KV + false }

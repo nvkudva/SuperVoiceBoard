@@ -1,9 +1,9 @@
 <!--
     Fluent UI System Icons (Regular 24) - Copyright (c) Microsoft Corporation, MIT License.
-    https://github.com/microsoft/fluentui-system-icons  (ic_fluent_arrow_redo_24_regular)
+    https://github.com/microsoft/fluentui-system-icons  (ic_fluent_arrow_hook_up_right_24_regular)
     SPDX-License-Identifier: MIT
 -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android" android:width="24dp" android:height="24dp" android:viewportWidth="24" android:viewportHeight="24">
     <path
-        android:pathData="M19.25 2c-0.38 0-0.693 0.282-0.743 0.648L18.5 2.75v5.69l-4.574-4.56c-2.442-2.442-6.364-2.5-8.878-0.179l-0.186 0.18c-2.503 2.502-2.503 6.56 0 9.063l8.845 8.84c0.293 0.292 0.768 0.292 1.06-0.001 0.293-0.293 0.293-0.768 0-1.06l-8.845-8.84c-1.917-1.917-1.917-5.025 0-6.942 1.86-1.86 4.839-1.916 6.766-0.168l0.178 0.169L17.438 9.5H11.75c-0.38 0-0.693 0.282-0.743 0.648L11 10.25c0 0.38 0.282 0.694 0.648 0.743L11.75 11h7.5c0.38 0 0.694-0.282 0.743-0.648L20 10.25v-7.5C20 2.336 19.664 2 19.25 2z" android:fillColor="#FFF"/>
+        android:pathData="M10.5 18.5h5.75c0.414 0 0.75 0.336 0.75 0.75S16.664 20 16.25 20H10.5C6.91 20 4 17.09 4 13.5S6.91 7 10.5 7h5.95l-2.616-2.617c-0.293-0.293-0.293-0.768 0-1.06 0.292-0.293 0.767-0.293 1.06 0l3.882 3.882c0.1 0.1 0.166 0.22 0.198 0.348C18.99 7.616 19 7.682 19 7.75c0 0.213-0.089 0.405-0.231 0.542l-3.88 3.88c-0.293 0.293-0.768 0.293-1.06 0-0.294-0.293-0.294-0.768 0-1.061l2.61-2.611H10.5c-2.761 0-5 2.239-5 5s2.239 5 5 5z" android:fillColor="#FFF"/>
 </vector>

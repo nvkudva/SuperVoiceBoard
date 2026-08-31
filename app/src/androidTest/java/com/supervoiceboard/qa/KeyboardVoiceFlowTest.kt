@@ -1,14 +1,10 @@
 // SPDX-License-Identifier: GPL-3.0-only
 package com.supervoiceboard.qa
 
-import android.content.Intent
-import androidx.test.core.app.ActivityScenario
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.uiautomator.By
 import androidx.test.uiautomator.UiObject2
 import androidx.test.uiautomator.Until
-import org.junit.After
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -17,9 +13,9 @@ import org.junit.Test
 import org.junit.runner.RunWith
 
 /**
- * The keyboard itself, driven through UiAutomator because it lives in its own
- * window: typing works, the pinned mic key is there, and starting a dictation
- * session swaps the suggestion row for the voice row.
+ * The keyboard itself, driven entirely through UiAutomator: it lives in its own
+ * window, and the field it types into lives in the test APK's own process, so
+ * neither is reachable with Espresso or ActivityScenario.
  */
 @RunWith(AndroidJUnit4::class)
 class KeyboardVoiceFlowTest {
@@ -27,26 +23,23 @@ class KeyboardVoiceFlowTest {
     @get:Rule
     val screenshots = ScreenshotOnFailure()
 
-    private lateinit var scenario: ActivityScenario<TestInputActivity>
-
     private val timeout = 10_000L
 
     @Before
     fun openAFieldWithOurKeyboard() {
         Qa.makeThisImeCurrent()
-        // The activity is declared in the androidTest manifest, so it is
-        // installed with the test APK, not with the app under test.
-        val context = InstrumentationRegistry.getInstrumentation().context
-        scenario = ActivityScenario.launch(
-            Intent(context, TestInputActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-        )
+        Qa.shell("am force-stop ${Qa.testAppId}")
+        Qa.shell("am start -W -n ${Qa.testAppId}/com.supervoiceboard.qa.TestInputActivity")
+        Qa.device.waitForIdle()
+        field().click()
         Qa.device.waitForIdle()
     }
 
-    @After
-    fun close() {
-        if (this::scenario.isInitialized) scenario.close()
-    }
+    private fun field(): UiObject2 =
+        Qa.device.wait(Until.findObject(By.clazz("android.widget.EditText")), timeout)
+            ?: throw AssertionError("the QA input field never appeared")
+
+    private fun typed(): String = field().text.orEmpty()
 
     private fun waitForDesc(description: String): UiObject2? =
         Qa.device.wait(Until.findObject(By.desc(description)), timeout)
@@ -60,9 +53,8 @@ class KeyboardVoiceFlowTest {
             ?: throw AssertionError("keyboard did not come up")
         a.click()
         Qa.device.waitForIdle()
-        var typed = ""
-        scenario.onActivity { typed = it.text }
-        assertTrue("expected the keypress to reach the field, got '$typed'", typed.contains("a"))
+        val text = typed()
+        assertTrue("expected the keypress to reach the field, got '$text'", text.contains("a"))
     }
 
     @Test
@@ -96,9 +88,8 @@ class KeyboardVoiceFlowTest {
         requireDesc(VOICE_INPUT, "no mic key on the suggestion strip").click()
         waitForDesc(STOP_DICTATING)?.click()
         Qa.device.waitForIdle()
-        var typed = "unset"
-        scenario.onActivity { typed = it.text }
-        assertTrue("cancelled dictation committed '$typed'", typed.isEmpty())
+        val text = typed()
+        assertTrue("cancelled dictation committed '$text'", text.isEmpty())
     }
 
     private companion object {

@@ -8,7 +8,6 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import androidx.test.filters.LargeTest
 import helium314.keyboard.latin.R
 import helium314.keyboard.settings.SettingsActivity
 import org.junit.Before
@@ -21,7 +20,6 @@ import org.junit.runner.RunWith
  * new install is actually in. No model is fetched here; CI has no business
  * pulling hundreds of megabytes to prove a screen renders.
  */
-@LargeTest
 @RunWith(AndroidJUnit4::class)
 class VoiceModelsTest {
 

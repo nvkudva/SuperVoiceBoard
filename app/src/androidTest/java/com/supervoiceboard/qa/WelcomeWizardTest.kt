@@ -6,7 +6,6 @@ import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import androidx.test.filters.LargeTest
 import helium314.keyboard.latin.R
 import helium314.keyboard.settings.SettingsActivity
 import org.junit.After
@@ -16,7 +15,6 @@ import org.junit.Test
 import org.junit.runner.RunWith
 
 /** What a first-run user sees: the wizard, before the IME is enabled. */
-@LargeTest
 @RunWith(AndroidJUnit4::class)
 class WelcomeWizardTest {
 

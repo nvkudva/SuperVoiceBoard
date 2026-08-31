@@ -8,7 +8,6 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import androidx.test.filters.LargeTest
 import helium314.keyboard.latin.R
 import helium314.keyboard.settings.SettingsActivity
 import org.junit.Before
@@ -17,7 +16,6 @@ import org.junit.Test
 import org.junit.runner.RunWith
 
 /** Walks the top-level settings menu and back out of every screen it opens. */
-@LargeTest
 @RunWith(AndroidJUnit4::class)
 class SettingsFlowTest {
 

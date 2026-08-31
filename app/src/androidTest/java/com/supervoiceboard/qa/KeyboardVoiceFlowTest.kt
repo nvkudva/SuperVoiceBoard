@@ -4,9 +4,9 @@ package com.supervoiceboard.qa
 import android.content.Intent
 import androidx.test.core.app.ActivityScenario
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import androidx.test.filters.LargeTest
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.uiautomator.By
+import androidx.test.uiautomator.UiObject2
 import androidx.test.uiautomator.Until
 import org.junit.After
 import org.junit.Assert.assertNotNull
@@ -21,7 +21,6 @@ import org.junit.runner.RunWith
  * window: typing works, the pinned mic key is there, and starting a dictation
  * session swaps the suggestion row for the voice row.
  */
-@LargeTest
 @RunWith(AndroidJUnit4::class)
 class KeyboardVoiceFlowTest {
 
@@ -47,13 +46,16 @@ class KeyboardVoiceFlowTest {
         if (this::scenario.isInitialized) scenario.close()
     }
 
-    private fun waitForDesc(description: String) =
+    private fun waitForDesc(description: String): UiObject2? =
         Qa.device.wait(Until.findObject(By.desc(description)), timeout)
+
+    private fun requireDesc(description: String, why: String): UiObject2 =
+        waitForDesc(description) ?: throw AssertionError(why)
 
     @Test
     fun typingReachesTheField() {
         val a = Qa.device.wait(Until.findObject(By.text("a")), timeout)
-        assertNotNull("keyboard did not come up", a)
+            ?: throw AssertionError("keyboard did not come up")
         a.click()
         Qa.device.waitForIdle()
         var typed = ""
@@ -63,21 +65,18 @@ class KeyboardVoiceFlowTest {
 
     @Test
     fun micKeyIsPinnedToTheSuggestionRow() {
-        val mic = waitForDesc(VOICE_INPUT)
-        assertNotNull("no mic key on the suggestion strip", mic)
+        val mic = requireDesc(VOICE_INPUT, "no mic key on the suggestion strip")
         assertTrue("mic key is not usable", mic.isEnabled)
         Qa.screenshot("suggestion-row-with-mic")
     }
 
     @Test
     fun tappingTheMicSwapsInTheVoiceRow() {
-        val mic = waitForDesc(VOICE_INPUT)
-        assertNotNull("no mic key on the suggestion strip", mic)
-        mic.click()
+        requireDesc(VOICE_INPUT, "no mic key on the suggestion strip").click()
 
         val cancel = waitForDesc(STOP_DICTATING)
         Qa.screenshot("voice-row-active")
-        assertNotNull("the voice row never appeared after tapping the mic", cancel)
+        cancel ?: throw AssertionError("the voice row never appeared after tapping the mic")
         assertNotNull("no done control on the voice row", waitForDesc(DONE_DICTATING))
         assertNotNull("no minimize control on the voice row", waitForDesc(MINIMIZE))
 
@@ -92,8 +91,7 @@ class KeyboardVoiceFlowTest {
     /** Cancelling a session must not leave anything behind in the field. */
     @Test
     fun cancellingDictationCommitsNothing() {
-        val mic = waitForDesc(VOICE_INPUT) ?: return
-        mic.click()
+        requireDesc(VOICE_INPUT, "no mic key on the suggestion strip").click()
         waitForDesc(STOP_DICTATING)?.click()
         Qa.device.waitForIdle()
         var typed = "unset"

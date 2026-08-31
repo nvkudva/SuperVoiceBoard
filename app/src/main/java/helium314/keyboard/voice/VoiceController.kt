@@ -16,6 +16,7 @@ import com.vboard.app.settings.SettingsRepository
 import com.vboard.app.voice.VoiceErrorAction
 import com.vboard.app.voice.VoiceRuntime
 import com.vboard.app.voice.VoiceSessionController
+import com.vboard.core.session.VoiceMetrics
 import com.vboard.core.text.CommitPlanner
 import com.vboard.core.text.FieldKind
 import helium314.keyboard.latin.LatinIME
@@ -62,6 +63,26 @@ class VoiceController(
     private var rawForSession = false
 
     /**
+     * W7.3: opt-in, content-free measurement. Held in memory for this IME
+     * instance only — there is no endpoint to send it to and no file to write
+     * it into; the user's own settings screen is the only reader (PLAN.md R24).
+     */
+    private val metrics = VoiceMetrics()
+
+    /** When the session that is currently committing started, for the mean. */
+    private var sessionStartedAt = 0L
+
+    /**
+     * The last dictated commit, awaiting its verdict: it counts as send-ready
+     * only once the user has moved on without editing it. Held as a duration,
+     * not as text.
+     */
+    private var pendingElapsedMs: Long? = null
+
+    /** Aggregates for the settings screen; empty when telemetry is off. */
+    fun metricsSnapshot(): VoiceMetrics.Snapshot = metrics.snapshot()
+
+    /**
      * An utterance whose input connection died before the final pass returned.
      * In memory only, replayed into the next editor of the same app and nowhere
      * else — see [PendingDictation].
@@ -77,6 +98,8 @@ class VoiceController(
     // --------------------------------------------------------------- IME hooks
 
     fun onStartInputView(editorInfo: EditorInfo?) {
+        // Moving to another field settles whatever was awaiting a verdict.
+        settleTelemetry()
         fieldKind = fieldKindOf(editorInfo)
         // A field that must never be dictated into ends any session that was
         // running when focus moved into it.
@@ -164,6 +187,8 @@ class VoiceController(
         if (!holdScoped) session.setEndpointingEnabled(true)
         isActive = true
         sessionPackage = ime.currentInputEditorInfo?.packageName
+        settleTelemetry()
+        sessionStartedAt = SystemClock.elapsedRealtime()
         commits.clear()
         strip?.reset()
         onSessionUiStarted?.invoke()
@@ -230,6 +255,30 @@ class VoiceController(
         val joined = CommitPlanner.joinForInsertion(precedingText(), text)
         ic.commitText(joined, 1)
         commits[index] = joined
+        // W7.3: the verdict is not known yet — the user may still edit this.
+        settleTelemetry()
+        pendingElapsedMs = SystemClock.elapsedRealtime() - sessionStartedAt
+    }
+
+    /**
+     * W7.3: the user typed or deleted after a dictated commit, so that utterance
+     * was not send-ready. Only the verdict and the duration are recorded.
+     */
+    fun onUserEditedDictation() {
+        val elapsed = pendingElapsedMs ?: return
+        pendingElapsedMs = null
+        if (runtime.settings.snapshot().telemetryEnabled) {
+            metrics.record(edited = true, elapsedMs = elapsed)
+        }
+    }
+
+    /** The pending utterance survived unedited: count it and forget it. */
+    private fun settleTelemetry() {
+        val elapsed = pendingElapsedMs ?: return
+        pendingElapsedMs = null
+        if (runtime.settings.snapshot().telemetryEnabled) {
+            metrics.record(edited = false, elapsedMs = elapsed)
+        }
     }
 
     override fun replaceUtterance(index: Int, newText: String) {

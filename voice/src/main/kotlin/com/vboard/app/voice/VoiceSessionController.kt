@@ -15,6 +15,7 @@ import com.vboard.core.session.DictationStateMachine.ErrorKind
 import com.vboard.core.session.DictationStateMachine.Event
 import com.vboard.core.session.FinalTranscriptPolicy
 import com.vboard.core.text.CleanupRequest
+import com.vboard.core.text.SpokenFormats
 import com.vboard.core.text.CleanupResult
 import com.vboard.core.text.FieldKind
 import com.vboard.core.text.UtteranceCommand
@@ -627,7 +628,12 @@ class VoiceSessionController(
         // address — and modern ones do — would have it mangled on the way to the
         // input connection. ContentGuard swaps those spans for placeholders the
         // tokenizer treats as ordinary words.
-        val shield = ContentGuard.shield(raw)
+        // W7.2: spoken formats become written ones first — "five dollars fifty"
+        // has to be "$5.50" *before* the guard shields it, or the shield has
+        // nothing to protect and the tokenizer eats the symbols that follow.
+        // Raw mode is exempt: it is the verbatim escape hatch.
+        val spoken = if (settings.rawTranscriptMode) raw else SpokenFormats.apply(raw)
+        val shield = ContentGuard.shield(spoken)
         val precedingText = host.precedingText()
         val request = CleanupRequest(
             transcript = shield.masked,

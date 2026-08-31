@@ -16,6 +16,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.vboard.app.settings.SettingsRepository.Defaults as VoiceDefaults
 import com.vboard.app.settings.SettingsRepository.Keys as VoiceKeys
 import com.vboard.core.session.SilenceTimeout
+import helium314.keyboard.latin.LatinIME
 import helium314.keyboard.latin.R
 import helium314.keyboard.latin.utils.Log
 import helium314.keyboard.latin.utils.Theme
@@ -51,6 +52,7 @@ fun VoiceScreen(
         if (raw) null else VoiceKeys.AUTO_CAP,
         if (raw) null else VoiceKeys.SPOKEN_COMMANDS,
         VoiceKeys.LLM_REFINE,
+        VoiceKeys.TELEMETRY,
     )
     SearchSettingsScreen(
         onClickBack = onClickBack,
@@ -103,6 +105,24 @@ fun createVoiceSettings(context: Context) = listOf(
     },
     Setting(context, VoiceKeys.LLM_REFINE, R.string.voice_llm_refine, R.string.voice_llm_refine_summary) {
         SwitchPreference(it, VoiceDefaults.LLM_REFINE)
+    },
+    Setting(context, VoiceKeys.TELEMETRY, R.string.voice_telemetry, R.string.voice_telemetry_summary) { setting ->
+        val ctx = LocalContext.current
+        // W7.3: whoever is asked to turn measurement on gets to see what it
+        // measured. The numbers live in the running IME and vanish with it.
+        val snapshot = LatinIME.getVoiceMetricsSnapshot()
+        val rate = snapshot?.sendReadyRate
+        SwitchPreference(
+            name = setting.title,
+            key = setting.key,
+            default = VoiceDefaults.TELEMETRY,
+            description = if (rate == null) setting.description else ctx.getString(
+                R.string.voice_telemetry_measured,
+                (rate * 100).toInt(),
+                snapshot.utterances,
+                snapshot.meanTimeToSendReadyMs / 1000.0,
+            ),
+        )
     },
 )
 

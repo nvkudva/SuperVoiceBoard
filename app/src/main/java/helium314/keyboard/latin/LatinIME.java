@@ -146,6 +146,11 @@ public class LatinIME extends InputMethodService implements
     private helium314.keyboard.voice.VoiceStripView mVoiceStripView;
     // SuperVoiceBoard: the AI fix toolbar key (W5.1) and its attribution (W5.2).
     private helium314.keyboard.voice.AiFixKey mAiFixKey;
+    // SuperVoiceBoard (W7.3): so the settings screen can read the running
+    // keyboard's measurement aggregates. Weak, and cleared on destroy: an IME
+    // instance outliving its process would be a leak, not a feature.
+    private static java.lang.ref.WeakReference<LatinIME> sVoiceMetricsInstance =
+            new java.lang.ref.WeakReference<>(null);
 
     private RichInputMethodManager mRichImm;
     final KeyboardSwitcher mKeyboardSwitcher;
@@ -700,6 +705,7 @@ public class LatinIME extends InputMethodService implements
     public void onDestroy() {
         // SuperVoiceBoard: releases the microphone and the ASR engines.
         if (mVoiceController != null) mVoiceController.onDestroy();
+        sVoiceMetricsInstance = new java.lang.ref.WeakReference<>(null);
         if (mAiFixKey != null) mAiFixKey.destroy();
         mClipboardHistoryManager.onDestroy();
         mDictionaryFacilitator.closeDictionaries();
@@ -812,6 +818,7 @@ public class LatinIME extends InputMethodService implements
      */
     private helium314.keyboard.voice.VoiceController voiceController() {
         if (mVoiceController == null) {
+            sVoiceMetricsInstance = new java.lang.ref.WeakReference<>(this);
             final com.vboard.app.voice.VoiceRuntime runtime =
                     ((com.vboard.app.voice.VoiceRuntimeHost) getApplicationContext()).getVoiceRuntime();
             mVoiceController = new helium314.keyboard.voice.VoiceController(this, runtime);
@@ -839,6 +846,17 @@ public class LatinIME extends InputMethodService implements
     /** SuperVoiceBoard: entry point for the mic key and the VOICE toolbar key. */
     public void toggleVoiceInput() {
         voiceController().toggle();
+    }
+
+    /**
+     * SuperVoiceBoard (W7.3): the running keyboard's measurement aggregates, for
+     * the settings screen. Null when no keyboard is running or nothing has been
+     * dictated; the numbers live in the IME process and die with it.
+     */
+    public static com.vboard.core.session.VoiceMetrics.Snapshot getVoiceMetricsSnapshot() {
+        final LatinIME ime = sVoiceMetricsInstance.get();
+        if (ime == null || ime.mVoiceController == null) return null;
+        return ime.mVoiceController.metricsSnapshot();
     }
 
     /** SuperVoiceBoard: the AI fix key's controller, created on first use. */
@@ -1538,6 +1556,9 @@ public class LatinIME extends InputMethodService implements
         // Deliberately here and not in onUpdateSelection — the fix's own rewrite
         // moves the cursor, and an undo that dies on its own write is an undo
         // nobody ever sees.
+        // SuperVoiceBoard (W7.3): typing after a dictated commit means that
+        // utterance was not send-ready. Only the verdict is recorded.
+        if (mVoiceController != null) mVoiceController.onUserEditedDictation();
         if (mAiFixKey != null && KeyCode.AI_FIX != event.getKeyCode()
                 && KeyCode.AI_FIX_ATTRIBUTION != event.getKeyCode()) {
             mAiFixKey.onUserEdit();

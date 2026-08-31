@@ -411,3 +411,55 @@ failure was invisible; v0.2.0-w2, v0.3.0-w3 and v0.4.0-w4 were published with th
 W0 baseline APK attached. Those assets have been deleted and each release now
 says so. Both build failures are fixed, and release builds are checked by exit
 status rather than by reading the tail of a log.
+
+### R22 — 2026-08-31: W7.1 is built as a foundation and left unwired
+
+TODO W7.1 gates two-model confidence on measured disagreement precision against
+a hand-labeled 200+ utterance corpus, published either way, and cancels it below
+~70%. **That corpus does not exist and cannot be produced here** — it needs real
+recorded speech and human labels, not code. So the gate is unmet, and the
+feature is not shipped: nothing marks a word in the UI, and no confidence reaches
+the strip.
+
+What did land is the foundation §5 said the feature had to wait for, as pure
+`:core` code with tests: `TranscriptAlignment` normalizes two transcripts of the
+same speech, aligns them word by word (Levenshtein backtrace), and reports which
+committed words the two models disagree about, plus a disagreement rate.
+Punctuation and case differences are normalized away first, because two
+recognizers differing about a comma is not disagreement about words.
+
+Whoever picks this up needs the corpus, not more code. Until then this is dead
+code that compiles and is tested, which is the honest state.
+
+### R23 — 2026-08-31: spoken formats run first, and refuse when unsure (W7.2)
+
+`SpokenFormats` runs on the raw transcript, before `ContentGuard` shields it —
+"five dollars fifty" has to be "$5.50" *before* the guard has something to
+protect. Raw mode is exempt, since that is the verbatim escape hatch.
+
+Every rule needs an unambiguous trigger: a currency word preceded by a number, a
+clock pair with a meridiem, an explicit "dot"/"at" chain ending in something
+TLD-shaped. "Three thirty" with no meridiem, "a pound of flour", "connect the
+dots" and "meet me at the pub" are all left exactly as spoken. The failure modes
+are asymmetric — leaving a spoken form alone is an annoyance, rewriting prose is
+the keyboard putting words in the user's mouth.
+
+Number matching is built from the vocabulary rather than `[a-z]+`; the generic
+form matched "costs twenty" as an amount and swallowed "fifty cents" into the
+fraction.
+
+### R24 — 2026-08-31: telemetry is opt-in, content-free, and stays on the device (W7.3)
+
+`VoiceMetrics` records exactly two things: how many dictated utterances were sent
+without editing, and how long each took from mic press to committed text. The
+type cannot hold text — there is nowhere to put it — and the snapshot carries
+aggregates only, not a per-utterance list, since a sequence of durations
+fingerprints a session in a way a mean does not.
+
+It is off by default, behind a switch in the voice settings, and the switch's own
+summary shows what was measured — whoever is asked to turn measurement on gets to
+see the result. **Nothing is transmitted.** There is no endpoint and no file: the
+numbers live in the IME process and die with it. "Opt-in telemetry" that sent
+data anywhere would need a privacy policy, an endpoint and a consent flow this
+fork does not have, and shipping the collection without them would be the wrong
+half to build first.

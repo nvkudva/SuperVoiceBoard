@@ -34,6 +34,12 @@ data class SettingsSnapshot(
      * [SilenceTimeout]: the shipped default is 8s.
      */
     val silenceTimeout: SilenceTimeout = SilenceTimeout.DEFAULT,
+    /**
+     * W7.3: opt-in, content-free measurement of how often dictated text is sent
+     * without editing, and how long that takes. Off unless the user turns it on,
+     * and it never leaves the device — see PLAN.md R24.
+     */
+    val telemetryEnabled: Boolean = false,
 ) {
     fun cleanupOptions(): CleanupOptions =
         if (rawTranscriptMode) {
@@ -73,6 +79,7 @@ class SettingsRepository(private val prefs: SharedPreferences) {
         const val RAW_TRANSCRIPT = "voice_raw_transcript"
         const val LLM_REFINE = "voice_llm_refine"
         const val SILENCE_TIMEOUT = "voice_silence_timeout"
+        const val TELEMETRY = "voice_telemetry"
     }
 
     object Defaults {
@@ -86,6 +93,7 @@ class SettingsRepository(private val prefs: SharedPreferences) {
         const val RAW_TRANSCRIPT = false
         const val LLM_REFINE = false
         val SILENCE_TIMEOUT: SilenceTimeout = SilenceTimeout.DEFAULT
+        const val TELEMETRY = false
     }
 
     /** Read on the dictation path; cheap, and never blocks on IO after first load. */
@@ -100,6 +108,7 @@ class SettingsRepository(private val prefs: SharedPreferences) {
         rawTranscriptMode = prefs.getBoolean(Keys.RAW_TRANSCRIPT, Defaults.RAW_TRANSCRIPT),
         llmRefineEnabled = prefs.getBoolean(Keys.LLM_REFINE, Defaults.LLM_REFINE),
         silenceTimeout = silenceTimeout(),
+        telemetryEnabled = prefs.getBoolean(Keys.TELEMETRY, Defaults.TELEMETRY),
     )
 
     private fun silenceTimeout(): SilenceTimeout {

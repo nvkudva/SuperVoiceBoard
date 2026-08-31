@@ -797,6 +797,9 @@ New dictionary:
     <string name="ai_fix_attribution_line">“%1$s” → “%2$s”</string>
     <string name="ai_fix_attribution_title">What the model changed</string>
     <string name="ai_fix_attribution_none">The model changed no wording — only spelling and spacing</string>
+    <string name="voice_telemetry">Measure how well dictation works</string>
+    <string name="voice_telemetry_summary">Counts how often dictated text is sent without editing, and how long that takes. No text, ever, and nothing leaves this device</string>
+    <string name="voice_telemetry_measured">%1$d%% of %2$d dictations sent unedited, %3$.1fs on average</string>
     <!-- SuperVoiceBoard: the voice strip (W3.4) -->
     <string name="voice_listening">Listening…</string>
     <string name="voice_preparing">Getting ready…</string>

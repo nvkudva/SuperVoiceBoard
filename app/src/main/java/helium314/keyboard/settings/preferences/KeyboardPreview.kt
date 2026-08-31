@@ -3,7 +3,9 @@ package helium314.keyboard.settings.preferences
 
 import android.content.Context
 import android.view.ContextThemeWrapper
+import android.view.LayoutInflater
 import android.view.View
+import android.widget.LinearLayout
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -20,7 +22,9 @@ import helium314.keyboard.keyboard.KeyboardElement
 import helium314.keyboard.keyboard.KeyboardLayoutSet
 import helium314.keyboard.keyboard.KeyboardTheme
 import helium314.keyboard.keyboard.KeyboardView
+import helium314.keyboard.latin.R
 import helium314.keyboard.latin.RichInputMethodSubtype
+import helium314.keyboard.latin.suggestions.SuggestionStripView
 import helium314.keyboard.latin.settings.Settings
 import helium314.keyboard.latin.utils.Log
 import helium314.keyboard.latin.utils.ResourceUtils
@@ -56,8 +60,10 @@ fun KeyboardPreview(modifier: Modifier = Modifier) {
     }
 }
 
+/** The keyboard plus the strip stacked above it. */
 private fun keyboardHeightPx(context: Context): Int = runCatching {
-    ResourceUtils.getKeyboardHeight(context.resources, Settings.getValues())
+    ResourceUtils.getKeyboardHeight(context.resources, Settings.getValues()) +
+        context.resources.getDimensionPixelSize(R.dimen.config_suggestions_strip_height)
 }.getOrDefault(0)
 
 /** Mirrors KeyboardSwitcher.loadKeyboard, minus everything that needs a running IME. */
@@ -75,10 +81,34 @@ private fun buildPreview(context: Context, widthPx: Int): View? = runCatching {
         .setEmojiKeyEnabled(values.mShowsEmojiKey)
         .setSplitLayoutEnabled(values.mIsSplitKeyboardEnabled)
         .build()
-    KeyboardView(themeContext, null).apply {
+    val keyboardView = KeyboardView(themeContext, null).apply {
         setKeyboard(layoutSet.getKeyboard(KeyboardElement.ALPHABET))
+    }
+    LinearLayout(themeContext).apply {
+        orientation = LinearLayout.VERTICAL
+        stripView(themeContext)?.let { addView(it) }
+        addView(keyboardView)
+        // a preview is for looking at: swallow every touch, so none of the strip's
+        // keys can fire without the listener a running IME would have given them
+        setOnTouchListener { _, _ -> true }
     }
 }.onFailure {
     // a preview is never worth taking the settings screen down with it
     Log.w(TAG, "could not build the keyboard preview", it)
+}.getOrNull()
+
+/**
+ * The suggestion strip with its toolbar showing, as the keyboard's top row. The strip
+ * builds its own toolbar keys from prefs in its init, so it needs no listener here.
+ */
+private fun stripView(themeContext: Context): View? = runCatching {
+    LayoutInflater.from(themeContext).inflate(R.layout.strip_container, null).apply {
+        findViewById<SuggestionStripView>(R.id.suggestion_strip_view)?.setToolbarVisibility(true)
+        layoutParams = LinearLayout.LayoutParams(
+            LinearLayout.LayoutParams.MATCH_PARENT,
+            themeContext.resources.getDimensionPixelSize(R.dimen.config_suggestions_strip_height)
+        )
+    }
+}.onFailure {
+    Log.w(TAG, "could not build the toolbar preview", it)
 }.getOrNull()

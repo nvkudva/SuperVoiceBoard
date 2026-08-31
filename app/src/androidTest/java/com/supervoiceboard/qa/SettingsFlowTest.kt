@@ -6,7 +6,6 @@ import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
-import androidx.compose.ui.test.performScrollTo
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import helium314.keyboard.latin.R
 import helium314.keyboard.settings.SettingsActivity
@@ -30,6 +29,7 @@ class SettingsFlowTest {
     @Before
     fun imeIsCurrent() {
         Qa.makeThisImeCurrent()
+        Qa.hideKeyboard()
     }
 
     @Test
@@ -43,7 +43,7 @@ class SettingsFlowTest {
             R.string.settings_screen_advanced,
             R.string.settings_screen_about,
         ).forEach { id ->
-            compose.onNodeWithText(string(id)).performScrollTo().assertIsDisplayed()
+            compose.onNodeWithText(string(id)).scrollToIfPossible().assertIsDisplayed()
         }
     }
 
@@ -64,7 +64,7 @@ class SettingsFlowTest {
             R.string.settings_screen_about,
         ).forEach { id ->
             val title = string(id)
-            compose.onNodeWithText(title).performScrollTo().performClick()
+            compose.onNodeWithText(title).scrollToIfPossible().performClick()
             compose.waitForIdle()
             // The title survives into the opened screen's app bar.
             compose.onAllNodes(hasText(title)).fetchSemanticsNodes().let {
@@ -73,7 +73,7 @@ class SettingsFlowTest {
             Qa.device.pressBack()
             compose.waitForIdle()
             compose.onNodeWithText(string(R.string.settings_screen_about))
-                .performScrollTo()
+                .scrollToIfPossible()
                 .assertIsDisplayed()
         }
     }

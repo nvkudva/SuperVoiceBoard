@@ -8,6 +8,7 @@ import androidx.test.uiautomator.Until
 import java.util.regex.Pattern
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
+import org.junit.After
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -32,11 +33,19 @@ class KeyboardVoiceFlowTest {
         // Whatever the previous case left on screen — a voice row, a dialog —
         // goes away before the field is asked for again.
         Qa.device.pressBack()
-        Qa.shell("am force-stop ${Qa.testAppId}")
-        Qa.shell("am start -W -n ${Qa.testAppId}/com.supervoiceboard.qa.TestInputActivity")
+        // Never force-stop this package: the instrumentation runs inside it.
+        Qa.shell(
+            "am start -W -f 0x14000000 " +
+                "-n ${Qa.testAppId}/com.supervoiceboard.qa.TestInputActivity"
+        )
         Qa.device.waitForIdle()
-        field().click()
+        field().apply { clear(); click() }
         Qa.device.waitForIdle()
+    }
+
+    @After
+    fun putTheKeyboardAway() {
+        Qa.hideKeyboard()
     }
 
     private fun field(): UiObject2 =

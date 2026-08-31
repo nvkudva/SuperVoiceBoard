@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0-only
 package com.supervoiceboard.qa
 
+import androidx.compose.ui.test.SemanticsNodeInteraction
+import androidx.compose.ui.test.performScrollTo
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.uiautomator.UiDevice
 import org.junit.rules.TestWatcher
@@ -35,6 +37,12 @@ object Qa {
         device.waitForIdle()
     }
 
+    /** ESC closes the IME window; leaving it up resizes whatever comes next. */
+    fun hideKeyboard() {
+        runCatching { shell("input keyevent 111") }
+        device.waitForIdle()
+    }
+
     fun makeThisImeNotCurrent() {
         shell("ime reset")
         shell("ime disable $imeId")
@@ -56,6 +64,13 @@ object Qa {
         }
     }
 }
+
+/**
+ * Not every settings screen is inside a scrollable container, and a node that
+ * is already on screen does not need scrolling to.
+ */
+fun SemanticsNodeInteraction.scrollToIfPossible(): SemanticsNodeInteraction =
+    also { runCatching { it.performScrollTo() } }
 
 /** Screenshots every failure, so a red CI run is diagnosable without a device. */
 class ScreenshotOnFailure : TestWatcher() {

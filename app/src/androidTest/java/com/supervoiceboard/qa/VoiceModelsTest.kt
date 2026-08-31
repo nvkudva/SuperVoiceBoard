@@ -6,7 +6,6 @@ import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
-import androidx.compose.ui.test.performScrollTo
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import helium314.keyboard.latin.R
 import helium314.keyboard.settings.SettingsActivity
@@ -34,9 +33,10 @@ class VoiceModelsTest {
     @Before
     fun openModelsScreen() {
         Qa.makeThisImeCurrent()
-        compose.onNodeWithText(string(R.string.settings_screen_voice)).performScrollTo().performClick()
+        Qa.hideKeyboard()
+        compose.onNodeWithText(string(R.string.settings_screen_voice)).scrollToIfPossible().performClick()
         compose.waitForIdle()
-        compose.onNodeWithText(string(R.string.settings_screen_voice_models)).performScrollTo().performClick()
+        compose.onNodeWithText(string(R.string.settings_screen_voice_models)).scrollToIfPossible().performClick()
         compose.waitForIdle()
     }
 
@@ -62,6 +62,6 @@ class VoiceModelsTest {
     fun backReturnsToVoiceSettings() {
         Qa.device.pressBack()
         compose.waitForIdle()
-        compose.onNodeWithText(string(R.string.voice_inline_dictation)).performScrollTo().assertIsDisplayed()
+        compose.onNodeWithText(string(R.string.voice_inline_dictation)).scrollToIfPossible().assertIsDisplayed()
     }
 }

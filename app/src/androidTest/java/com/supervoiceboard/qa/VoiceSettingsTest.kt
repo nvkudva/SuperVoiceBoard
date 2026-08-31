@@ -10,7 +10,6 @@ import androidx.compose.ui.test.isToggleable
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
-import androidx.compose.ui.test.performScrollTo
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import helium314.keyboard.latin.R
 import helium314.keyboard.settings.SettingsActivity
@@ -34,7 +33,8 @@ class VoiceSettingsTest {
     @Before
     fun openVoiceScreen() {
         Qa.makeThisImeCurrent()
-        compose.onNodeWithText(string(R.string.settings_screen_voice)).performScrollTo().performClick()
+        Qa.hideKeyboard()
+        compose.onNodeWithText(string(R.string.settings_screen_voice)).scrollToIfPossible().performClick()
         compose.waitForIdle()
     }
 
@@ -57,24 +57,24 @@ class VoiceSettingsTest {
             R.string.voice_llm_refine,
             R.string.voice_telemetry,
         ).forEach { id ->
-            compose.onNodeWithText(string(id)).performScrollTo().assertIsDisplayed()
+            compose.onNodeWithText(string(id)).scrollToIfPossible().assertIsDisplayed()
         }
     }
 
     @Test
     fun togglingASwitchFlipsItAndSurvivesLeavingTheScreen() {
         val label = R.string.voice_llm_refine // defaults off
-        compose.onNodeWithText(string(label)).performScrollTo()
+        compose.onNodeWithText(string(label)).scrollToIfPossible()
         switchFor(label).assertIsOff().performClick()
         compose.waitForIdle()
         switchFor(label).assertIsOn()
 
         Qa.device.pressBack()
         compose.waitForIdle()
-        compose.onNodeWithText(string(R.string.settings_screen_voice)).performScrollTo().performClick()
+        compose.onNodeWithText(string(R.string.settings_screen_voice)).scrollToIfPossible().performClick()
         compose.waitForIdle()
 
-        compose.onNodeWithText(string(label)).performScrollTo()
+        compose.onNodeWithText(string(label)).scrollToIfPossible()
         switchFor(label).assertIsOn().performClick() // leave the device as we found it
     }
 
@@ -85,7 +85,7 @@ class VoiceSettingsTest {
     @Test
     fun rawTranscriptHidesTheCleanupSwitches() {
         val raw = R.string.voice_raw_transcript
-        compose.onNodeWithText(string(raw)).performScrollTo()
+        compose.onNodeWithText(string(raw)).scrollToIfPossible()
         switchFor(raw).assertIsOff().performClick()
         compose.waitForIdle()
 
@@ -101,15 +101,15 @@ class VoiceSettingsTest {
             }
         }
 
-        compose.onNodeWithText(string(raw)).performScrollTo()
+        compose.onNodeWithText(string(raw)).scrollToIfPossible()
         switchFor(raw).performClick()
         compose.waitForIdle()
-        compose.onNodeWithText(string(R.string.voice_remove_fillers)).performScrollTo().assertIsDisplayed()
+        compose.onNodeWithText(string(R.string.voice_remove_fillers)).scrollToIfPossible().assertIsDisplayed()
     }
 
     @Test
     fun silenceTimeoutOpensItsChoices() {
-        compose.onNodeWithText(string(R.string.voice_silence_timeout)).performScrollTo().performClick()
+        compose.onNodeWithText(string(R.string.voice_silence_timeout)).scrollToIfPossible().performClick()
         compose.waitForIdle()
         compose.onNodeWithText(string(R.string.voice_silence_timeout_off)).assertIsDisplayed()
         Qa.device.pressBack()

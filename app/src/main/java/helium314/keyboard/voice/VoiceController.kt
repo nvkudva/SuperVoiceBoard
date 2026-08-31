@@ -13,6 +13,7 @@ import android.text.InputType
 import android.view.View
 import android.view.inputmethod.EditorInfo
 import com.vboard.app.settings.SettingsRepository
+import com.vboard.app.voice.VoiceEngines
 import com.vboard.app.voice.VoiceErrorAction
 import com.vboard.app.voice.VoiceRuntime
 import com.vboard.app.voice.VoiceSessionController
@@ -150,6 +151,28 @@ class VoiceController(
     }
 
     /** The mic key, and the VOICE toolbar key, both land here. */
+    /**
+     * Starts loading the models without starting a session.
+     *
+     * Called on the mic's touch-down and when the keyboard opens with models
+     * installed: model load is seconds on a cold press, and doing it during the
+     * gesture is time the user was going to spend anyway.
+     */
+    fun warmUp() {
+        if (!fieldKind.allowsVoice) return
+        VoiceEngines.warmUp(runtime)
+    }
+
+    /** The keyboard is visible: do not release engines out from under it. */
+    fun onKeyboardShown() {
+        VoiceEngines.cancelIdleRelease()
+    }
+
+    /** The keyboard is gone: the engines may be reclaimed after the idle delay. */
+    fun onKeyboardHidden() {
+        VoiceEngines.scheduleIdleRelease()
+    }
+
     fun toggle() {
         if (isActive) session.stopAndFinalize() else start()
     }

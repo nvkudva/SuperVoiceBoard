@@ -138,6 +138,14 @@ class SuggestionStripView(context: Context, attrs: AttributeSet?, defStyle: Int)
      */
     var onMicHoldStart: ((raw: Boolean) -> Unit)? = null
     var onMicHoldEnd: (() -> Unit)? = null
+
+    /**
+     * Fires on the mic's touch-down, before the tap is even complete.
+     *
+     * Loading the ASR models takes long enough to be the biggest single piece of
+     * "why is nothing happening yet", and the gesture itself is free time.
+     */
+    var onMicTouchDown: (() -> Unit)? = null
     private val incognitoIcon = KeyboardIconsSet.instance.getNewDrawable(ToolbarKey.INCOGNITO.name, context)
     private val toolbarArrowIcon = KeyboardIconsSet.instance.getNewDrawable(KeyboardIconsSet.NAME_TOOLBAR_KEY, context)
     private val defaultToolbarBackground: Drawable = toolbarExpandKey.background
@@ -553,6 +561,7 @@ class SuggestionStripView(context: Context, attrs: AttributeSet?, defStyle: Int)
                 MotionEvent.ACTION_DOWN -> {
                     holding = false
                     raw = false
+                    onMicTouchDown?.invoke()
                     view.postDelayed(startHold, MIC_HOLD_MS)
                     view.postDelayed(escalateToRaw, MIC_RAW_HOLD_MS)
                     false // let the click listener see a short press

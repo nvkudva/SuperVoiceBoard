@@ -47,10 +47,28 @@ class ModelStore(context: Context) {
 
     private val appContext: Context = context.applicationContext
 
-    private val internalRoot: File = File(appContext.filesDir, DIR_NAME)
+    /**
+     * Device-protected storage, explicitly.
+     *
+     * The IME is `directBootAware`: the system starts its process before the
+     * device is unlocked, and such a process cannot read credential-encrypted
+     * storage (`/data/user/0/...`) at all — not even after the user unlocks,
+     * because the mount it was given never gains it. Models written there by the
+     * `:ui` process are invisible to the keyboard, which then says they are not
+     * downloaded. Device-protected storage is readable at every point in the
+     * boot, by every process of the app, which is the property the mic needs.
+     */
+    private val internalRoot: File =
+        File(appContext.createDeviceProtectedStorageContext().filesDir, DIR_NAME)
 
     /** Where packs are read from and written to for the life of this process. */
-    val rootDir: File = chooseRoot(appContext, internalRoot)
+    val rootDir: File = chooseRoot(appContext, internalRoot).also { root ->
+        // The external root is created by externalRoot(); the internal one never
+        // was, because it was never the default. An absent directory reports
+        // zero usable space, so every download failed its storage pre-check
+        // instantly and the row simply went back to "not installed".
+        if (!root.isDirectory) root.mkdirs()
+    }
 
     /** True when [rootDir] is the one that (usually) survives an uninstall. */
     val isOutsideAppData: Boolean = rootDir != internalRoot
@@ -135,7 +153,14 @@ class ModelStore(context: Context) {
         synchronized(lockFor(pack)) { ensureExtractedLocked(installer, pack) }
 
     private fun ensureExtractedLocked(installer: PackInstaller, pack: ModelPack): File? {
-        if (installer.stateOf(pack) != PackState.Installed) return null
+        if (installer.stateOf(pack) != PackState.Installed) {
+            // Says nothing about the user's text; the pack id is a catalog
+            // constant. Worth a line, because "not installed" and "installed
+            // somewhere this process cannot read" look identical to the user and
+            // used to look identical here too.
+            Log.i(TAG, "pack ${pack.id} is not installed under $rootDir")
+            return null
+        }
         val installDir = installer.installedDir(pack)?.toFile() ?: return null
         val target = File(installDir, EXTRACTED_DIR)
         val marker = File(target, COMPLETE_MARKER)

@@ -58,6 +58,7 @@ fun VoiceScreen(
         if (raw) null else VoiceKeys.AUTO_PUNCTUATE,
         if (raw) null else VoiceKeys.AUTO_CAP,
         if (raw) null else VoiceKeys.SPOKEN_COMMANDS,
+        VoiceKeys.PROVISIONAL_COMMIT,
         VoiceKeys.LLM_REFINE,
         VoiceKeys.TELEMETRY,
     )
@@ -123,6 +124,9 @@ fun createVoiceSettings(context: Context) = listOf(
     },
     Setting(context, VoiceKeys.SPOKEN_COMMANDS, R.string.voice_spoken_commands, R.string.voice_spoken_commands_summary) {
         SwitchPreference(it, VoiceDefaults.SPOKEN_COMMANDS)
+    },
+    Setting(context, VoiceKeys.PROVISIONAL_COMMIT, R.string.voice_provisional_commit, R.string.voice_provisional_commit_summary) {
+        SwitchPreference(it, VoiceDefaults.PROVISIONAL_COMMIT)
     },
     Setting(context, VoiceKeys.LLM_REFINE, R.string.voice_llm_refine, R.string.voice_llm_refine_summary) {
         SwitchPreference(it, VoiceDefaults.LLM_REFINE)

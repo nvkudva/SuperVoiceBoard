@@ -32,12 +32,34 @@ internal object ModelRoots {
      * the copy has landed, so the mic never reports "not installed" for models
      * that are on the device.
      */
+    /**
+     * Internal storage wins, and external is only read when models are already
+     * there (SuperVoiceBoard).
+     *
+     * VBoard preferred `Android/media`, so an uninstall would not take a
+     * gigabyte of models with it. That is the wrong trade for a keyboard: the
+     * IME is `directBootAware` and its process is started by the system before
+     * the device is unlocked, and a process started that early does not get a
+     * usable view of external storage — it can list the models directory and
+     * still not see a file another process wrote into it. The symptom is the
+     * keyboard reporting "voice models aren't downloaded yet" for models that
+     * are demonstrably on the device, which is what this fork hit in testing.
+     *
+     * Device-protected internal storage (this app sets
+     * `defaultToDeviceProtectedStorage`) is readable by every process of the app
+     * at every point in the boot, which is the property the mic needs. Models
+     * already installed externally by an older build keep being used.
+     */
     fun choose(external: File?, internal: File): File {
         if (external == null) return internal
-        if (hasPacks(external)) return external
         if (hasPacks(internal)) return internal
-        return external
+        if (isUsable(external) && hasPacks(external)) return external
+        return internal
     }
+
+    /** True when the app can actually list and read [root], not merely see it. */
+    fun isUsable(root: File): Boolean =
+        root.isDirectory && root.canRead() && root.listFiles() != null
 
     /**
      * Copies pack directories from [from] to [to], skipping any that are already

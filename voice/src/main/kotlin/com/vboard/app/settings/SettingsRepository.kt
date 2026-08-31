@@ -30,6 +30,14 @@ data class SettingsSnapshot(
     val rawTranscriptMode: Boolean = false,
     val llmRefineEnabled: Boolean = false,
     /**
+     * Commit the live model's text the moment speech stops, then quietly replace
+     * it with the accurate model's answer when that arrives.
+     *
+     * The committed text is always the accurate model's; this only decides
+     * whether the user waits for it with an empty field or a provisional one.
+     */
+    val provisionalCommit: Boolean = true,
+    /**
      * How long the mic may stay open with nothing being said. See
      * [SilenceTimeout]: the shipped default is 8s.
      */
@@ -78,6 +86,7 @@ class SettingsRepository(private val prefs: SharedPreferences) {
         const val SPOKEN_COMMANDS = "voice_spoken_commands"
         const val RAW_TRANSCRIPT = "voice_raw_transcript"
         const val LLM_REFINE = "voice_llm_refine"
+        const val PROVISIONAL_COMMIT = "voice_provisional_commit"
         const val SILENCE_TIMEOUT = "voice_silence_timeout"
         const val TELEMETRY = "voice_telemetry"
     }
@@ -92,6 +101,7 @@ class SettingsRepository(private val prefs: SharedPreferences) {
         const val SPOKEN_COMMANDS = true
         const val RAW_TRANSCRIPT = false
         const val LLM_REFINE = false
+        const val PROVISIONAL_COMMIT = true
         val SILENCE_TIMEOUT: SilenceTimeout = SilenceTimeout.DEFAULT
         const val TELEMETRY = false
     }
@@ -107,6 +117,7 @@ class SettingsRepository(private val prefs: SharedPreferences) {
         spokenCommands = prefs.getBoolean(Keys.SPOKEN_COMMANDS, Defaults.SPOKEN_COMMANDS),
         rawTranscriptMode = prefs.getBoolean(Keys.RAW_TRANSCRIPT, Defaults.RAW_TRANSCRIPT),
         llmRefineEnabled = prefs.getBoolean(Keys.LLM_REFINE, Defaults.LLM_REFINE),
+        provisionalCommit = prefs.getBoolean(Keys.PROVISIONAL_COMMIT, Defaults.PROVISIONAL_COMMIT),
         silenceTimeout = silenceTimeout(),
         telemetryEnabled = prefs.getBoolean(Keys.TELEMETRY, Defaults.TELEMETRY),
     )

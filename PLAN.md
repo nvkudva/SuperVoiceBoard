@@ -490,3 +490,31 @@ would later be resumed as if it were a download.
 
 Removing a pack deletes its installed files, its partial downloads and its older
 versions, and the row goes back to offering Download and Import.
+
+### R26 — 2026-09-01: models live in internal storage, not `Android/media`
+
+VBoard put model packs in `Android/media/<pkg>` so an uninstall would not take a
+gigabyte with it. That is the wrong trade for a keyboard, and testing this fork
+showed why: the IME is `directBootAware` and the system starts its process
+before the device is unlocked, and a process started that early does not get a
+usable view of external storage. It can list the models directory and still not
+see files another process wrote into it — so the mic reported "voice models
+aren't downloaded yet" for models that were demonstrably installed, with the
+settings screen showing them as Installed at the same time.
+
+`ModelRoots.choose` now prefers device-protected internal storage, which every
+process of this app can read at every point in the boot, and only reads the
+external root when packs are already there from an older build.
+
+Two bugs fell out of that switch and are fixed with it:
+
+- The internal root was never created, and a directory that does not exist
+  reports **zero** usable space — so the installer's storage pre-check failed
+  instantly and every download died before it started, silently.
+- The models screen believed the download worker's last published state over
+  what is on disk, so a pack the keyboard could not read still read "Installed"
+  there. Disk wins now, except while work is actually scheduled.
+
+`ensureExtracted` also logs when a pack is not installed under the root it
+looked in — the case above was silent, and "not installed" and "installed
+somewhere this process cannot read" looked identical from the outside.

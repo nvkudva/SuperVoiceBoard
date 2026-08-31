@@ -561,6 +561,20 @@ class VoiceSessionController(
         host.showFinalizing()
 
         finalizeJob = scope.launch {
+            // Latency: the accurate model takes about a second on the utterance
+            // that just ended, and the user spends it looking at an empty field.
+            // The live model's text is already good enough to read, so commit it
+            // now and replace it when the accurate answer lands. What ends up in
+            // the field is still the accurate model's text — this only decides
+            // whether the wait happens with an empty field or a provisional one.
+            var provisional: String? = null
+            if (settings.provisionalCommit && partial.isNotBlank()) {
+                val early = cleanTranscript(partial)
+                if (early.command == UtteranceCommand.NONE && early.text.isNotBlank()) {
+                    host.commitUtterance(utteranceIndex, early.text)
+                    provisional = early.text
+                }
+            }
             val decoded = if (samples.isEmpty()) {
                 null
             } else {
@@ -583,6 +597,15 @@ class VoiceSessionController(
             val finalText = FinalTranscriptPolicy.choose(decoded, partial)
 
             val cleaned = cleanTranscript(finalText)
+            // With a provisional commit already in the field, the machine must
+            // not commit a second copy: it is told the utterance is finished
+            // (blank), and the text in the field is corrected in place instead.
+            val alreadyInField = provisional
+            if (alreadyInField != null && cleaned.command != UtteranceCommand.NONE) {
+                // The utterance turned out to be a command, so the provisional
+                // text was never text: take it back before acting on it.
+                host.replaceUtterance(utteranceIndex, "")
+            }
             when (cleaned.command) {
                 UtteranceCommand.SCRATCH_THAT -> {
                     dispatch(Event.FinalTranscript(""))
@@ -594,7 +617,19 @@ class VoiceSessionController(
                     dispatch(Event.StopRequested)
                 }
                 UtteranceCommand.NONE -> {
-                    dispatch(Event.FinalTranscript(cleaned.text))
+                    if (alreadyInField != null) {
+                        if (cleaned.text != alreadyInField) {
+                            host.replaceUtterance(utteranceIndex, cleaned.text)
+                        }
+                        // The machine's commit effect is what normally schedules
+                        // refinement, and it is not running on this path.
+                        if (settings.llmRefineEnabled && cleaned.text.isNotBlank()) {
+                            refineAsync(cleaned.text, utteranceIndex)
+                        }
+                        dispatch(Event.FinalTranscript(""))
+                    } else {
+                        dispatch(Event.FinalTranscript(cleaned.text))
+                    }
                     showListeningIfListening()
                 }
             }

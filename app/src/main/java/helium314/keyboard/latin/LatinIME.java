@@ -790,6 +790,12 @@ public class LatinIME extends InputMethodService implements
                 toggleVoiceInput();
                 return kotlin.Unit.INSTANCE;
             });
+            // SuperVoiceBoard: start loading the models on touch-down, so the
+            // tap gesture pays for the model load instead of the user waiting.
+            mSuggestionStripView.setOnMicTouchDown(() -> {
+                voiceController().warmUp();
+                return kotlin.Unit.INSTANCE;
+            });
             // SuperVoiceBoard: hold-to-talk and its raw variant (W6.3/W6.4).
             mSuggestionStripView.setOnMicHoldStart((raw) -> {
                 voiceController().startHold(raw);
@@ -900,6 +906,10 @@ public class LatinIME extends InputMethodService implements
         // SuperVoiceBoard: the field decides whether dictation is allowed at all
         // (a password field is not), so the session hears about every focus change.
         voiceController().onStartInputView(editorInfo);
+        // SuperVoiceBoard: while the keyboard is up, engines already loaded stay
+        // loaded — releasing them between two dictations is the slowest path
+        // there is.
+        voiceController().onKeyboardShown();
         aiFixKey().onStartInput();
     }
 
@@ -907,7 +917,10 @@ public class LatinIME extends InputMethodService implements
     public void onFinishInputView(final boolean finishingInput) {
         // SuperVoiceBoard: the editor is going away, but what was already said
         // must still land in it — finalize rather than discard.
-        if (mVoiceController != null) mVoiceController.onFinishInputView();
+        if (mVoiceController != null) {
+            mVoiceController.onFinishInputView();
+            mVoiceController.onKeyboardHidden();
+        }
         if (mAiFixKey != null) mAiFixKey.onFinishInputView();
         StatsUtils.onFinishInputView();
         mHandler.onFinishInputView(finishingInput);

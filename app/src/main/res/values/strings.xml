@@ -864,6 +864,8 @@ New dictionary:
     <string name="voice_auto_capitalize_summary">Separate from the keyboard\'s own auto-capitalization</string>
     <string name="voice_spoken_commands">Spoken punctuation</string>
     <string name="voice_spoken_commands_summary">“comma”, “new line”, “question mark” become the mark itself</string>
+    <string name="voice_provisional_commit">Show text immediately</string>
+    <string name="voice_provisional_commit_summary">Types the live model\'s text the moment you stop speaking, then corrects it in place when the accurate model finishes. The text you keep is always the accurate one</string>
     <string name="voice_llm_refine">AI refinement</string>
     <string name="voice_llm_refine_summary">Tidy dictated text with the on-device model. Runs outside the keyboard, and needs the refiner model downloaded</string>
     <!-- SuperVoiceBoard: attribution entry for the upstream project this fork is built on -->

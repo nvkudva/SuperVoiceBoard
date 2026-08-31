@@ -39,6 +39,13 @@ interface VoiceRuntimeHost {
     val voiceRuntime: VoiceRuntime
 }
 
+/** Free space on the volume holding [dir], asking its nearest existing ancestor. */
+private fun usableSpaceOf(dir: java.io.File): Long {
+    var candidate: java.io.File? = dir
+    while (candidate != null && !candidate.isDirectory) candidate = candidate.parentFile
+    return candidate?.usableSpace ?: 0L
+}
+
 /** The runtime behind [context], or null in a process that never built one. */
 fun voiceRuntimeOrNull(context: Context): VoiceRuntime? =
     (context.applicationContext as? VoiceRuntimeHost)?.voiceRuntime
@@ -62,8 +69,10 @@ class DefaultVoiceRuntime(
         rootDir = modelStore.rootDir.toPath(),
         fetcher = AndroidFetcher(),
         // The volume the packs actually land on, which is not necessarily the
-        // one filesDir is on.
-        freeBytes = { modelStore.rootDir.usableSpace },
+        // one filesDir is on. A directory that does not exist yet reports zero,
+        // which would fail every storage pre-check, so the nearest existing
+        // ancestor answers for it.
+        freeBytes = { usableSpaceOf(modelStore.rootDir) },
     )
     override val cleaner: TranscriptCleaner = TranscriptCleaner()
 }

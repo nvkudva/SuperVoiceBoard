@@ -139,7 +139,10 @@ private fun PackRow(
     LaunchedEffect(pack.id, liveState) {
         diskState = withContext(Dispatchers.IO) { runtime.packInstaller.stateOf(pack) }
     }
-    val state = liveState ?: diskState
+    // Disk wins once nothing is scheduled: the worker's last published state is
+    // what it *did*, and a pack it installed into a directory this process cannot
+    // read must not keep reading "Installed" here while the mic says otherwise.
+    val state = if (running || queued) liveState ?: diskState else diskState
 
     val importer = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
         if (uri == null) return@rememberLauncherForActivityResult

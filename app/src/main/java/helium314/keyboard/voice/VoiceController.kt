@@ -7,6 +7,7 @@ package helium314.keyboard.voice
 
 import android.content.Intent
 import android.net.Uri
+import android.os.SystemClock
 import android.provider.Settings as AndroidSettings
 import android.text.InputType
 import android.view.View
@@ -51,6 +52,16 @@ class VoiceController(
 
     private var fieldKind: FieldKind = FieldKind.TEXT
 
+    /** The app being dictated into, captured when the session starts (W4.3). */
+    private var sessionPackage: String? = null
+
+    /**
+     * An utterance whose input connection died before the final pass returned.
+     * In memory only, replayed into the next editor of the same app and nowhere
+     * else — see [PendingDictation].
+     */
+    private var pending: PendingDictation? = null
+
     /**
      * Committed utterances of this session, by index, so a later refinement can
      * replace exactly what it refined rather than guessing at the cursor.
@@ -64,6 +75,30 @@ class VoiceController(
         // A field that must never be dictated into ends any session that was
         // running when focus moved into it.
         if (!fieldKind.allowsVoice && isActive) cancel()
+        replayPending(editorInfo?.packageName)
+    }
+
+    /**
+     * W4.3 draft rescue: hand a held utterance to the editor that just opened,
+     * if it is plausibly the same piece of work the user was speaking into.
+     *
+     * The rule is deliberately narrow — same app, within the TTL, field still
+     * accepts voice — because replaying speech into the *next* app's field would
+     * be a worse bug than the data loss it fixes.
+     */
+    private fun replayPending(editorPackage: String?) {
+        val held = pending ?: return
+        val verdict = held.verdictFor(editorPackage, fieldKind.allowsVoice, SystemClock.elapsedRealtime())
+        if (verdict != ReplayVerdict.REPLAY) {
+            // Never logs the text, its length, or anything derived from it.
+            Log.i(TAG, "held utterance not replayed: $verdict")
+            if (verdict == ReplayVerdict.EXPIRED) pending = null
+            return
+        }
+        val ic = ime.currentInputConnection ?: return
+        pending = null
+        ic.commitText(CommitPlanner.joinForInsertion(precedingText(), held.text), 1)
+        Log.i(TAG, "held utterance replayed into the reopened editor")
     }
 
     /** The editor is going away: finalize rather than discard what was said. */
@@ -76,6 +111,15 @@ class VoiceController(
         strip = null
     }
 
+    /**
+     * W4.4: a touch outside the keyboard ends the utterance rather than leaving
+     * the mic open. The user has moved on — to another field, a send button, the
+     * app's own UI — and anything already said should land, not keep recording.
+     */
+    fun onTouchOutsideKeyboard() {
+        if (isActive) session.stopAndFinalize()
+    }
+
     /** The mic key, and the VOICE toolbar key, both land here. */
     fun toggle() {
         if (isActive) session.stopAndFinalize() else start()
@@ -84,6 +128,7 @@ class VoiceController(
     fun start() {
         if (!fieldKind.allowsVoice) return
         isActive = true
+        sessionPackage = ime.currentInputEditorInfo?.packageName
         commits.clear()
         strip?.reset()
         onSessionUiStarted?.invoke()
@@ -134,7 +179,13 @@ class VoiceController(
         // toggling password visibility mid-dictation does exactly that.
         if (!fieldKind.allowsVoice) return
         val ic = ime.currentInputConnection ?: run {
-            Log.w(TAG, "input connection gone before the final pass; utterance not committed")
+            // W4.3: the editor went away before the final pass returned. The
+            // speech is held rather than dropped; the next editor of the same
+            // app gets it.
+            pending = PendingDictation.hold(
+                pending, text, sessionPackage, SystemClock.elapsedRealtime(),
+            )
+            Log.w(TAG, "no input connection; dictated utterance $index held for replay")
             return
         }
         val joined = CommitPlanner.joinForInsertion(precedingText(), text)

@@ -297,3 +297,41 @@ one anyway.
 `KeyCode.VOICE_INPUT`. It now calls `toggleVoiceInput()`. HeliBoard's other
 handling of that key code — shift state, keyboard switching, the popup-key
 shortcut — is untouched.
+
+### R15 — 2026-08-31: `:core`'s SuggestionEngine does not run (W4.1)
+
+The open question in §5 is settled: **HeliBoard's native decoder is the only
+suggestion engine in this fork, for typing and for dictation alike.**
+`core/suggest` — SuggestionEngine, Lexicon, UserHistory — stays in the tree,
+compiled and tested, and is wired to nothing.
+
+Why not compose them:
+
+- The native decoder is what makes this a Gboard clone rather than a keyboard
+  with a word list: it has the dictionaries, the gesture decoding, the
+  personalization, 100+ locales. `core/suggest` was written for a keyboard that
+  had none of that, against an English lexicon.
+- Two engines writing the suggestion strip means one of them must win per
+  keystroke, and that decision has no principled answer at the strip. Every
+  arrangement we sketched — ours for dictated spans, native for typed ones —
+  needs the strip to know which characters came from which source, which the
+  input connection does not tell us after a commit.
+- Dictated text is not where suggestions matter. What dictation needs from
+  `core/` is the *cleanup* pipeline (TranscriptCleaner, CommitPlanner,
+  ContentGuard) and that is wired, in W4.2. Correction of dictated text is the
+  refiner's job (W5), not a second n-gram engine's.
+
+`core/suggest` is kept rather than deleted because `AiFixController` (W5.1) uses
+its lexicon for the non-LLM fallback path, and because deleting 4k lines of
+tested code to prove a point is not a decision that has to be made now. If W5
+lands without needing it, deleting it is a clean follow-up.
+
+### R16 — 2026-08-31: ContentGuard wraps the cleaner, not the commit (W4.2)
+
+TODO W4.2 lists the pipeline as "TranscriptCleaner → CommitPlanner →
+ContentGuard". The implemented order is ContentGuard.shield → TranscriptCleaner
+→ ContentGuard.restore → CommitPlanner.joinForInsertion, because that is what
+the guard is for: the tokenizer drops symbols it does not recognize, so the
+shield has to be in place *before* the cleaner runs, and lifted after. Running
+it last would have nothing left to protect. `endsWithShieldedSpan` also
+suppresses the terminal period, so an utterance ending in a URL keeps it intact.

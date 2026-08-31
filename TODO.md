@@ -21,10 +21,10 @@
 - [x] W3.5 Attach the voice session lifecycle to `LatinIME.java` — surgical edits only, each commented with why, no reformatting of the file.
 - [x] W3.6 Replace HeliBoard's existing VOICE toolbar key (today it just hands off to the system voice IME via `Constants.CODE_SHORTCUT`) so it drives our session instead.
 - [x] W3.7 TalkBack: content descriptions and state announcements for every voice-row control.
-- [ ] W4.1 Decide and document how `:core`'s `SuggestionEngine` composes with HeliBoard's native JNI decoder — native stays authoritative for typing, ours contributes for dictated text. Append the decision to PLAN.md §Revisions.
-- [ ] W4.2 Run dictated text through `core/text` (TranscriptCleaner → CommitPlanner → ContentGuard) before it reaches the input connection.
-- [ ] W4.3 Draft rescue: an input connection that dies before the final ASR pass must not lose the user's speech. This was VBoard's oldest open data-loss bug; it does not get to survive the port.
-- [ ] W4.4 Force-endpoint the session on any touch outside the keyboard.
+- [x] W4.1 Decide and document how `:core`'s `SuggestionEngine` composes with HeliBoard's native JNI decoder — native stays authoritative for typing, ours contributes for dictated text. Append the decision to PLAN.md §Revisions.
+- [x] W4.2 Run dictated text through `core/text` (TranscriptCleaner → CommitPlanner → ContentGuard) before it reaches the input connection.
+- [x] W4.3 Draft rescue: an input connection that dies before the final ASR pass must not lose the user's speech. This was VBoard's oldest open data-loss bug; it does not get to survive the port.
+- [x] W4.4 Force-endpoint the session on any touch outside the keyboard.
 - [ ] W5.1 Mount `AiFixController` as a pinned toolbar key using HeliBoard's existing toolbar-key mechanism.
 - [ ] W5.2 Attribution UI for refined text — the user must be able to see what the model changed.
 - [ ] W6.1 Privacy audit of the whole fork against the never-log-user-content rule, including everything inherited from HeliBoard.

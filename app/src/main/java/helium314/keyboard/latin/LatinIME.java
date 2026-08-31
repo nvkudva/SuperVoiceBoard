@@ -1148,6 +1148,17 @@ public class LatinIME extends InputMethodService implements
      * Here we override the behavior due to the possibility that a re-correction could
      * cause the suggestions strip to disappear and re-appear.
      */
+    /**
+     * SuperVoiceBoard (W4.4): the user touched the editor rather than the
+     * keyboard, so the utterance is force-endpointed — what was already said
+     * lands, and the mic does not stay open while they do something else.
+     */
+    @Override
+    public void onViewClicked(final boolean focusChanged) {
+        super.onViewClicked(focusChanged);
+        if (mVoiceController != null) mVoiceController.onTouchOutsideKeyboard();
+    }
+
     @Override
     public void onExtractedTextClicked() {
         if (mSettings.getCurrent().needsToLookupSuggestions()) {

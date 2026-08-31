@@ -7,6 +7,7 @@ import android.util.Log
 import com.vboard.app.R
 import com.vboard.core.model.ModelCatalog
 import com.vboard.core.model.ModelKind
+import com.vboard.core.correct.ContentGuard
 import com.vboard.core.session.AudioPipeline
 import com.vboard.core.session.DictationStateMachine
 import com.vboard.core.session.DictationStateMachine.Effect
@@ -601,14 +602,27 @@ class VoiceSessionController(
      * change is the wrong side of that bargain.
      */
     private suspend fun cleanTranscript(raw: String): CleanupResult {
+        // SuperVoiceBoard (W4.2): shield before the cleaner, restore after.
+        //
+        // The tokenizer was built for prose and drops every symbol it does not
+        // recognize, so a recognizer that writes "$5.99", "3.14" or an email
+        // address — and modern ones do — would have it mangled on the way to the
+        // input connection. ContentGuard swaps those spans for placeholders the
+        // tokenizer treats as ordinary words.
+        val shield = ContentGuard.shield(raw)
+        val precedingText = host.precedingText()
         val request = CleanupRequest(
-            transcript = raw,
-            precedingText = host.precedingText(),
+            transcript = shield.masked,
+            precedingText = precedingText,
             fieldKind = fieldKind,
             options = settings.cleanupOptions(),
-            ensureTerminalPunctuation = settings.autoPunctuate && fieldKind == FieldKind.TEXT,
+            // Never staple a period onto a URL that happens to end the utterance.
+            ensureTerminalPunctuation = settings.autoPunctuate &&
+                fieldKind == FieldKind.TEXT &&
+                !shield.endsWithShieldedSpan,
         )
-        return withContext(Dispatchers.Default) { app.cleaner.clean(request) }
+        val cleaned = withContext(Dispatchers.Default) { app.cleaner.clean(request) }
+        return cleaned.copy(text = shield.restore(cleaned.text))
     }
 
     // ------------------------------------------------------------ refinement

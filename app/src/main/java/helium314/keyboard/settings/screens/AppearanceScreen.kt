@@ -27,6 +27,7 @@ import helium314.keyboard.latin.utils.prefs
 import helium314.keyboard.settings.preferences.ListPreference
 import helium314.keyboard.settings.SettingsWithoutKey
 import helium314.keyboard.settings.Setting
+import helium314.keyboard.settings.preferences.KeyboardPreview
 import helium314.keyboard.settings.preferences.Preference
 import helium314.keyboard.settings.preferences.StylePreview
 import helium314.keyboard.settings.SearchSettingsScreen
@@ -98,7 +99,8 @@ fun AppearanceScreen(
     SearchSettingsScreen(
         onClickBack = onClickBack,
         title = stringResource(R.string.settings_screen_appearance),
-        settings = items
+        settings = items,
+        footer = { KeyboardPreview() }
     )
 }
 

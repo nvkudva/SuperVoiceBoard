@@ -85,7 +85,9 @@ fun SearchSettingsScreen(
     onClickBack: () -> Unit,
     title: String,
     settings: List<Any?>,
-    content: @Composable (ColumnScope.() -> Unit)? = null // overrides settings if not null
+    content: @Composable (ColumnScope.() -> Unit)? = null, // overrides settings if not null
+    /** Pinned below the scrolling settings, where the keyboard itself would sit. */
+    footer: (@Composable () -> Unit)? = null,
 ) {
     SearchScreen(
         onClickBack = onClickBack,
@@ -94,6 +96,7 @@ fun SearchSettingsScreen(
             if (content != null) content()
             else {
                 Scaffold(
+                    modifier = if (footer == null) Modifier else Modifier.weight(1f),
                     contentWindowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Bottom)
                 ) { innerPadding ->
                     Column(
@@ -139,6 +142,7 @@ fun SearchSettingsScreen(
     //                }
                 }
             }
+            footer?.invoke()
         },
         filteredItems = { SettingsActivity.settingsContainer.filter(it) },
         itemContent = { it.Preference() }

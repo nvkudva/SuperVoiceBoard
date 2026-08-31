@@ -140,6 +140,10 @@ public class LatinIME extends InputMethodService implements
     private View mInputView;
     private InsetsOutlineProvider mInsetsUpdater;
     private SuggestionStripView mSuggestionStripView;
+    // SuperVoiceBoard: the dictation session for this IME instance. Built lazily
+    // because the voice runtime is only reachable once the Application exists.
+    private helium314.keyboard.voice.VoiceController mVoiceController;
+    private helium314.keyboard.voice.VoiceStripView mVoiceStripView;
 
     private RichInputMethodManager mRichImm;
     final KeyboardSwitcher mKeyboardSwitcher;
@@ -692,6 +696,8 @@ public class LatinIME extends InputMethodService implements
 
     @Override
     public void onDestroy() {
+        // SuperVoiceBoard: releases the microphone and the ASR engines.
+        if (mVoiceController != null) mVoiceController.onDestroy();
         mClipboardHistoryManager.onDestroy();
         mDictionaryFacilitator.closeDictionaries();
         mSettings.onDestroy();
@@ -769,7 +775,55 @@ public class LatinIME extends InputMethodService implements
         if (hasSuggestionStripView()) {
             mSuggestionStripView.setRtl(mRichImm.getCurrentSubtype().isRtlSubtype());
             mSuggestionStripView.setListener(this, view);
+            // SuperVoiceBoard: the mic in the strip and the VOICE toolbar key
+            // both drive our own session (W3.2, W3.6).
+            mSuggestionStripView.setOnMicClick(() -> {
+                toggleVoiceInput();
+                return kotlin.Unit.INSTANCE;
+            });
         }
+        // SuperVoiceBoard: voice is the fourth mode of the strip row (PLAN.md §2).
+        mVoiceStripView = view.findViewById(R.id.voice_strip);
+        if (mVoiceStripView != null) {
+            voiceController().setStrip(mVoiceStripView);
+        }
+    }
+
+    /**
+     * SuperVoiceBoard: the dictation session, created on first use.
+     *
+     * Everything that knows about views, input connections or HeliBoard lives in
+     * VoiceController; this method is the whole surface the IME exposes to it.
+     */
+    private helium314.keyboard.voice.VoiceController voiceController() {
+        if (mVoiceController == null) {
+            final com.vboard.app.voice.VoiceRuntime runtime =
+                    ((com.vboard.app.voice.VoiceRuntimeHost) getApplicationContext()).getVoiceRuntime();
+            mVoiceController = new helium314.keyboard.voice.VoiceController(this, runtime);
+            mVoiceController.setOnSessionUiStarted(() -> {
+                showVoiceStrip(true);
+                return kotlin.Unit.INSTANCE;
+            });
+            mVoiceController.setOnSessionUiEnded(() -> {
+                showVoiceStrip(false);
+                return kotlin.Unit.INSTANCE;
+            });
+        }
+        return mVoiceController;
+    }
+
+    /** SuperVoiceBoard: swap the strip row between suggestions and voice. */
+    private void showVoiceStrip(final boolean voiceVisible) {
+        if (mVoiceStripView == null) return;
+        mVoiceStripView.setVisibility(voiceVisible ? View.VISIBLE : View.GONE);
+        if (hasSuggestionStripView()) {
+            mSuggestionStripView.setVisibility(voiceVisible ? View.GONE : View.VISIBLE);
+        }
+    }
+
+    /** SuperVoiceBoard: entry point for the mic key and the VOICE toolbar key. */
+    public void toggleVoiceInput() {
+        voiceController().toggle();
     }
 
     @Override
@@ -786,10 +840,16 @@ public class LatinIME extends InputMethodService implements
     public void onStartInputView(final EditorInfo editorInfo, final boolean restarting) {
         mHandler.onStartInputView(editorInfo, restarting);
         mStatsUtilsManager.onStartInputView();
+        // SuperVoiceBoard: the field decides whether dictation is allowed at all
+        // (a password field is not), so the session hears about every focus change.
+        voiceController().onStartInputView(editorInfo);
     }
 
     @Override
     public void onFinishInputView(final boolean finishingInput) {
+        // SuperVoiceBoard: the editor is going away, but what was already said
+        // must still land in it — finalize rather than discard.
+        if (mVoiceController != null) mVoiceController.onFinishInputView();
         StatsUtils.onFinishInputView();
         mHandler.onFinishInputView(finishingInput);
         mStatsUtilsManager.onFinishInputView();
@@ -1411,7 +1471,10 @@ public class LatinIME extends InputMethodService implements
     // completely replace #onCodeInput.
     public void onEvent(@NonNull final Event event) {
         if (KeyCode.VOICE_INPUT == event.getKeyCode()) {
-            mRichImm.switchToShortcutIme(this);
+            // SuperVoiceBoard (W3.6): upstream hands off to the system voice IME
+            // here. This fork has its own on-device dictation, so the key drives
+            // that instead; the system IME is no longer involved.
+            toggleVoiceInput();
         }
         final InputTransaction completeInputTransaction =
                 mInputLogic.onCodeInput(mSettings.getCurrent(), event,

@@ -119,6 +119,14 @@ class SuggestionStripView(context: Context, attrs: AttributeSet?, defStyle: Int)
     private val pinnedKeys: ViewGroup = findViewById(R.id.pinned_keys)
     private val suggestionsStrip: ViewGroup = findViewById(R.id.suggestions_strip)
     private val toolbarExpandKey = findViewById<ImageButton>(R.id.suggestions_strip_toolbar_key)
+
+    // SuperVoiceBoard: the always-visible mic at the right-hand end of the row.
+    // Not a pinned toolbar key, because those are hidden while the toolbar is
+    // expanded, and this one must survive every state of the strip (W3.2).
+    private val micKey = findViewById<ImageButton>(R.id.supervoiceboard_mic_key)
+
+    /** Set by LatinIME; null until the IME has built its voice controller. */
+    var onMicClick: (() -> Unit)? = null
     private val incognitoIcon = KeyboardIconsSet.instance.getNewDrawable(ToolbarKey.INCOGNITO.name, context)
     private val toolbarArrowIcon = KeyboardIconsSet.instance.getNewDrawable(KeyboardIconsSet.NAME_TOOLBAR_KEY, context)
     private val defaultToolbarBackground: Drawable = toolbarExpandKey.background
@@ -142,6 +150,13 @@ class SuggestionStripView(context: Context, attrs: AttributeSet?, defStyle: Int)
         colors.setBackground(toolbarExpandKey, ColorType.STRIP_BACKGROUND) // necessary because background is re-used for defaultToolbarBackground
         colors.setColor(toolbarExpandKey, ColorType.TOOL_BAR_EXPAND_KEY)
         colors.setColor(toolbarExpandKey.background, ColorType.TOOL_BAR_EXPAND_KEY_BACKGROUND)
+
+        // SuperVoiceBoard: mic key styling, matching the toolbar keys around it
+        micKey.scaleType = android.widget.ImageView.ScaleType.CENTER
+        micKey.setImageDrawable(KeyboardIconsSet.instance.getNewDrawable(ToolbarKey.VOICE.name, context))
+        colors.setColor(micKey, ColorType.TOOL_BAR_KEY)
+        colors.setBackground(micKey, ColorType.STRIP_BACKGROUND)
+        micKey.setOnClickListener { onMicClick?.invoke() }
 
         // background indicator for pinned keys
         val color = colors.get(ColorType.TOOL_BAR_KEY_ENABLED_BACKGROUND) or -0x1000000 // ignore alpha (in Java this is more readable 0xFF000000)
@@ -504,6 +519,9 @@ class SuggestionStripView(context: Context, attrs: AttributeSet?, defStyle: Int)
         val show = Settings.getValues().mShowsVoiceInputKey
         toolbar.findViewWithTag<View>(ToolbarKey.VOICE)?.isVisible = show
         pinnedKeys.findViewWithTag<View>(ToolbarKey.VOICE)?.isVisible = show
+        // SuperVoiceBoard: the strip's own mic follows the same setting, so a
+        // user who turned the voice key off does not get one anyway (W3.2).
+        micKey.isVisible = show
     }
 
     private fun updateKeys() {

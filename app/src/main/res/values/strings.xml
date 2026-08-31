@@ -791,6 +791,16 @@ New dictionary:
     <!-- version for about screen -->
     <string name="version">Version</string>
     <!-- github repo link for about screen -->
+    <!-- SuperVoiceBoard: the voice strip (W3.4) -->
+    <string name="voice_listening">Listening…</string>
+    <string name="voice_preparing">Getting ready…</string>
+    <string name="voice_finalizing">Finishing…</string>
+    <string name="voice_cleaning">Cleaning up…</string>
+    <string name="voice_cancel">Stop dictating</string>
+    <string name="voice_done">Done dictating</string>
+    <string name="voice_minimize_keyboard">Hide keyboard, keep listening</string>
+    <string name="voice_started">Voice typing started</string>
+    <string name="voice_stopped">Voice typing stopped</string>
     <!-- SuperVoiceBoard: voice settings (W2.5) -->
     <string name="settings_screen_voice">Voice typing</string>
     <string name="voice_inline_dictation">Dictate in place</string>

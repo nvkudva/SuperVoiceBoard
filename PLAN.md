@@ -263,3 +263,37 @@ below Java 21. CI now uses Java 21 so they actually execute. This machine has
 only JDK 17 (AGP 8.13 rejects the JDK 25 in Android Studio), so `:app`'s
 Robolectric tests are unverified locally and are verified in CI instead;
 `:core`'s 795 tests and the plain-JUnit manifest audit run fine on 17.
+
+### R12 — 2026-08-31: what W3.1 actually observed
+
+Checked against Gboard running on an Android 15 emulator, not a physical device
+— the fork has none available. Screenshots are in `docs/reference/`. What it
+does during dictation:
+
+- The keyboard **stays fully visible** and the keys stay live. There is no
+  full-screen takeover and no separate bar.
+- The strip row becomes: back arrow at the left, a centred status line
+  ("Listening…"), and the mic at the right in an active filled-circle state.
+- Idle, the mic sits at the right-hand end of that same row, outside the
+  scrolling toolbar, and stays there in every state of it.
+
+`VoiceStripView` mirrors that, and adds two things Gboard does not show: a level
+meter behind the status text (silence and a dead mic are otherwise
+indistinguishable) and an explicit done control, so a session can be ended
+without waiting for endpointing.
+
+### R13 — 2026-08-31: the mic is not a pinned toolbar key (W3.2)
+
+HeliBoard can pin toolbar keys onto the suggestion strip, but pinned keys are
+hidden whenever the toolbar is expanded, and the brief calls for a mic that is
+always there. It is therefore its own view at the end of
+`suggestions_strip.xml`, a sibling of `pinned_keys`. It follows the existing
+"show voice key" setting, so a user who turned the voice key off does not get
+one anyway.
+
+### R14 — 2026-08-31: the VOICE key no longer reaches the system IME (W3.6)
+
+`LatinIME.onEvent` called `mRichImm.switchToShortcutIme(this)` for
+`KeyCode.VOICE_INPUT`. It now calls `toggleVoiceInput()`. HeliBoard's other
+handling of that key code — shift state, keyboard switching, the popup-key
+shortcut — is untouched.

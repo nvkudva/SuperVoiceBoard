@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    SuperVoiceBoard: the strip while dictation runs. Mirrors
+    docs/reference/gboard-strip-listening.png — back at the left, status in the
+    middle, controls at the right — inside the existing strip row.
+    SPDX-License-Identifier: GPL-3.0-only
+-->
+<merge xmlns:android="http://schemas.android.com/apk/res/android">
+    <ImageButton
+        android:id="@+id/voice_strip_back"
+        android:layout_width="@dimen/config_suggestions_strip_edge_key_width"
+        android:layout_height="match_parent"
+        android:layout_gravity="center_vertical"
+        android:scaleType="center"
+        android:src="@drawable/ic_arrow_left"
+        style="?attr/suggestionWordStyle"
+        android:contentDescription="@string/voice_cancel" />
+    <TextView
+        android:id="@+id/voice_strip_status"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:gravity="center"
+        android:maxLines="1"
+        android:ellipsize="end"
+        style="?attr/suggestionWordStyle" />
+    <ImageButton
+        android:id="@+id/voice_strip_minimize"
+        android:layout_width="@dimen/config_suggestions_strip_edge_key_width"
+        android:layout_height="match_parent"
+        android:layout_gravity="center_vertical"
+        android:scaleType="center"
+        android:src="@drawable/ic_page_down"
+        style="?attr/suggestionWordStyle"
+        android:contentDescription="@string/voice_minimize_keyboard" />
+    <ImageButton
+        android:id="@+id/voice_strip_done"
+        android:layout_width="@dimen/config_suggestions_strip_edge_key_width"
+        android:layout_height="match_parent"
+        android:layout_gravity="center_vertical"
+        android:scaleType="center"
+        android:src="@drawable/ic_setup_check"
+        style="?attr/suggestionWordStyle"
+        android:contentDescription="@string/voice_done" />
+</merge>

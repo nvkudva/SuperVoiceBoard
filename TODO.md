@@ -14,13 +14,13 @@
 - [x] W2.3 Manifest: add `RECORD_AUDIO`, and add `INTERNET` scoped so only the `:ui` process can use it. Add an audit test asserting the IME process never gets INTERNET.
 - [x] W2.4 Port `:llm` module + `ILlmRefiner.aidl` and the `:ui` / `:llm` / IME three-process split onto HeliBoard's manifest and Application class.
 - [x] W2.5 Voice + model settings screens inside HeliBoard's existing settings, not VBoard's. Do not port VBoard's onboarding wholesale.
-- [ ] W3.1 Verify on a real device how Gboard actually behaves during dictation — does the keyboard stay visible, what exactly does the top row become, what does the mic indicator look like. Screenshot it. Do this before writing W3.2.
-- [ ] W3.2 Pin a mic key to the right-hand end of `SuggestionStripView`'s row, always visible, surviving both the collapsed-suggestions and expanded-toolbar states.
-- [ ] W3.3 Add `VoiceStripView` as a fourth child of `res/layout/strip_container.xml`, alongside `suggestion_strip_view` / `emoji_tab_strip` / `clipboard_strip`. Voice is a mode of the existing row, not a new bar.
-- [ ] W3.4 Voice-active row contents and transitions: back/cancel, live status + level meter, minimize-keyboard, done. Match what W3.1 recorded.
-- [ ] W3.5 Attach the voice session lifecycle to `LatinIME.java` — surgical edits only, each commented with why, no reformatting of the file.
-- [ ] W3.6 Replace HeliBoard's existing VOICE toolbar key (today it just hands off to the system voice IME via `Constants.CODE_SHORTCUT`) so it drives our session instead.
-- [ ] W3.7 TalkBack: content descriptions and state announcements for every voice-row control.
+- [x] W3.1 Verify on a real device how Gboard actually behaves during dictation — does the keyboard stay visible, what exactly does the top row become, what does the mic indicator look like. Screenshot it. Do this before writing W3.2. (checked against Gboard on an API 35 emulator, not a physical device; screenshots in docs/reference/)
+- [x] W3.2 Pin a mic key to the right-hand end of `SuggestionStripView`'s row, always visible, surviving both the collapsed-suggestions and expanded-toolbar states.
+- [x] W3.3 Add `VoiceStripView` as a fourth child of `res/layout/strip_container.xml`, alongside `suggestion_strip_view` / `emoji_tab_strip` / `clipboard_strip`. Voice is a mode of the existing row, not a new bar.
+- [x] W3.4 Voice-active row contents and transitions: back/cancel, live status + level meter, minimize-keyboard, done. Match what W3.1 recorded.
+- [x] W3.5 Attach the voice session lifecycle to `LatinIME.java` — surgical edits only, each commented with why, no reformatting of the file.
+- [x] W3.6 Replace HeliBoard's existing VOICE toolbar key (today it just hands off to the system voice IME via `Constants.CODE_SHORTCUT`) so it drives our session instead.
+- [x] W3.7 TalkBack: content descriptions and state announcements for every voice-row control.
 - [ ] W4.1 Decide and document how `:core`'s `SuggestionEngine` composes with HeliBoard's native JNI decoder — native stays authoritative for typing, ours contributes for dictated text. Append the decision to PLAN.md §Revisions.
 - [ ] W4.2 Run dictated text through `core/text` (TranscriptCleaner → CommitPlanner → ContentGuard) before it reaches the input connection.
 - [ ] W4.3 Draft rescue: an input connection that dies before the final ASR pass must not lose the user's speech. This was VBoard's oldest open data-loss bug; it does not get to survive the port.

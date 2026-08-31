@@ -24,6 +24,15 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         style="?attr/suggestionStripViewStyle" />
+    <!-- SuperVoiceBoard: voice is the fourth mode of this row, not a new bar
+         (PLAN.md §2). Same FrameLayout, same height, same swap. -->
+    <helium314.keyboard.voice.VoiceStripView
+        android:id="@+id/voice_strip"
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone"
+        style="?attr/suggestionStripViewStyle" />
     <HorizontalScrollView
         android:id="@+id/clipboard_strip_scroll_view"
         android:layout_width="match_parent"

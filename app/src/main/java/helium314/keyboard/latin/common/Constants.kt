@@ -8,6 +8,8 @@ object Links {
     const val DICTIONARY_EXPERIMENTAL_SUFFIX = "dictionaries_experimental/"
     const val DICTIONARY_EMOJI_CLDR_SUFFIX = "emoji_cldr_signal_dictionaries/"
     const val GITHUB = "https://github.com/HeliBorg/HeliBoard"
+    // SuperVoiceBoard: upstream project this fork is built on, linked from the about screen
+    const val UPSTREAM = "https://github.com/HeliBorg/HeliBoard"
     const val LICENSE = "$GITHUB/blob/main/LICENSE"
     const val WIKI_URL = "$GITHUB/wiki"
     const val LAYOUT_WIKI_URL = "$WIKI_URL/2.-Layouts"

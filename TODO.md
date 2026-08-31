@@ -1,0 +1,37 @@
+# TODO
+
+- [ ] W0.1 Re-init git: drop HeliBoard's history to a squashed base commit, add `upstream` = https://github.com/HeliBorg/HeliBoard.git, record the base SHA (9f5bb63) in the commit message so future rebases have an anchor.
+- [ ] W0.2 Rebrand without renaming: change `applicationId`, app label and launcher/IME icon only. Do NOT rename the `helium314.keyboard` package namespace — it breaks every future upstream merge.
+- [ ] W0.3 Baseline gate: `./gradlew assembleDebug` green, install on a device or emulator, confirm typing/glide/emoji/clipboard all work before a single line is changed.
+- [ ] W0.4 GPL-3.0 compliance pass: keep all upstream LICENSE files, add HeliBoard + AOSP attribution to README and the about screen, confirm SPDX headers survive on every file touched.
+- [ ] W0.5 CI: port VBoard's `.github/workflows/ci.yml` (build + unit tests + lint) to this repo.
+- [ ] W1.1 Copy VBoard `core/` in verbatim as a `:core` Gradle module (pure Kotlin, coroutines only, no Android deps). Wire nothing yet. Gate: all `:core` tests pass in this repo unchanged.
+- [ ] W1.2 Carry over VBoard's one open `:core` defect — `ClipClassifier`'s payment-card rule reads raw text instead of classifying by code point.
+- [ ] W1.3 Carry over VBoard's other open `:core` defect — `DIGIT_RUN_PATTERN`'s separator class is still ASCII-only.
+- [ ] W1.4 VB-QA-05 idempotency: the one remaining `@Disabled` test in `:core`, in `CleanupPropertyTest`.
+- [ ] W2.1 New `:voice` module: port `app/voice/AsrEngines.kt` and `VoiceSessionController.kt` from VBoard, keeping them IME-agnostic (no reference to any View).
+- [ ] W2.2 Port `app/models/` (download, storage, lifecycle) into `:voice`; the download path must run in the `:ui` process.
+- [ ] W2.3 Manifest: add `RECORD_AUDIO`, and add `INTERNET` scoped so only the `:ui` process can use it. Add an audit test asserting the IME process never gets INTERNET.
+- [ ] W2.4 Port `:llm` module + `ILlmRefiner.aidl` and the `:ui` / `:llm` / IME three-process split onto HeliBoard's manifest and Application class.
+- [ ] W2.5 Voice + model settings screens inside HeliBoard's existing settings, not VBoard's. Do not port VBoard's onboarding wholesale.
+- [ ] W3.1 Verify on a real device how Gboard actually behaves during dictation — does the keyboard stay visible, what exactly does the top row become, what does the mic indicator look like. Screenshot it. Do this before writing W3.2.
+- [ ] W3.2 Pin a mic key to the right-hand end of `SuggestionStripView`'s row, always visible, surviving both the collapsed-suggestions and expanded-toolbar states.
+- [ ] W3.3 Add `VoiceStripView` as a fourth child of `res/layout/strip_container.xml`, alongside `suggestion_strip_view` / `emoji_tab_strip` / `clipboard_strip`. Voice is a mode of the existing row, not a new bar.
+- [ ] W3.4 Voice-active row contents and transitions: back/cancel, live status + level meter, minimize-keyboard, done. Match what W3.1 recorded.
+- [ ] W3.5 Attach the voice session lifecycle to `LatinIME.java` — surgical edits only, each commented with why, no reformatting of the file.
+- [ ] W3.6 Replace HeliBoard's existing VOICE toolbar key (today it just hands off to the system voice IME via `Constants.CODE_SHORTCUT`) so it drives our session instead.
+- [ ] W3.7 TalkBack: content descriptions and state announcements for every voice-row control.
+- [ ] W4.1 Decide and document how `:core`'s `SuggestionEngine` composes with HeliBoard's native JNI decoder — native stays authoritative for typing, ours contributes for dictated text. Append the decision to PLAN.md §Revisions.
+- [ ] W4.2 Run dictated text through `core/text` (TranscriptCleaner → CommitPlanner → ContentGuard) before it reaches the input connection.
+- [ ] W4.3 Draft rescue: an input connection that dies before the final ASR pass must not lose the user's speech. This was VBoard's oldest open data-loss bug; it does not get to survive the port.
+- [ ] W4.4 Force-endpoint the session on any touch outside the keyboard.
+- [ ] W5.1 Mount `AiFixController` as a pinned toolbar key using HeliBoard's existing toolbar-key mechanism.
+- [ ] W5.2 Attribution UI for refined text — the user must be able to see what the model changed.
+- [ ] W6.1 Privacy audit of the whole fork against the never-log-user-content rule, including everything inherited from HeliBoard.
+- [ ] W6.2 Measure and record the ≤60MB typing-only IME memory budget and APK size on the real fork.
+- [ ] W6.3 Hold-to-talk + release-to-send, shipped alongside tap-to-toggle, never replacing it.
+- [ ] W6.4 Mic long-press → session-scoped raw dictation (no cleanup, no refinement).
+- [ ] W6.5 Adaptive endpointing, re-scoped after W6.3 lands.
+- [ ] W7.1 Transcript normalization + two-model alignment + per-word confidence. Gate: measured disagreement precision against a hand-labeled 200+ utterance corpus, published either way. Cancelled if it lands below ~70%.
+- [ ] W7.2 Spoken-format intelligence — times, money, dates, spoken email addresses. After W7.1; must run before `ContentGuard`.
+- [ ] W7.3 Opt-in, content-free telemetry: send-ready rate, time-to-send-ready.

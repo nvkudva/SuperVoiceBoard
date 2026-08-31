@@ -1,0 +1,87 @@
+# SuperVoiceBoard CI — ported from VBoard's ci.yml.
+# The upstream HeliBoard workflows (build-debug-apk, build-test-auto) are kept
+# as-is so they stay mergeable; this is the fork's own gate.
+name: CI
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  core-tests:
+    name: Core unit tests (JVM)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+      - uses: gradle/actions/setup-gradle@v4
+      # :core arrives in W1; until then this job is a no-op rather than a failure.
+      - name: Run :core tests
+        run: |
+          if [ -d core ]; then
+            ./gradlew :core:test --no-daemon
+          else
+            echo ":core module not present yet (W1) — skipping"
+          fi
+      - name: Upload test reports
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: core-test-reports
+          path: core/build/reports/tests/
+
+  android-build:
+    name: Android build + unit tests + lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Assemble debug APK
+        run: ./gradlew :app:assembleDebug --no-daemon
+      # runTests is HeliBoard's build variant that skips tests known to fail there.
+      - name: Run unit tests
+        run: ./gradlew testRunTestsUnitTest --no-daemon
+      - name: Lint
+        run: ./gradlew :app:lintDebug --no-daemon
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: supervoiceboard-debug-apk
+          path: app/build/outputs/apk/debug/*.apk
+      - name: Upload reports
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-reports
+          path: |
+            app/build/reports/
+            core/build/reports/
+
+  permission-audit:
+    name: Permission audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # PLAN.md §3.3: the IME process must never hold INTERNET. The real
+      # per-process assertion lands with W2.3; this catches the crude case of
+      # INTERNET being declared before that machinery exists.
+      - name: INTERNET must not be declared without process scoping
+        run: |
+          if grep -q 'android.permission.INTERNET' app/src/main/AndroidManifest.xml \
+             && ! grep -q 'supervoiceboard:internet-scoped' app/src/main/AndroidManifest.xml; then
+            echo "INTERNET declared without the reviewed :ui-process scoping marker"
+            exit 1
+          fi

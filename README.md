@@ -1,10 +1,29 @@
-# HeliBoard
-HeliBoard is a privacy-conscious and customizable open-source keyboard, based on AOSP / OpenBoard.
-Does not use internet permission, and thus is 100% offline.
+# SuperVoiceBoard
 
-[<img src="https://fdroid.gitlab.io/artwork/badge/get-it-on.png" alt="Get it on F-Droid" height="80">](https://f-droid.org/packages/helium314.keyboard/)
-[<img src="https://user-images.githubusercontent.com/663460/26973090-f8fdc986-4d14-11e7-995a-e7c5e79ed925.png" alt="Get APK from GitHub" height="80">](https://github.com/HeliBorg/HeliBoard/releases/latest)
-[<img src="https://gitlab.com/IzzyOnDroid/repo/-/raw/master/assets/IzzyOnDroid.png" alt="Get it on IzzyOnDroid" height="80">](https://apt.izzysoft.de/fdroid/index/apk/helium314.keyboard)
+SuperVoiceBoard is a keyboard with on-device voice intelligence: dictation,
+cleanup and AI text refinement built into the suggestion strip rather than
+bolted on beside it.
+
+It is a fork of **[HeliBoard](https://github.com/HeliBorg/HeliBoard) 4.1**
+(base commit `9f5bb63`), which is itself a fork of OpenBoard / AOSP LatinIME.
+The entire typing engine — layouts, glide typing, dictionaries, the native
+suggestion decoder, emoji and clipboard panels, themes — is HeliBoard's work,
+unmodified except where the voice layer had to attach to it.
+
+## What this fork changes
+
+- Adds voice dictation as a mode of the existing suggestion/toolbar strip.
+- Adds on-device transcript cleanup and an out-of-process AI refiner.
+- Requests `RECORD_AUDIO` (the IME process) and `INTERNET` (the `:ui` process
+  only, for model download). **HeliBoard itself requests neither** — this fork
+  is not offline-only, and that is a deliberate departure from its base. See
+  [PLAN.md](PLAN.md) §3.3.
+- Does *not* rename the `helium314.keyboard` package namespace, so upstream
+  fixes stay mergeable. Only the application ID, label and icon differ.
+
+Everything below this line describes the inherited HeliBoard feature set.
+
+---
 
 ## Table of Contents
 
@@ -111,17 +130,22 @@ See [Contribution Guidelines](CONTRIBUTING.md)
 
 # License
 
-HeliBoard (as a fork of OpenBoard) is licensed under GNU General Public License v3.0.
+SuperVoiceBoard is licensed under GNU General Public License v3.0, as is HeliBoard
+(and OpenBoard) before it. Everything in this repository ships under GPL-3.0-only,
+including the voice, ASR-session and refiner code written for this fork.
 
  > Permissions of this strong copyleft license are conditioned on making available complete source code of licensed works and modifications, which include larger works using a licensed work, under the same license. Copyright and license notices must be preserved. Contributors provide an express grant of patent rights.
 
 See repo's [LICENSE](/LICENSE) file.
 
 Since the app is based on Apache 2.0 licensed AOSP Keyboard, an [Apache 2.0](LICENSE-Apache-2.0) license file is provided.
-The icon is licensed under [Creative Commons BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/). A [license file](LICENSE-CC-BY-SA-4.0) is also included.
+The launcher icon is derived from HeliBoard's icon (same adaptive-icon background,
+new foreground mark) and so remains licensed under [Creative Commons BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/). A [license file](LICENSE-CC-BY-SA-4.0) is also included.
 
 # Credits
-- Icon by [Fabian OvrWrt](https://github.com/FabianOvrWrt) with contributions from [The Eclectic Dyslexic](https://github.com/the-eclectic-dyslexic)
+- [HeliBoard](https://github.com/HeliBorg/HeliBoard) — the keyboard this fork is built on;
+  all typing functionality is theirs
+- Original icon by [Fabian OvrWrt](https://github.com/FabianOvrWrt) with contributions from [The Eclectic Dyslexic](https://github.com/the-eclectic-dyslexic)
 - [OpenBoard](https://github.com/openboard-team/openboard)
 - [AOSP Keyboard](https://android.googlesource.com/platform/packages/inputmethods/LatinIME/)
 - [LineageOS](https://review.lineageos.org/admin/repos/LineageOS/android_packages_inputmethods_LatinIME)

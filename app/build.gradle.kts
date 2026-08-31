@@ -12,7 +12,7 @@ android {
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "helium314.keyboard"
+        applicationId = "com.supervoiceboard.app" // SuperVoiceBoard: rebrand; namespace stays helium314.keyboard.* for upstream rebaseability
         minSdk = 21
         targetSdk = 36
         versionCode = 4101
@@ -67,7 +67,7 @@ android {
             }
             variant.outputs.forEach { output ->
                 if (output is com.android.build.api.variant.impl.VariantOutputImpl) {
-                    output.outputFileName = "HeliBoard_${defaultConfig.versionName}-${variant.buildType}.apk"
+                    output.outputFileName = "SuperVoiceBoard_${defaultConfig.versionName}-${variant.buildType}.apk"
                 }
             }
         }

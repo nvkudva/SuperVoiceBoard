@@ -54,6 +54,7 @@ fun AboutScreen(
         SettingsWithoutKey.APP,
         SettingsWithoutKey.VERSION,
         SettingsWithoutKey.LICENSE,
+        SettingsWithoutKey.BASED_ON, // SuperVoiceBoard: upstream attribution
         SettingsWithoutKey.HIDDEN_FEATURES,
         SettingsWithoutKey.GITHUB_WIKI,
         SettingsWithoutKey.COMMUNITY_LINKS,
@@ -102,6 +103,21 @@ fun createAboutSettings(context: Context) = listOf(
             onClick = {
                 val intent = Intent()
                 intent.data = Links.LICENSE.toUri()
+                intent.action = Intent.ACTION_VIEW
+                ctx.startActivity(intent)
+            },
+            icon = R.drawable.ic_settings_about_license
+        )
+    },
+    // SuperVoiceBoard: this fork must credit the keyboard it is built on; opens the upstream project
+    Setting(context, SettingsWithoutKey.BASED_ON, R.string.about_based_on, R.string.about_based_on_description) {
+        val ctx = LocalContext.current
+        Preference(
+            name = it.title,
+            description = it.description,
+            onClick = {
+                val intent = Intent()
+                intent.data = Links.UPSTREAM.toUri()
                 intent.action = Intent.ACTION_VIEW
                 ctx.startActivity(intent)
             },

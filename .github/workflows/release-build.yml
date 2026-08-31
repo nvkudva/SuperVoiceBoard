@@ -6,6 +6,9 @@ on:
   workflow_dispatch:
   push:
     tags: ["v*"]
+    # dispatch-by-API needs the workflow on the default branch; until this
+    # lands on main, pushes to the dev branch are how it gets exercised.
+    branches: ["claude/**"]
 
 concurrency:
   group: release-build-${{ github.ref }}

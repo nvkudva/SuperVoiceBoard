@@ -3,6 +3,7 @@ package com.vboard.core.model
 import java.io.BufferedOutputStream
 import java.io.FileOutputStream
 import java.io.IOException
+import java.io.InputStream
 import java.io.UncheckedIOException
 import java.nio.channels.FileChannel
 import java.nio.file.AtomicMoveNotSupportedException
@@ -268,6 +269,92 @@ class PackInstaller(
     }
 
     /**
+     * Result of handing the installer a file the user supplied themselves.
+     *
+     * Deliberately not an exception: an import failing is an ordinary answer to
+     * "is this the right file?", and the screen has something to say for each.
+     */
+    enum class ImportResult {
+        /** Staged and verified; [install] will now finish without a network. */
+        STAGED,
+
+        /** The bytes are not this file — a different model, or a truncated copy. */
+        DIGEST_MISMATCH,
+
+        /** The pack does not expect a file with that name. */
+        UNKNOWN_FILE,
+
+        /** Already installed; nothing to import. */
+        ALREADY_INSTALLED,
+
+        /** Could not be written — no space, or the volume went away. */
+        IO_ERROR,
+    }
+
+    /**
+     * Accepts a model file the user already has, in place of downloading it.
+     *
+     * Someone on a metered connection, an air-gapped device, or simply with the
+     * archive already on disk should not have to pull several hundred megabytes
+     * again. The bytes land in the same staging directory a download would use,
+     * so [install] then verifies, extracts and finalizes them through exactly the
+     * same path — this adds a source, not a second install pipeline.
+     *
+     * The digest is checked here rather than at install time because that is
+     * where the user can still act on it: after staging, an unverified file is
+     * indistinguishable from a resumed download.
+     *
+     * [fileName] is matched against the pack's expected relative paths;
+     * [openSource] is called at most once.
+     */
+    suspend fun importFile(
+        pack: ModelPack,
+        fileName: String,
+        openSource: () -> InputStream,
+    ): ImportResult = lockFor(pack).withLock {
+        if (stateOf(pack) == PackState.Installed) return@withLock ImportResult.ALREADY_INSTALLED
+        val spec = pack.files.firstOrNull { it.relativePath.substringAfterLast('/') == fileName }
+            ?: return@withLock ImportResult.UNKNOWN_FILE
+
+        val staging = stagingDir(pack)
+        val target = staging.resolve(spec.relativePath)
+        val temp = staging.resolve(spec.relativePath + IMPORT_SUFFIX)
+        val digest = MessageDigest.getInstance("SHA-256")
+        try {
+            target.parent?.let(Files::createDirectories)
+            Files.deleteIfExists(temp)
+            openSource().use { input ->
+                Files.newOutputStream(temp).use { output ->
+                    val buffer = ByteArray(HASH_BUFFER_SIZE)
+                    while (true) {
+                        val read = input.read(buffer)
+                        if (read < 0) break
+                        digest.update(buffer, 0, read)
+                        output.write(buffer, 0, read)
+                    }
+                }
+            }
+        } catch (e: IOException) {
+            runCatching { Files.deleteIfExists(temp) }
+            return@withLock ImportResult.IO_ERROR
+        }
+
+        // An empty sha256 in the catalog means "not pinned yet" and is the same
+        // policy the downloader follows; anything else must match exactly.
+        if (spec.sha256.isNotEmpty() && toHex(digest.digest()) != spec.sha256.lowercase()) {
+            runCatching { Files.deleteIfExists(temp) }
+            return@withLock ImportResult.DIGEST_MISMATCH
+        }
+        try {
+            Files.move(temp, target, StandardCopyOption.REPLACE_EXISTING)
+        } catch (e: IOException) {
+            runCatching { Files.deleteIfExists(temp) }
+            return@withLock ImportResult.IO_ERROR
+        }
+        ImportResult.STAGED
+    }
+
+    /**
      * Deletes installed files AND partial downloads for the pack, including old
      * versions. Takes the same per-pack lock [install] holds so a delete cannot
      * run against a directory a download is writing into.
@@ -391,6 +478,7 @@ class PackInstaller(
     private companion object {
         const val MARKER_NAME = "installed.marker"
         const val PART_SUFFIX = ".part"
+        const val IMPORT_SUFFIX = ".import"
         const val STORAGE_HEADROOM_BYTES = 50_000_000L // 50 MB
         const val HASH_BUFFER_SIZE = 64 * 1024
         const val HEX_DIGITS = "0123456789abcdef"

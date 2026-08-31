@@ -463,3 +463,30 @@ numbers live in the IME process and die with it. "Opt-in telemetry" that sent
 data anywhere would need a privacy policy, an endpoint and a consent flow this
 fork does not have, and shipping the collection without them would be the wrong
 half to build first.
+
+### R25 — 2026-09-01: model management, and the optional setup step
+
+The download machinery existed since W2 but nothing drove it. It now has a UI:
+
+- **Voice models screen** (Settings → Voice typing → Voice models): one row per
+  pack with its size and state, and whichever action that state allows —
+  Download, Cancel while one runs, Remove when installed, Import otherwise. It
+  reads disk state rather than only the live flow, because the flow is empty
+  after process death and a pack would otherwise offer "Download" for a download
+  already running.
+- **Setup wizard**: an optional voice row on the last step, next to Finish. It
+  names the size and leads to the models screen; setup completes without it.
+  Offered last and never gated on, because dictation costs several hundred
+  megabytes and a keyboard must be usable before that is spent.
+
+**Import** is a source, not a second install pipeline: `PackInstaller.importFile`
+streams the user's file into the same staging directory a download writes to,
+verifies it against the same catalog digest, and lets the normal `install` path
+extract and finalize it. The digest is checked at import rather than at install
+because that is where the user can still act on the answer — after staging, an
+unverified file is indistinguishable from a resumed download. A file whose bytes
+do not match is refused and nothing is left behind, since a surviving half-file
+would later be resumed as if it were a download.
+
+Removing a pack deletes its installed files, its partial downloads and its older
+versions, and the row goes back to offering Download and Import.

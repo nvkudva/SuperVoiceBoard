@@ -7,7 +7,11 @@
 package helium314.keyboard.settings.screens
 
 import android.content.Context
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Surface
+import androidx.compose.ui.Modifier
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.platform.LocalContext
@@ -19,6 +23,7 @@ import com.vboard.core.session.SilenceTimeout
 import helium314.keyboard.latin.LatinIME
 import helium314.keyboard.latin.R
 import helium314.keyboard.latin.utils.Log
+import helium314.keyboard.latin.utils.NextScreenIcon
 import helium314.keyboard.latin.utils.Theme
 import helium314.keyboard.latin.utils.getActivity
 import helium314.keyboard.latin.utils.previewDark
@@ -28,11 +33,13 @@ import helium314.keyboard.settings.Setting
 import helium314.keyboard.settings.SettingsActivity
 import helium314.keyboard.settings.initPreview
 import helium314.keyboard.settings.preferences.ListPreference
+import helium314.keyboard.settings.preferences.Preference
 import helium314.keyboard.settings.preferences.SwitchPreference
 
 @Composable
 fun VoiceScreen(
     onClickBack: () -> Unit,
+    onClickModels: () -> Unit = {},
 ) {
     val prefs = LocalContext.current.prefs()
     val b = (LocalContext.current.getActivity() as? SettingsActivity)?.prefChanged?.collectAsState()
@@ -57,8 +64,22 @@ fun VoiceScreen(
     SearchSettingsScreen(
         onClickBack = onClickBack,
         title = stringResource(R.string.settings_screen_voice),
-        settings = items
-    )
+        settings = items,
+    ) {
+        Column(Modifier.verticalScroll(rememberScrollState())) {
+            // The models are the first thing this screen is about: without them
+            // every switch below is describing something that cannot run.
+            Preference(
+                name = stringResource(R.string.settings_screen_voice_models),
+                description = stringResource(R.string.voice_models_summary),
+                onClick = onClickModels,
+                icon = R.drawable.ic_settings_voice,
+            ) { NextScreenIcon() }
+            for (key in items) {
+                SettingsActivity.settingsContainer[key]?.Preference()
+            }
+        }
+    }
 }
 
 fun createVoiceSettings(context: Context) = listOf(
@@ -132,7 +153,7 @@ private fun PreviewScreen() {
     initPreview(LocalContext.current)
     Theme(previewDark) {
         Surface {
-            VoiceScreen { }
+            VoiceScreen(onClickBack = { })
         }
     }
 }

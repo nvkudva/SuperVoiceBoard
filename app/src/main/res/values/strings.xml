@@ -810,6 +810,38 @@ New dictionary:
     <string name="voice_minimize_keyboard">Hide keyboard, keep listening</string>
     <string name="voice_started">Voice typing started</string>
     <string name="voice_stopped">Voice typing stopped</string>
+    <!-- SuperVoiceBoard: the optional voice step in the setup wizard -->
+    <string name="setup_voice_action">Set up voice typing</string>
+    <string name="setup_voice_instruction">Optional. Downloads about %1$s of speech models, used entirely on this device.</string>
+    <!-- SuperVoiceBoard: the voice models screen -->
+    <string name="settings_screen_voice_models">Voice models</string>
+    <string name="voice_models_summary">Download, import or remove the on-device speech models</string>
+    <string name="voice_models_unavailable">Voice models are unavailable in this process</string>
+    <string name="voice_models_footer">Models are stored on this device and used offline. Removing one frees its space; you can download or import it again later.</string>
+    <string name="voice_models_needed">Needed for dictation · %1$s</string>
+    <string name="voice_models_optional">Optional · %1$s</string>
+    <string name="voice_models_installed">Installed · %1$s</string>
+    <string name="voice_models_downloading">Downloading %1$d%% of %2$s</string>
+    <string name="voice_models_queued">Waiting for Wi-Fi</string>
+    <string name="voice_models_verifying">Checking the download…</string>
+    <string name="voice_models_failed_network">Download failed — no connection</string>
+    <string name="voice_models_failed_checksum">Download failed — the file did not match</string>
+    <string name="voice_models_failed_storage">Not enough free space</string>
+    <string name="voice_models_failed_cancelled">Download cancelled</string>
+    <string name="voice_models_failed_io">Download failed — could not write to storage</string>
+    <string name="voice_models_metered_title">Use mobile data?</string>
+    <string name="voice_models_metered_message">You are not on Wi-Fi. This download is %1$s and will use your mobile data. It can also wait until you are on Wi-Fi.</string>
+    <string name="voice_models_use_mobile_data">Use mobile data</string>
+    <string name="voice_models_download">Download</string>
+    <string name="voice_models_cancel">Cancel</string>
+    <string name="voice_models_remove">Remove</string>
+    <string name="voice_models_import">Import a file</string>
+    <string name="voice_models_importing">Checking the file…</string>
+    <string name="voice_models_import_ok">Imported — finishing the install</string>
+    <string name="voice_models_import_wrong_file">That file does not match this model</string>
+    <string name="voice_models_import_unknown_file">This model does not use a file with that name</string>
+    <string name="voice_models_import_installed">Already installed</string>
+    <string name="voice_models_import_io">Could not read that file</string>
     <!-- SuperVoiceBoard: voice settings (W2.5) -->
     <string name="settings_screen_voice">Voice typing</string>
     <string name="voice_inline_dictation">Dictate in place</string>

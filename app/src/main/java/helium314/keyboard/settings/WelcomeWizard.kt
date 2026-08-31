@@ -46,6 +46,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
+import com.vboard.core.model.ByteSize
+import com.vboard.core.model.ModelCatalog
 import helium314.keyboard.latin.R
 import helium314.keyboard.latin.utils.JniUtils
 import helium314.keyboard.latin.utils.Theme
@@ -182,6 +184,41 @@ fun WelcomeWizard(
                         painterResource(R.drawable.sym_keyboard_language_switch),
                         close
                     )
+                    // SuperVoiceBoard: voice typing is offered here and nowhere
+                    // earlier, because it is optional and costs a several-hundred
+                    // megabyte download. Setup completes without it; this row
+                    // leads to the models screen, and skipping it is the default
+                    // path (the finish row below is unchanged).
+                    Spacer(Modifier.height(4.dp))
+                    Row(
+                        Modifier.clickable {
+                            SettingsDestination.navigateTo(SettingsDestination.VoiceModels)
+                            close()
+                        }
+                            .background(color = stepBackgroundColor)
+                            .padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            painterResource(R.drawable.ic_settings_voice),
+                            null,
+                            Modifier.padding(end = 6.dp).size(32.dp),
+                            tint = textColor
+                        )
+                        Column(Modifier.weight(1f)) {
+                            Text(stringResource(R.string.setup_voice_action))
+                            Text(
+                                stringResource(
+                                    R.string.setup_voice_instruction,
+                                    ByteSize.format(
+                                        ModelCatalog.packs.filter { it.required }.sumOf { it.totalBytes }
+                                    ),
+                                ),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = textColorDim,
+                            )
+                        }
+                    }
                     Spacer(Modifier.height(4.dp))
                     Row(
                         Modifier.clickable { finish() }

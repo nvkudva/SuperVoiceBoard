@@ -35,3 +35,4 @@
 - [~] W7.1 Transcript normalization + two-model alignment + per-word confidence. Gate: measured disagreement precision against a hand-labeled 200+ utterance corpus, published either way. Cancelled if it lands below ~70%. (NOT SHIPPED: the corpus does not exist, so the gate is unmet. The alignment/normalization/confidence foundation is built and tested in :core but wired to nothing — PLAN.md R22.)
 - [x] W7.2 Spoken-format intelligence — times, money, dates, spoken email addresses. After W7.1; must run before `ContentGuard`.
 - [x] W7.3 Opt-in, content-free telemetry: send-ready rate, time-to-send-ready.
+- [x] Model management UI: a Voice models screen (download, cancel, remove, import) and an optional voice step in the setup wizard. Import verifies against the catalog digest before staging.

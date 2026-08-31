@@ -10,12 +10,12 @@ import android.widget.LinearLayout
 /** A single focused EditText — the smallest thing that makes the IME appear. */
 class TestInputActivity : Activity() {
 
-    lateinit var field: EditText
+    lateinit var input: EditText
         private set
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        field = EditText(this).apply {
+        input = EditText(this).apply {
             id = FIELD_ID
             hint = "qa input"
             layoutParams = LinearLayout.LayoutParams(
@@ -25,12 +25,12 @@ class TestInputActivity : Activity() {
         }
         setContentView(LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
-            addView(field)
+            addView(input)
         })
-        field.requestFocus()
+        input.requestFocus()
     }
 
-    val text: String get() = field.text.toString()
+    val text: String get() = input.text.toString()
 
     companion object {
         const val FIELD_ID = 0x0decaf01

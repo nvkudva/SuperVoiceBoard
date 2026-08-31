@@ -36,8 +36,13 @@ jobs:
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm
 
+      # The NDK build floods the log with warnings; drop them so a Kotlin or
+      # resource error is actually findable in the job output.
       - name: Assemble app + test APKs
-        run: ./gradlew :app:assembleDebugNoMinify :app:assembleDebugNoMinifyAndroidTest --no-daemon
+        run: |
+          set -o pipefail
+          ./gradlew :app:assembleDebugNoMinify :app:assembleDebugNoMinifyAndroidTest --no-daemon 2>&1 \
+            | grep -vE '^C/C\+\+:|^\s+\||warning:' | tail -120
 
       - name: Run UI QA suite
         uses: reactivecircus/android-emulator-runner@v2

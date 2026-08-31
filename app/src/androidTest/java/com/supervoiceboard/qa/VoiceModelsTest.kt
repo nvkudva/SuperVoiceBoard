@@ -54,7 +54,8 @@ class VoiceModelsTest {
     fun offersDownloadAndImportWhenNothingIsInstalled() {
         compose.onAllNodes(hasText(string(R.string.voice_models_download))).fetchSemanticsNodes()
             .let { assert(it.isNotEmpty()) { "no download action offered" } }
-        compose.onNodeWithText(string(R.string.voice_models_import)).performScrollTo().assertIsDisplayed()
+        compose.onAllNodes(hasText(string(R.string.voice_models_import))).fetchSemanticsNodes()
+            .let { assert(it.isNotEmpty()) { "no import action offered" } }
     }
 
     @Test

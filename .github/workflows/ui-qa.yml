@@ -60,7 +60,7 @@ jobs:
             adb shell settings put secure long_press_timeout 1500
             ./gradlew :app:connectedDebugNoMinifyAndroidTest --no-daemon || FAILED=1
             mkdir -p ui-qa-screenshots
-            adb pull /sdcard/Android/data/com.supervoiceboard.app.debug/files/ui-qa ui-qa-screenshots || true
+            adb pull /sdcard/Android/data/com.supervoiceboard.app.debug.test/files/ui-qa ui-qa-screenshots || true
             exit ${FAILED:-0}
 
       # The per-test verdicts, in the job log — the artifacts are not always
@@ -90,6 +90,7 @@ jobs:
                   else:
                       print(f"pass {name}")
           print(f"--- {total} tests, {failed} failed")
+          raise SystemExit(1 if failed else 0)
           PY
 
       - name: Upload UI QA reports

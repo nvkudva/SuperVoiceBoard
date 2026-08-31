@@ -18,6 +18,10 @@ object Qa {
     val appId: String
         get() = InstrumentationRegistry.getInstrumentation().targetContext.packageName
 
+    /** The instrumentation APK's own id — where screenshots can be written. */
+    val testAppId: String
+        get() = InstrumentationRegistry.getInstrumentation().context.packageName
+
     val imeId: String get() = "$appId/helium314.keyboard.latin.LatinIME"
 
     fun shell(command: String): String = device.executeShellCommand(command)
@@ -42,7 +46,7 @@ object Qa {
     /** Where the workflow pulls failures from. */
     private val screenshotDir: File
         get() = File(
-            InstrumentationRegistry.getInstrumentation().targetContext.getExternalFilesDir(null),
+            InstrumentationRegistry.getInstrumentation().context.getExternalFilesDir(null),
             "ui-qa",
         ).also { it.mkdirs() }
 

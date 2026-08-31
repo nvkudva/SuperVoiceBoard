@@ -38,8 +38,8 @@ class WelcomeWizardTest {
         ).assertIsDisplayed()
         compose.onNodeWithText(string(R.string.setup_start_action)).assertIsDisplayed().performClick()
         compose.waitForIdle()
+        compose.onNodeWithText(string(R.string.setup_steps_title)).assertIsDisplayed()
         compose.onNodeWithText(string(R.string.setup_step1_action)).assertIsDisplayed()
-        compose.onNodeWithText(string(R.string.setup_voice_action)).assertIsDisplayed()
         Qa.screenshot("welcome-wizard-steps")
     }
 

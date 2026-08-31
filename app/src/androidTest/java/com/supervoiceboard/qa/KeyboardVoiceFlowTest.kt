@@ -34,7 +34,9 @@ class KeyboardVoiceFlowTest {
     @Before
     fun openAFieldWithOurKeyboard() {
         Qa.makeThisImeCurrent()
-        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        // The activity is declared in the androidTest manifest, so it is
+        // installed with the test APK, not with the app under test.
+        val context = InstrumentationRegistry.getInstrumentation().context
         scenario = ActivityScenario.launch(
             Intent(context, TestInputActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         )

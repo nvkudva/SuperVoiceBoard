@@ -5,6 +5,6 @@
 <resources>
     <string name="english_ime_name" translatable="false">SuperVoiceBoard debug</string>
     <string name="spell_checker_service_name" translatable="false">SuperVoiceBoard debug Spell Checker</string>
-    <string name="ime_settings" translatable="false">SuperVoiceBoard debug Settings</string>
+    <string name="ime_settings" translatable="false">Settings (debug)</string>
 
 </resources>

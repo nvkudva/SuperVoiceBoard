@@ -102,11 +102,12 @@ fun SearchSettingsScreen(
                             .padding(bottom = 24.dp)
                     ) {
                         sectionsOf(settings).forEach { section ->
-                            if (section.title != null)
-                                PreferenceCategory(stringResource(section.title))
-                            // a section whose every entry is currently hidden would
-                            // otherwise draw as an empty card
-                            if (section.keys.any { it != null })
+                            // screens null out prefs that don't apply, so a whole
+                            // section can be hidden: drop its header too, rather than
+                            // leaving one standing over an empty card
+                            if (section.keys.any { it != null }) {
+                                if (section.title != null)
+                                    PreferenceCategory(stringResource(section.title))
                                 PreferenceGroup {
                                     section.keys.forEach {
                                         // this only animates appearing prefs
@@ -117,6 +118,7 @@ fun SearchSettingsScreen(
                                         }
                                     }
                                 }
+                            }
                         }
                     }
                     // lazyColumn has janky scroll for a while (not sure why compose gets smoother after a while)

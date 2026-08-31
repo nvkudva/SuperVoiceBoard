@@ -1,12 +1,10 @@
 // SPDX-License-Identifier: GPL-3.0-only
 package com.supervoiceboard.qa
 
-import android.graphics.Bitmap
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.uiautomator.UiDevice
 import org.junit.rules.TestWatcher
 import org.junit.runner.Description
-import java.io.File
 
 /** Shared plumbing for the on-device QA suite. */
 object Qa {
@@ -44,22 +42,18 @@ object Qa {
     }
 
     /** Where the workflow pulls failures from. */
-    private val screenshotDir: File
-        get() = File(
-            InstrumentationRegistry.getInstrumentation().context.getExternalFilesDir(null),
-            "ui-qa",
-        ).also { it.mkdirs() }
+    private const val SCREENSHOT_DIR = "/sdcard/Download/ui-qa"
 
+    /**
+     * Taken through the shell: the instrumentation process has no external
+     * directory of its own on every image, and a screenshot that throws would
+     * replace the real failure with its own.
+     */
     fun screenshot(name: String) {
-        val png = File(screenshotDir, "$name.png")
-        InstrumentationRegistry.getInstrumentation().uiAutomation
-            .takeScreenshot()
-            ?.use(Bitmap.CompressFormat.PNG, png)
-    }
-
-    private fun Bitmap.use(format: Bitmap.CompressFormat, target: File) {
-        target.outputStream().use { compress(format, 100, it) }
-        recycle()
+        runCatching {
+            shell("mkdir -p $SCREENSHOT_DIR")
+            shell("screencap -p $SCREENSHOT_DIR/$name.png")
+        }
     }
 }
 

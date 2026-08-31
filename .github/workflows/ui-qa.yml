@@ -60,7 +60,7 @@ jobs:
             adb shell settings put secure long_press_timeout 1500
             ./gradlew :app:connectedDebugNoMinifyAndroidTest --no-daemon || FAILED=1
             mkdir -p ui-qa-screenshots
-            adb pull /sdcard/Android/data/com.supervoiceboard.app.debug.test/files/ui-qa ui-qa-screenshots || true
+            adb pull /sdcard/Download/ui-qa ui-qa-screenshots || true
             exit ${FAILED:-0}
 
       # The per-test verdicts, in the job log — the artifacts are not always

@@ -158,7 +158,16 @@ class ModelStore(context: Context) {
             // constant. Worth a line, because "not installed" and "installed
             // somewhere this process cannot read" look identical to the user and
             // used to look identical here too.
-            Log.i(TAG, "pack ${pack.id} is not installed under $rootDir")
+            val marker = File(File(File(rootDir, pack.id), "v${pack.version}"), "installed.marker")
+            // Says nothing about the user's text; a pack id and a path. Worth a
+            // line, because "not installed" and "installed somewhere this
+            // process cannot read it" look identical to the user, and the marker
+            // state is what tells them apart.
+            Log.i(
+                TAG,
+                "pack ${pack.id} is not installed under $rootDir " +
+                    "(marker exists=${marker.exists()} readable=${marker.canRead()})",
+            )
             return null
         }
         val installDir = installer.installedDir(pack)?.toFile() ?: return null

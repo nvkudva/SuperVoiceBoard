@@ -518,3 +518,66 @@ Two bugs fell out of that switch and are fixed with it:
 `ensureExtracted` also logs when a pack is not installed under the root it
 looked in — the case above was silent, and "not installed" and "installed
 somewhere this process cannot read" looked identical from the outside.
+
+
+### R27 — 2026-09-01: W7.1 is cancelled; the answer is the accurate model's, and latency is the goal
+
+Superseding R22. The two-model confidence idea is dropped at the user's
+direction: the committed text is simply the accurate model's answer, and no
+disagreement signal is computed, marked or shown. `TranscriptAlignment` and its
+tests are deleted rather than left as dead code with no future — the git history
+has them if the idea ever comes back, and a repository is not a museum.
+
+What replaces it is the thing the feature was competing for: **the time between
+speaking and having the final text.** Four changes, in the order they pay off:
+
+1. **Provisional commit.** At the endpoint the live model's cleaned text is
+   committed immediately and replaced in place when the accurate model's answer
+   arrives a second later. The text the user keeps is still the accurate model's
+   — this only decides whether the wait happens with an empty field or a
+   readable one. It can be turned off ("Show text immediately"), and an
+   utterance that turns out to be a command takes its provisional text back
+   before acting on it.
+2. **Warm on touch-down.** Model load is the largest single component of a cold
+   press, and the tap gesture is free time: the engines start loading on
+   ACTION_DOWN, before the tap has even completed.
+3. **Engines stay loaded while the keyboard is visible.** Releasing them between
+   two dictations in one sitting was the slowest path there is.
+4. **No silence wait while the mic key is held** (W6.5, already landed): the
+   finger is the endpoint.
+
+The 0.8s / 2.4s endpoint thresholds are deliberately left alone. Shortening them
+would cut latency for tap-to-toggle too, and would also cut people off
+mid-sentence; that trade needs measurement this fork has not done, and the hold
+path already avoids the wait entirely.
+
+
+### R28 — 2026-09-01: `:core` compiles against Java 11 and runs on Android
+
+The keyboard reported "voice models aren't downloaded yet" for models that were
+downloaded, extracted and visible in settings. The cause was one line:
+
+    Files.readString(marker).trim().toInt()
+
+`:core` is a plain JVM library module, so it compiles against JDK 17 and
+`Files.readString` resolves. Android's `java.nio.file.Files` has no such method,
+so at runtime it threw `NoSuchMethodError` — **inside a `runCatching`**, which
+catches `Throwable`. Every installed pack therefore read as `NotInstalled`, and
+the failure produced no log, no error state and no user-visible cause. It now
+uses `Files.readAllBytes(...).decodeToString()`.
+
+Two things follow from this, beyond the one-line fix:
+
+- **The module boundary hides this class of bug.** `:core` is compiled as a JVM
+  library precisely so it can be tested without an Android runtime, and that is
+  worth keeping — but nothing checks that what it calls exists on Android. Any
+  Java 9+ API added to `:core` needs that check by hand until something
+  automates it. The same applies to the `:voice` module's compile: the Android
+  compiler *did* reject `Files.readString`, which is how this was finally found.
+- **`runCatching` around a platform call is a trap.** It swallows `Error` as
+  well as `Exception`, so a missing method looks exactly like a corrupt file.
+  Where the two need different answers, catch `Exception`.
+
+R26's storage change stands on its own merits — a directBootAware IME should not
+keep its models in credential-encrypted storage — but it was not the cause of
+this, and the note there overstated the evidence.

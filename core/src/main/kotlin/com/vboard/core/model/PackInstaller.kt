@@ -54,7 +54,15 @@ class PackInstaller(
     fun stateOf(pack: ModelPack): PackState {
         val marker = markerFile(pack)
         if (Files.isRegularFile(marker)) {
-            val markedVersion = runCatching { Files.readString(marker).trim().toInt() }.getOrNull()
+            // readAllBytes, not readString: this module is a plain JVM library, so
+            // it compiles against Java 11 happily and then meets an Android
+            // runtime that has no Files.readString. The NoSuchMethodError landed
+            // inside this runCatching, so every installed pack read as "not
+            // installed" and the keyboard reported models it had just downloaded
+            // as missing (PLAN.md R28).
+            val markedVersion = runCatching {
+                Files.readAllBytes(marker).decodeToString().trim().toInt()
+            }.getOrNull()
             if (markedVersion == pack.version) return PackState.Installed
         }
         return PackState.NotInstalled

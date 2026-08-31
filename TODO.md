@@ -32,7 +32,8 @@
 - [x] W6.3 Hold-to-talk + release-to-send, shipped alongside tap-to-toggle, never replacing it.
 - [x] W6.4 Mic long-press → session-scoped raw dictation (no cleanup, no refinement).
 - [x] W6.5 Adaptive endpointing, re-scoped after W6.3 lands.
-- [~] W7.1 Transcript normalization + two-model alignment + per-word confidence. Gate: measured disagreement precision against a hand-labeled 200+ utterance corpus, published either way. Cancelled if it lands below ~70%. (NOT SHIPPED: the corpus does not exist, so the gate is unmet. The alignment/normalization/confidence foundation is built and tested in :core but wired to nothing — PLAN.md R22.)
+- [x] W7.1 Transcript normalization + two-model alignment + per-word confidence. Gate: measured disagreement precision against a hand-labeled 200+ utterance corpus, published either way. Cancelled if it lands below ~70%. (CANCELLED by decision, 2026-09-01: no two-model comparison at all. The committed text is the accurate model's answer, and the effort went into cutting the time to it instead. PLAN.md R27.)
 - [x] W7.2 Spoken-format intelligence — times, money, dates, spoken email addresses. After W7.1; must run before `ContentGuard`.
 - [x] W7.3 Opt-in, content-free telemetry: send-ready rate, time-to-send-ready.
 - [x] Model management UI: a Voice models screen (download, cancel, remove, import) and an optional voice step in the setup wizard. Import verifies against the catalog digest before staging.
+- [x] Latency: provisional commit replaced in place by the accurate model, engine warm-up on mic touch-down, engines held while the keyboard is visible.

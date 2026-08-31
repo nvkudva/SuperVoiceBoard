@@ -51,9 +51,8 @@ class KeyboardVoiceFlowTest {
     @After
     fun putTheKeyboardAway() {
         Qa.hideKeyboard()
-        // The app under test is a different process, so this is safe, and it
-        // resets an activity stack these cases can leave on the settings screen.
-        Qa.shell("am force-stop ${Qa.appId}")
+        // No force-stop here: the instrumentation is attached to the target
+        // package, so killing it kills this test run with no verdict recorded.
     }
 
     private fun findField(): UiObject2? =

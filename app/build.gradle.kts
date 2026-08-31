@@ -41,6 +41,10 @@ android {
         }
     }
 
+    // SuperVoiceBoard: the UI QA suite runs against debugNoMinify — "debug" here
+    // is minified, and R8 renames the very things the tests look for.
+    testBuildType = "debugNoMinify"
+
     buildTypes {
         release {
             isMinifyEnabled = true

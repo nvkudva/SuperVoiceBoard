@@ -49,15 +49,14 @@ jobs:
           ram-size: 4096M
           disable-animations: true
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          # adb only exists on PATH inside this action, so the screenshots are
+          # pulled here rather than in a later step.
           script: |
             adb shell settings put secure long_press_timeout 1500
-            ./gradlew :app:connectedDebugNoMinifyAndroidTest --no-daemon
-
-      - name: Collect screenshots off the device
-        if: always()
-        run: |
-          mkdir -p ui-qa-screenshots
-          adb pull /sdcard/Android/data/com.supervoiceboard.app.debug/files/ui-qa ui-qa-screenshots || true
+            ./gradlew :app:connectedDebugNoMinifyAndroidTest --no-daemon || FAILED=1
+            mkdir -p ui-qa-screenshots
+            adb pull /sdcard/Android/data/com.supervoiceboard.app.debug/files/ui-qa ui-qa-screenshots || true
+            exit ${FAILED:-0}
 
       - name: Upload UI QA reports
         if: always()

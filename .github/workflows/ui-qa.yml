@@ -83,7 +83,8 @@ jobs:
                   if bad:
                       failed += 1
                       node = case.find("failure") if case.find("failure") is not None else case.find("error")
-                      first = (node.text or "").strip().splitlines()[:3]
+                      detail = (node.text or "").strip() or (node.get("message") or "").strip()
+                      first = detail.splitlines()[:3]
                       why = first[0] if first else "no detail"
                       print(f"FAIL {name}")
                       for line in first:

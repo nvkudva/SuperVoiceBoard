@@ -59,7 +59,7 @@ fun PreferenceGroup(
     Surface(
         modifier = modifier.fillMaxWidth().padding(horizontal = 16.dp),
         shape = MaterialTheme.shapes.large,
-        color = MaterialTheme.colorScheme.surfaceContainerLow,
+        color = MaterialTheme.colorScheme.surfaceContainer,
     ) {
         Column(Modifier.padding(vertical = 4.dp), content = content)
     }

@@ -4,6 +4,9 @@ package helium314.keyboard.latin.utils
 import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.Column
 import androidx.compose.material3.Icon
+import androidx.compose.ui.unit.dp
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
@@ -18,11 +21,16 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.LayoutDirection
 import helium314.keyboard.latin.R
 
+/** The affordance on a row that opens another screen. Deliberately quiet: it repeats
+ *  down the whole list, so at full contrast it competes with the row's own label. */
 @Composable
 fun NextScreenIcon() {
     Icon(
         painterResource(R.drawable.ic_arrow_left), null,
-        if (LocalLayoutDirection.current == LayoutDirection.Ltr) Modifier.scale(-1f, 1f) else Modifier
+        Modifier
+            .then(if (LocalLayoutDirection.current == LayoutDirection.Ltr) Modifier.scale(-1f, 1f) else Modifier)
+            .size(20.dp),
+        tint = MaterialTheme.colorScheme.outline
     )
 }
 

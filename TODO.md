@@ -1,10 +1,10 @@
 # TODO
 
-- [ ] W0.1 Re-init git: drop HeliBoard's history to a squashed base commit, add `upstream` = https://github.com/HeliBorg/HeliBoard.git, record the base SHA (9f5bb63) in the commit message so future rebases have an anchor.
-- [ ] W0.2 Rebrand without renaming: change `applicationId`, app label and launcher/IME icon only. Do NOT rename the `helium314.keyboard` package namespace — it breaks every future upstream merge.
-- [ ] W0.3 Baseline gate: `./gradlew assembleDebug` green, install on a device or emulator, confirm typing/glide/emoji/clipboard all work before a single line is changed.
-- [ ] W0.4 GPL-3.0 compliance pass: keep all upstream LICENSE files, add HeliBoard + AOSP attribution to README and the about screen, confirm SPDX headers survive on every file touched.
-- [ ] W0.5 CI: port VBoard's `.github/workflows/ci.yml` (build + unit tests + lint) to this repo.
+- [x] W0.1 Re-init git: drop HeliBoard's history to a squashed base commit, add `upstream` = https://github.com/HeliBorg/HeliBoard.git, record the base SHA (9f5bb63) in the commit message so future rebases have an anchor.
+- [x] W0.2 Rebrand without renaming: change `applicationId`, app label and launcher/IME icon only. Do NOT rename the `helium314.keyboard` package namespace — it breaks every future upstream merge.
+- [x] W0.3 Baseline gate: `./gradlew assembleDebug` green, install on a device or emulator, confirm typing/glide/emoji/clipboard all work before a single line is changed. (glide not verified: needs the closed-source gesture library, absent from this build)
+- [x] W0.4 GPL-3.0 compliance pass: keep all upstream LICENSE files, add HeliBoard + AOSP attribution to README and the about screen, confirm SPDX headers survive on every file touched.
+- [x] W0.5 CI: port VBoard's `.github/workflows/ci.yml` (build + unit tests + lint) to this repo.
 - [ ] W1.1 Copy VBoard `core/` in verbatim as a `:core` Gradle module (pure Kotlin, coroutines only, no Android deps). Wire nothing yet. Gate: all `:core` tests pass in this repo unchanged.
 - [ ] W1.2 Carry over VBoard's one open `:core` defect — `ClipClassifier`'s payment-card rule reads raw text instead of classifying by code point.
 - [ ] W1.3 Carry over VBoard's other open `:core` defect — `DIGIT_RUN_PATTERN`'s separator class is still ASCII-only.

@@ -5,7 +5,6 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.uiautomator.By
 import androidx.test.uiautomator.UiObject2
 import androidx.test.uiautomator.Until
-import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.After
 import org.junit.Before
@@ -85,34 +84,45 @@ class KeyboardVoiceFlowTest {
         Qa.screenshot("suggestion-row-with-mic")
     }
 
+    /**
+     * Tapping the mic hands the suggestion row over to the voice row. On a
+     * device with no speech model installed the session cannot start, so the
+     * row comes up in its error state: a status line and the back control,
+     * with done and minimize deliberately hidden.
+     */
     @Test
     fun tappingTheMicSwapsInTheVoiceRow() {
         requireDesc(VOICE_INPUT, "no mic key on the suggestion strip").click()
-
         val cancel = waitForDesc(STOP_DICTATING)
         Qa.screenshot("voice-row-active")
         cancel ?: throw AssertionError("the voice row never appeared after tapping the mic")
-        // Done and minimize belong to the listening state only — VoiceStripView
-        // hides them on error, which is where a device with no model installed
-        // lands, so they are not asserted here.
-
-        // Re-found rather than reused: the row redraws as the session starts.
-        requireDesc(STOP_DICTATING, "the cancel control went away").click()
-        Qa.device.waitForIdle()
-        assertNotNull(
-            "cancelling dictation did not bring the suggestion row back",
-            waitForDesc(VOICE_INPUT),
-        )
+        assertTrue("the voice row control is not usable", cancel.isEnabled)
     }
 
-    /** Cancelling a session must not leave anything behind in the field. */
+    /**
+     * With nothing to dictate with, the row's control is repurposed into the
+     * fix for the problem — it opens the voice settings, rather than dead-ending
+     * (VoiceStripView, VoiceErrorAction.OPEN_DOWNLOAD).
+     */
     @Test
-    fun cancellingDictationCommitsNothing() {
+    fun theErrorRowLeadsToTheVoiceSettings() {
         requireDesc(VOICE_INPUT, "no mic key on the suggestion strip").click()
-        waitForDesc(STOP_DICTATING)?.click()
-        Qa.device.waitForIdle()
+        requireDesc(STOP_DICTATING, "the voice row never appeared").click()
+        val settings = Qa.device.wait(
+            Until.hasObject(By.textContains("Voice")),
+            timeout,
+        )
+        Qa.screenshot("voice-row-error-action")
+        assertTrue("the error row did not lead anywhere", settings)
+    }
+
+    /** Nothing is committed to the field by a session that never started. */
+    @Test
+    fun aFailedSessionCommitsNothing() {
+        requireDesc(VOICE_INPUT, "no mic key on the suggestion strip").click()
+        waitForDesc(STOP_DICTATING)
         val text = typed()
-        assertTrue("cancelled dictation committed '$text'", text.isEmpty())
+        assertTrue("a session that never started committed '$text'", text.isEmpty())
     }
 
     private companion object {

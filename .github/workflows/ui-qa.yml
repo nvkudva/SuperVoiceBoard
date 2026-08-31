@@ -84,9 +84,12 @@ jobs:
                       failed += 1
                       node = case.find("failure") if case.find("failure") is not None else case.find("error")
                       first = (node.text or "").strip().splitlines()[:3]
+                      why = first[0] if first else "no detail"
                       print(f"FAIL {name}")
                       for line in first:
                           print(f"     {line}")
+                      # An annotation, so the verdict is readable from the API.
+                      print(f"::error title=UI QA::{name} :: {why}"[:900])
                   else:
                       print(f"pass {name}")
           print(f"--- {total} tests, {failed} failed")

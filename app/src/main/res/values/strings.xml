@@ -350,6 +350,8 @@
     <string name="clipboard" tools:keep="@string/clipboard">Clipboard</string>
     <string name="clear_clipboard" tools:keep="@string/clear_clipboard">Clear clipboard</string>
     <string name="voice" tools:keep="@string/voice">Voice input</string>
+    <!-- SuperVoiceBoard: name of the AI fix toolbar key (W5.1) -->
+    <string name="ai_fix" tools:keep="@string/ai_fix">AI fix</string>
     <string name="numpad" tools:keep="@string/numpad" translatable="false">@string/layout_numpad</string>
     <string name="dpad" tools:keep="@string/dpad" translatable="false">@string/layout_dpad</string>
     <string name="settings" tools:keep="@string/settings">Settings</string>
@@ -791,6 +793,10 @@ New dictionary:
     <!-- version for about screen -->
     <string name="version">Version</string>
     <!-- github repo link for about screen -->
+    <!-- SuperVoiceBoard: AI fix attribution (W5.2) -->
+    <string name="ai_fix_attribution_line">“%1$s” → “%2$s”</string>
+    <string name="ai_fix_attribution_title">What the model changed</string>
+    <string name="ai_fix_attribution_none">The model changed no wording — only spelling and spacing</string>
     <!-- SuperVoiceBoard: the voice strip (W3.4) -->
     <string name="voice_listening">Listening…</string>
     <string name="voice_preparing">Getting ready…</string>

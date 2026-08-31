@@ -25,8 +25,8 @@
 - [x] W4.2 Run dictated text through `core/text` (TranscriptCleaner → CommitPlanner → ContentGuard) before it reaches the input connection.
 - [x] W4.3 Draft rescue: an input connection that dies before the final ASR pass must not lose the user's speech. This was VBoard's oldest open data-loss bug; it does not get to survive the port.
 - [x] W4.4 Force-endpoint the session on any touch outside the keyboard.
-- [ ] W5.1 Mount `AiFixController` as a pinned toolbar key using HeliBoard's existing toolbar-key mechanism.
-- [ ] W5.2 Attribution UI for refined text — the user must be able to see what the model changed.
+- [x] W5.1 Mount `AiFixController` as a pinned toolbar key using HeliBoard's existing toolbar-key mechanism.
+- [x] W5.2 Attribution UI for refined text — the user must be able to see what the model changed.
 - [ ] W6.1 Privacy audit of the whole fork against the never-log-user-content rule, including everything inherited from HeliBoard.
 - [ ] W6.2 Measure and record the ≤60MB typing-only IME memory budget and APK size on the real fork.
 - [ ] W6.3 Hold-to-talk + release-to-send, shipped alongside tap-to-toggle, never replacing it.

@@ -55,6 +55,14 @@
             android:gravity="center_horizontal"
             android:hapticFeedbackEnabled="false"
             android:soundEffectsEnabled="false" />
+        <LinearLayout
+            android:id="@+id/pinned_keys"
+            android:orientation="horizontal"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:minWidth="0dp"
+            style="?attr/suggestionWordStyle">
+        </LinearLayout>
         <!-- SuperVoiceBoard: the mic lives at the right-hand end of this row and
              stays there in every state of it — collapsed suggestions, expanded
              toolbar, empty strip. That is what Gboard does (see
@@ -69,13 +77,5 @@
             android:layout_weight="0"
             style="?attr/suggestionWordStyle"
             android:contentDescription="@string/spoken_description_mic" />
-        <LinearLayout
-            android:id="@+id/pinned_keys"
-            android:orientation="horizontal"
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:minWidth="0dp"
-            style="?attr/suggestionWordStyle">
-        </LinearLayout>
     </LinearLayout>
 </merge>

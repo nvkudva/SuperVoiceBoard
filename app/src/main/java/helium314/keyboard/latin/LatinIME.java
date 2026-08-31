@@ -144,6 +144,8 @@ public class LatinIME extends InputMethodService implements
     // because the voice runtime is only reachable once the Application exists.
     private helium314.keyboard.voice.VoiceController mVoiceController;
     private helium314.keyboard.voice.VoiceStripView mVoiceStripView;
+    // SuperVoiceBoard: the AI fix toolbar key (W5.1) and its attribution (W5.2).
+    private helium314.keyboard.voice.AiFixKey mAiFixKey;
 
     private RichInputMethodManager mRichImm;
     final KeyboardSwitcher mKeyboardSwitcher;
@@ -698,6 +700,7 @@ public class LatinIME extends InputMethodService implements
     public void onDestroy() {
         // SuperVoiceBoard: releases the microphone and the ASR engines.
         if (mVoiceController != null) mVoiceController.onDestroy();
+        if (mAiFixKey != null) mAiFixKey.destroy();
         mClipboardHistoryManager.onDestroy();
         mDictionaryFacilitator.closeDictionaries();
         mSettings.onDestroy();
@@ -782,6 +785,9 @@ public class LatinIME extends InputMethodService implements
                 return kotlin.Unit.INSTANCE;
             });
         }
+        // SuperVoiceBoard: the fix key can live in the toolbar, pinned to the
+        // strip, or both; the controller finds every copy under this root.
+        aiFixKey().setStripRoot(view);
         // SuperVoiceBoard: voice is the fourth mode of the strip row (PLAN.md §2).
         mVoiceStripView = view.findViewById(R.id.voice_strip);
         if (mVoiceStripView != null) {
@@ -826,6 +832,30 @@ public class LatinIME extends InputMethodService implements
         voiceController().toggle();
     }
 
+    /** SuperVoiceBoard: the AI fix key's controller, created on first use. */
+    private helium314.keyboard.voice.AiFixKey aiFixKey() {
+        if (mAiFixKey == null) {
+            final com.vboard.app.voice.VoiceRuntime runtime =
+                    ((com.vboard.app.voice.VoiceRuntimeHost) getApplicationContext()).getVoiceRuntime();
+            mAiFixKey = new helium314.keyboard.voice.AiFixKey(this, runtime,
+                    () -> voiceController().fieldKind());
+        }
+        return mAiFixKey;
+    }
+
+    /**
+     * SuperVoiceBoard (W5.2): the user is owed an account of what the model
+     * rewrote, so a long-press on the fix key lists the wording changes. Casing
+     * and spacing are not listed — those are visible at a glance.
+     */
+    private void showFixAttribution() {
+        final java.util.List<String> lines = aiFixKey().attributionLines();
+        final String message = lines.isEmpty()
+                ? getString(R.string.ai_fix_attribution_none)
+                : getString(R.string.ai_fix_attribution_title) + "\n" + String.join("\n", lines);
+        mKeyboardSwitcher.showToast(message, false);
+    }
+
     @Override
     public void setCandidatesView(final View view) {
         // To ensure that CandidatesView will never be set.
@@ -843,6 +873,7 @@ public class LatinIME extends InputMethodService implements
         // SuperVoiceBoard: the field decides whether dictation is allowed at all
         // (a password field is not), so the session hears about every focus change.
         voiceController().onStartInputView(editorInfo);
+        aiFixKey().onStartInput();
     }
 
     @Override
@@ -850,6 +881,7 @@ public class LatinIME extends InputMethodService implements
         // SuperVoiceBoard: the editor is going away, but what was already said
         // must still land in it — finalize rather than discard.
         if (mVoiceController != null) mVoiceController.onFinishInputView();
+        if (mAiFixKey != null) mAiFixKey.onFinishInputView();
         StatsUtils.onFinishInputView();
         mHandler.onFinishInputView(finishingInput);
         mStatsUtilsManager.onFinishInputView();
@@ -1481,11 +1513,25 @@ public class LatinIME extends InputMethodService implements
     // This method is public for testability of LatinIME, but also in the future it should
     // completely replace #onCodeInput.
     public void onEvent(@NonNull final Event event) {
+        // SuperVoiceBoard (W5.1/W5.2): the AI fix key and its long-press.
+        if (KeyCode.AI_FIX == event.getKeyCode()) {
+            aiFixKey().onFixKeyPressed();
+        } else if (KeyCode.AI_FIX_ATTRIBUTION == event.getKeyCode()) {
+            showFixAttribution();
+        }
         if (KeyCode.VOICE_INPUT == event.getKeyCode()) {
             // SuperVoiceBoard (W3.6): upstream hands off to the system voice IME
             // here. This fork has its own on-device dictation, so the key drives
             // that instead; the system IME is no longer involved.
             toggleVoiceInput();
+        }
+        // SuperVoiceBoard (W5.1): typing or deleting makes the fix undo stale.
+        // Deliberately here and not in onUpdateSelection — the fix's own rewrite
+        // moves the cursor, and an undo that dies on its own write is an undo
+        // nobody ever sees.
+        if (mAiFixKey != null && KeyCode.AI_FIX != event.getKeyCode()
+                && KeyCode.AI_FIX_ATTRIBUTION != event.getKeyCode()) {
+            mAiFixKey.onUserEdit();
         }
         final InputTransaction completeInputTransaction =
                 mInputLogic.onCodeInput(mSettings.getCurrent(), event,

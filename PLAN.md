@@ -335,3 +335,26 @@ the guard is for: the tokenizer drops symbols it does not recognize, so the
 shield has to be in place *before* the cleaner runs, and lifted after. Running
 it last would have nothing left to protect. `endsWithShieldedSpan` also
 suppresses the terminal period, so an utterance ending in a URL keeps it intact.
+
+### R17 — 2026-08-31: the fix controller talks to a `FixSurface` (W5.1)
+
+`AiFixController` drove VBoard's own `ToolbarView` directly. Here the button is
+one of HeliBoard's toolbar keys, so the controller drives a `FixSurface`
+interface instead: it decides what to say and which state the key is in, and
+`AiFixKey` in `:app` decides how a key and a message look in this keyboard.
+`AI_FIX` is a real `ToolbarKey` with its own `KeyCode`, so it can be enabled,
+reordered, pinned or removed with every other toolbar key. It ships enabled and
+pinned by default — a key nobody can find is a feature nobody has.
+
+Messages go through HeliBoard's existing toast surface rather than a message
+line of our own, because that is the one users of this keyboard already know.
+
+### R18 — 2026-08-31: attribution is on the long-press (W5.2)
+
+The user is owed an account of what the model rewrote, but not a permanent panel
+for it: the fix is usually mechanical, and a UI that reports "nothing changed"
+most of the time trains people to ignore it. Long-pressing the fix key lists the
+**editorial** edits — the model substituting or rewording — as `"before" → "after"`
+lines. Mechanical edits (casing, spacing, a doubled word) are deliberately not
+listed: they are visible at a glance and attributing them would bury the changes
+that matter.

@@ -1,23 +1,9 @@
-<?xml version="1.0" encoding="utf-8"?>
 <!--
-    icon available in Android Studio
-    modified
-    SPDX-License-Identifier: Apache-2.0
+    Fluent UI System Icons (Regular 24) - Copyright (c) Microsoft Corporation, MIT License.
+    https://github.com/microsoft/fluentui-system-icons  (ic_fluent_caret_up_24_regular)
+    SPDX-License-Identifier: MIT
 -->
-<vector xmlns:android="http://schemas.android.com/apk/res/android"
-    android:height="24dp"
-    android:width="24dp"
-    android:viewportHeight="24"
-    android:viewportWidth="24">
-    <group
-        android:translateX="24"
-        android:rotation="90">
-    <group android:scaleX="1.2"
-        android:scaleY="1.2"
-        android:translateX="-2.4"
-        android:translateY="-2.4">
-        <path android:fillColor="#FFF"
-            android:pathData="M15.41,16.59L10.83,12l4.58,-4.59L14,6l-6,6 6,6 1.41,-1.41z"/>
-    </group>
-    </group>
+<vector xmlns:android="http://schemas.android.com/apk/res/android" android:width="24dp" android:height="24dp" android:viewportWidth="24" android:viewportHeight="24">
+    <path
+        android:pathData="M5.161 14.907c-0.707 0.809-0.133 2.073 0.941 2.073h11.796c1.074 0 1.648-1.264 0.941-2.073l-5.522-6.31c-0.697-0.797-1.937-0.797-2.634 0l-5.522 6.31zm1.492 0.573l5.159-5.896c0.1-0.113 0.277-0.113 0.376 0l5.16 5.896H6.652z" android:fillColor="#FFF"/>
 </vector>

@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Voice-layer strings, ported from VBoard. They live in :voice rather than
+    :app so the module carries its own UI text and nothing has to be merged into
+    an upstream HeliBoard resource file.
+    SPDX-License-Identifier: GPL-3.0-only
+-->
+<resources>
+    <string name="voice_listening">Listening…</string>
+    <string name="voice_preparing">Getting ready…</string>
+    <string name="voice_preparing_toast">Voice is still starting up…</string>
+    <string name="voice_tap_to_speak">Tap the mic and start speaking</string>
+    <string name="voice_cleaning">Cleaning ✨</string>
+    <string name="voice_error_no_permission">Microphone access is needed for voice typing</string>
+    <string name="voice_error_no_permission_action">Allow</string>
+    <string name="voice_error_no_model">Voice models aren\'t downloaded yet</string>
+    <string name="voice_error_no_model_action">Download</string>
+    <string name="voice_error_model_corrupt">Voice models are damaged — download them again</string>
+    <string name="voice_error_mic_busy">Microphone is in use by another app</string>
+    <string name="voice_error_generic">Something went wrong with voice typing</string>
+    <string name="download_channel_name">Model downloads</string>
+    <string name="download_notification_title">Downloading voice models</string>
+    <string name="setup_notify_voice_ready">Voice typing is ready</string>
+    <string name="setup_notify_pack_ready">%1$s is ready</string>
+    <string name="setup_notify_pack_failed">%1$s couldn\'t be downloaded</string>
+</resources>

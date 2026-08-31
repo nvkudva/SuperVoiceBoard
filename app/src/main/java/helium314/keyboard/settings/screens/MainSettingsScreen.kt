@@ -42,6 +42,7 @@ fun MainSettingsScreen(
     onClickLanguage: () -> Unit,
     onClickLayouts: () -> Unit,
     onClickDictionaries: () -> Unit,
+    onClickVoice: () -> Unit, // SuperVoiceBoard
     onClickBack: () -> Unit,
 ) {
     SearchSettingsScreen(
@@ -64,6 +65,13 @@ fun MainSettingsScreen(
                     name = stringResource(R.string.settings_screen_preferences),
                     onClick = onClickPreferences,
                     icon = R.drawable.ic_settings_preferences
+                ) { NextScreenIcon() }
+                // SuperVoiceBoard: the differentiator sits near the top, not
+                // buried under Advanced.
+                Preference(
+                    name = stringResource(R.string.settings_screen_voice),
+                    onClick = onClickVoice,
+                    icon = R.drawable.ic_settings_voice
                 ) { NextScreenIcon() }
                 Preference(
                     name = stringResource(R.string.settings_screen_appearance),
@@ -124,7 +132,7 @@ private fun PreviewScreen() {
     initPreview(LocalContext.current)
     Theme(previewDark) {
         Surface {
-            MainSettingsScreen({}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {})
+            MainSettingsScreen({}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {})
         }
     }
 }

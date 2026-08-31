@@ -203,3 +203,63 @@ on `repetitionsCollapsed > 0` so that a stage-3 spoken-punctuation conversion
 `@Disabled` test in `CleanupPropertyTest` is enabled and `QaRegressionPinTest`'s
 pin is inverted to assert the fixed behaviour. `:core` now has 795 tests, 0
 failures, 0 ignored.
+
+### R6 — 2026-08-31: `:voice` uses the namespace `com.vboard.app` (W2.1)
+
+The ported sources reference `com.vboard.app.R` for their strings. Giving the
+`:voice` library that namespace makes those references resolve with no edit, so
+the diff against VBoard stays readable. `:llm` is `com.vboard.app.llm`.
+
+### R7 — 2026-08-31: voice settings live in HeliBoard's preferences (W2.5)
+
+VBoard kept settings in a DataStore of its own, and its snapshot carried the
+keyboard's settings too — theme, haptics, key preview, autocorrect mode, number
+row, clipboard history. All of those are HeliBoard's here, so the ported
+`SettingsRepository` was cut down to what the voice layer alone decides and
+re-pointed at HeliBoard's SharedPreferences. One store, one screen, and the
+dictation path keeps a synchronous read.
+
+### R8 — 2026-08-31: what "INTERNET only in `:ui`" can actually mean (W2.3)
+
+Android grants permissions to an application, not a process: there is no way to
+declare INTERNET for `:ui` alone, and any claim otherwise would be theatre. What
+is enforceable is that every component that can reach the network runs in `:ui`
+— the download service and WorkManager's foreground service, with WorkManager's
+androidx.startup initializer removed so the keyboard process never hosts the
+downloader — and that the IME declares no `android:process` at all.
+`ManifestProcessSplitTest` asserts exactly that, and the manifest carries the
+`supervoiceboard:internet-scoped` marker the CI audit greps for.
+
+HeliBoard's own settings activity stays in the main process. Moving it to `:ui`
+would put its SharedPreferences writes in a different process from the IME's
+reads, which SharedPreferences does not support; it touches no network, so it
+does not need to move.
+
+### R9 — 2026-08-31: MediaPipe's minSdk is overridden, not adopted (W2.4)
+
+`tasks-genai` declares minSdk 24 and HeliBoard supports 21. Raising the floor
+would drop API 21-23 users for an optional feature, so `:llm` force-merges the
+library and both `LlmRefinerService.engineOrNull` and `refinerClientOrNull`
+return null below API 24. On those devices the refiner simply does not exist.
+
+### R10 — 2026-08-31: `VoiceRuntime` replaces `VBoardApp` (W2.1)
+
+VBoard handed its `Application` subclass to the session controller, the download
+worker and the refiner client. The hosting Application here is HeliBoard's — an
+upstream class this fork does not own — so those five references now go through
+`VoiceRuntime` / `VoiceRuntimeHost` (and `RefinerModelHost` for the `:llm`
+process, which must not see the keyboard's half at all). `App.kt` implements
+them; that is the entire footprint of the voice layer in an upstream file.
+
+`VoiceBarView` was not ported, per §2, so `ErrorActionKind` moved out of it and
+into `VoiceErrorAction` in `:voice`: which error happened and what the recovery
+is are session facts, not view state.
+
+### R11 — 2026-08-31: HeliBoard's Robolectric tests need Java 21
+
+`:app`'s inherited tests (InputTest, ParserTest, SpellCheckerTest, …) fail
+before they run on Java 17: Robolectric refuses to sandbox an SDK 36 target
+below Java 21. CI now uses Java 21 so they actually execute. This machine has
+only JDK 17 (AGP 8.13 rejects the JDK 25 in Android Studio), so `:app`'s
+Robolectric tests are unverified locally and are verified in CI instead;
+`:core`'s 795 tests and the plain-JUnit manifest audit run fine on 17.

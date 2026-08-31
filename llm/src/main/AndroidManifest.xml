@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    SPDX-License-Identifier: GPL-3.0-only
+
+    MediaPipe's tasks-genai declares minSdk 24 and HeliBoard supports 21. The
+    refiner is optional and lives in its own process, so rather than raising the
+    whole keyboard's floor and dropping API 21-23 users, the library is force-
+    merged and never touched below 24 — see the guards in LlmRefinerService and
+    refinerClientOrNull.
+-->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <uses-sdk tools:overrideLibrary="com.google.mediapipe.tasks.genai,com.google.mediapipe.tasks.core" />
+</manifest>

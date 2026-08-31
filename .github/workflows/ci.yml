@@ -22,7 +22,7 @@ jobs:
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: "17"
+          java-version: "21"
       - uses: gradle/actions/setup-gradle@v4
       # :core arrives in W1; until then this job is a no-op rather than a failure.
       - name: Run :core tests
@@ -44,10 +44,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      # Robolectric needs Java 21 to sandbox an SDK 36 target; on 17 every
+      # Robolectric test in :app errors out before it runs.
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: "17"
+          java-version: "21"
       - uses: gradle/actions/setup-gradle@v4
       - name: Assemble debug APK
         run: ./gradlew :app:assembleDebug --no-daemon

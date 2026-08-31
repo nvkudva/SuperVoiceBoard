@@ -1,3 +1,5 @@
 include ':app'
 include ':tools:make-emoji-keys'
 include ':core'
+include ':llm'
+include ':voice'

@@ -16,6 +16,7 @@ import androidx.navigation.compose.rememberNavController
 import helium314.keyboard.latin.common.LocaleUtils.constructLocale
 import helium314.keyboard.latin.settings.SettingsSubtype.Companion.toSettingsSubtype
 import helium314.keyboard.latin.settings.getTransitionAnimationScale
+import helium314.keyboard.settings.screens.VoiceScreen // SuperVoiceBoard
 import helium314.keyboard.settings.screens.AboutScreen
 import helium314.keyboard.settings.screens.AdvancedSettingsScreen
 import helium314.keyboard.settings.screens.AppearanceScreen
@@ -78,6 +79,7 @@ fun SettingsNavHost(
                 onClickLanguage = { navController.navigate(SettingsDestination.Languages) },
                 onClickLayouts = { navController.navigate(SettingsDestination.Layouts) },
                 onClickDictionaries = { navController.navigate(SettingsDestination.Dictionaries) },
+                onClickVoice = { navController.navigate(SettingsDestination.Voice) }, // SuperVoiceBoard
                 onClickBack = ::goBack,
             )
         }
@@ -104,6 +106,9 @@ fun SettingsNavHost(
         }
         composable(SettingsDestination.Advanced) {
             AdvancedSettingsScreen(onClickBack = ::goBack)
+        }
+        composable(SettingsDestination.Voice) { // SuperVoiceBoard
+            VoiceScreen(onClickBack = ::goBack)
         }
         composable(SettingsDestination.Debug) {
             DebugScreen(onClickBack = ::goBack)
@@ -154,6 +159,7 @@ object SettingsDestination {
     const val DataGathering = "data_gathering" // remove when data gathering phase is done (end of 2026 latest)
     const val DataReview = "data_review" // remove when data gathering phase is done (end of 2026 latest)
     const val Advanced = "advanced"
+    const val Voice = "voice" // SuperVoiceBoard
     const val Debug = "debug"
     const val Appearance = "appearance"
     const val Colors = "colors/"

@@ -24,14 +24,35 @@ android {
         proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
     }
 
+    // SuperVoiceBoard: release builds must be installable. The keystore lives
+    // outside the repo; without it (CI, a fresh clone) the release build still
+    // works and comes out unsigned, exactly as upstream's does.
+    signingConfigs {
+        create("supervoiceboard") {
+            val store = file(System.getProperty("user.home") + "/.supervoiceboard/release.jks")
+            if (store.exists()) {
+                storeFile = store
+                storePassword = System.getenv("SVB_STORE_PASSWORD") ?: "supervoiceboard"
+                keyAlias = "supervoiceboard"
+                keyPassword = System.getenv("SVB_KEY_PASSWORD") ?: "supervoiceboard"
+            }
+        }
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = true
             isShrinkResources = false
             isDebuggable = false
             isJniDebuggable = false
+            // SuperVoiceBoard: sign when the local keystore is present
+            signingConfigs.getByName("supervoiceboard").storeFile?.let {
+                signingConfig = signingConfigs.getByName("supervoiceboard")
+            }
         }
         create("nouserlib") { // same as release, but does not allow the user to provide a library
+            // SuperVoiceBoard: :core/:voice/:llm only have debug and release
+            matchingFallbacks += "release"
             isMinifyEnabled = true
             isShrinkResources = false
             isDebuggable = false
@@ -45,10 +66,12 @@ android {
             applicationIdSuffix = ".debug"
         }
         create("runTests") { // build variant for running tests on CI that skips tests known to fail
+            matchingFallbacks += "debug"
             isMinifyEnabled = false
             isJniDebuggable = false
         }
         create("debugNoMinify") { // for faster builds in IDE
+            matchingFallbacks += "debug"
             isDebuggable = true
             isMinifyEnabled = false
             isJniDebuggable = false
@@ -125,6 +148,11 @@ android {
 }
 
 dependencies {
+    // SuperVoiceBoard: the voice layer and the out-of-process refiner
+    implementation(project(":core"))
+    implementation(project(":voice"))
+    implementation(project(":llm"))
+
     // androidx
     implementation("androidx.core:core-ktx:1.17.0") // 1.18.0 requires minSdk 23
     implementation("androidx.recyclerview:recyclerview:1.4.0")

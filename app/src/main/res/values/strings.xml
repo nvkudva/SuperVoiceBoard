@@ -791,6 +791,30 @@ New dictionary:
     <!-- version for about screen -->
     <string name="version">Version</string>
     <!-- github repo link for about screen -->
+    <!-- SuperVoiceBoard: voice settings (W2.5) -->
+    <string name="settings_screen_voice">Voice typing</string>
+    <string name="voice_inline_dictation">Dictate in place</string>
+    <string name="voice_inline_dictation_summary">Keep the keys live while you speak, instead of taking over the screen</string>
+    <string name="voice_silence_timeout">Stop after silence</string>
+    <string name="voice_silence_timeout_summary">How long the mic stays open with nothing being said</string>
+    <string name="voice_silence_timeout_off">Never</string>
+    <string name="voice_silence_timeout_seconds">%1$d seconds</string>
+    <string name="voice_raw_transcript">Raw transcript</string>
+    <string name="voice_raw_transcript_summary">Type exactly what was heard — no cleanup at all</string>
+    <string name="voice_remove_fillers">Remove fillers</string>
+    <string name="voice_remove_fillers_summary">Drop “um”, “uh” and the like</string>
+    <string name="voice_aggressive_fillers">Remove discourse fillers</string>
+    <string name="voice_aggressive_fillers_summary">Also drop “you know”, “I mean”, “sort of”</string>
+    <string name="voice_self_corrections">Resolve self-corrections</string>
+    <string name="voice_self_corrections_summary">“to John no wait to Mary” becomes “to Mary”</string>
+    <string name="voice_auto_punctuate">Add punctuation</string>
+    <string name="voice_auto_punctuate_summary">Punctuate dictated sentences automatically</string>
+    <string name="voice_auto_capitalize">Capitalize dictated text</string>
+    <string name="voice_auto_capitalize_summary">Separate from the keyboard\'s own auto-capitalization</string>
+    <string name="voice_spoken_commands">Spoken punctuation</string>
+    <string name="voice_spoken_commands_summary">“comma”, “new line”, “question mark” become the mark itself</string>
+    <string name="voice_llm_refine">AI refinement</string>
+    <string name="voice_llm_refine_summary">Tidy dictated text with the on-device model. Runs outside the keyboard, and needs the refiner model downloaded</string>
     <!-- SuperVoiceBoard: attribution entry for the upstream project this fork is built on -->
     <string name="about_based_on">Based on HeliBoard</string>
     <string name="about_based_on_description">All typing functionality comes from HeliBoard (GPL-3.0), itself a fork of OpenBoard and AOSP LatinIME</string>

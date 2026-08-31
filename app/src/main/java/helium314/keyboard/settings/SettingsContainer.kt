@@ -14,6 +14,7 @@ import helium314.keyboard.settings.screens.createGestureTypingSettings
 import helium314.keyboard.settings.screens.createLayoutSettings
 import helium314.keyboard.settings.screens.createPreferencesSettings
 import helium314.keyboard.settings.screens.createToolbarSettings
+import helium314.keyboard.settings.screens.createVoiceSettings // SuperVoiceBoard
 
 class SettingsContainer(context: Context) {
     private val list = createSettings(context)
@@ -65,7 +66,8 @@ class Setting(
 private fun createSettings(context: Context) = createAboutSettings(context) + createAppearanceSettings(context) +
         createCorrectionSettings(context) + createPreferencesSettings(context) + createToolbarSettings(context) +
         createLayoutSettings(context) + createAdvancedSettings(context) +
-        if (JniUtils.sHaveGestureLib) createGestureTypingSettings(context) else emptyList()
+        createVoiceSettings(context) + // SuperVoiceBoard
+        (if (JniUtils.sHaveGestureLib) createGestureTypingSettings(context) else emptyList())
 
 object SettingsWithoutKey {
     const val EDIT_PERSONAL_DICTIONARY = "edit_personal_dictionary"

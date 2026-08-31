@@ -9,11 +9,11 @@
 - [x] W1.2 Carry over VBoard's one open `:core` defect — `ClipClassifier`'s payment-card rule reads raw text instead of classifying by code point.
 - [x] W1.3 Carry over VBoard's other open `:core` defect — `DIGIT_RUN_PATTERN`'s separator class is still ASCII-only.
 - [x] W1.4 VB-QA-05 idempotency: the one remaining `@Disabled` test in `:core`, in `CleanupPropertyTest`.
-- [ ] W2.1 New `:voice` module: port `app/voice/AsrEngines.kt` and `VoiceSessionController.kt` from VBoard, keeping them IME-agnostic (no reference to any View).
-- [ ] W2.2 Port `app/models/` (download, storage, lifecycle) into `:voice`; the download path must run in the `:ui` process.
-- [ ] W2.3 Manifest: add `RECORD_AUDIO`, and add `INTERNET` scoped so only the `:ui` process can use it. Add an audit test asserting the IME process never gets INTERNET.
-- [ ] W2.4 Port `:llm` module + `ILlmRefiner.aidl` and the `:ui` / `:llm` / IME three-process split onto HeliBoard's manifest and Application class.
-- [ ] W2.5 Voice + model settings screens inside HeliBoard's existing settings, not VBoard's. Do not port VBoard's onboarding wholesale.
+- [x] W2.1 New `:voice` module: port `app/voice/AsrEngines.kt` and `VoiceSessionController.kt` from VBoard, keeping them IME-agnostic (no reference to any View).
+- [x] W2.2 Port `app/models/` (download, storage, lifecycle) into `:voice`; the download path must run in the `:ui` process.
+- [x] W2.3 Manifest: add `RECORD_AUDIO`, and add `INTERNET` scoped so only the `:ui` process can use it. Add an audit test asserting the IME process never gets INTERNET.
+- [x] W2.4 Port `:llm` module + `ILlmRefiner.aidl` and the `:ui` / `:llm` / IME three-process split onto HeliBoard's manifest and Application class.
+- [x] W2.5 Voice + model settings screens inside HeliBoard's existing settings, not VBoard's. Do not port VBoard's onboarding wholesale.
 - [ ] W3.1 Verify on a real device how Gboard actually behaves during dictation — does the keyboard stay visible, what exactly does the top row become, what does the mic indicator look like. Screenshot it. Do this before writing W3.2.
 - [ ] W3.2 Pin a mic key to the right-hand end of `SuggestionStripView`'s row, always visible, surviving both the collapsed-suggestions and expanded-toolbar states.
 - [ ] W3.3 Add `VoiceStripView` as a fourth child of `res/layout/strip_container.xml`, alongside `suggestion_strip_view` / `emoji_tab_strip` / `clipboard_strip`. Voice is a mode of the existing row, not a new bar.

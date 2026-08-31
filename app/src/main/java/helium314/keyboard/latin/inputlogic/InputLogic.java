@@ -2448,7 +2448,10 @@ public final class InputLogic {
         long startTimeMillis = 0;
         if (DebugFlags.DEBUG_ENABLED) {
             startTimeMillis = SystemClock.elapsedRealtime();
-            Log.d(TAG, "commitChosenWord() : [" + chosenWord + "]");
+            // SuperVoiceBoard: never log user content (PLAN.md §3.4). HeliBoard's
+            // own log buffer is exportable from the about screen, so a
+            // debug-gated word is still a word that leaves the device.
+            Log.d(TAG, "commitChosenWord() : word of length " + chosenWord.length());
         }
         // essentially reverted https://github.com/lineageos/android_packages_inputmethods_LatinIME/commit/ee6de1466bc98e27bd414c9a7451f2aee3f9e721
         // can't find any drawback (performance, neither when setting nor when reading)
@@ -2469,7 +2472,8 @@ public final class InputLogic {
             long runTimeMillis = SystemClock.elapsedRealtime() - startTimeMillis;
             Log.d(TAG, "commitChosenWord() : " + runTimeMillis + " ms to run "
                     + "Connection.getNgramContextFromNthPreviousWord()");
-            Log.d(TAG, "commitChosenWord() : NgramContext = " + ngramContext);
+            // SuperVoiceBoard: never log user content (PLAN.md §3.4).
+            Log.d(TAG, "commitChosenWord() : ngram context withheld");
             startTimeMillis = SystemClock.elapsedRealtime();
         }
         mConnection.commitText(chosenWordWithSuggestions, 1);

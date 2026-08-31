@@ -110,7 +110,8 @@ public class ContactsBinaryDictionary extends ExpandableBinaryDictionary
                 int end = ContactsDictionaryUtils.getWordEndPosition(name, len, i);
                 String word = name.substring(i, end);
                 if (DEBUG_DUMP) {
-                    Log.d(TAG, "addName word = " + word);
+                    // SuperVoiceBoard: never log user content (PLAN.md §3.4).
+                    Log.d(TAG, "addName word of length " + word.length());
                 }
                 i = end - 1;
                 // Don't add single letter words, possibly confuses
@@ -118,7 +119,8 @@ public class ContactsBinaryDictionary extends ExpandableBinaryDictionary
                 final int wordLen = StringUtils.codePointCount(word);
                 if (wordLen <= MAX_WORD_LENGTH && wordLen > 1) {
                     if (DEBUG) {
-                        Log.d(TAG, "addName " + name + ", " + word + ", "  + ngramContext);
+                        // SuperVoiceBoard: never log user content (PLAN.md §3.4).
+                        Log.d(TAG, "addName with ngram context");
                     }
                     runGCIfRequiredLocked(true /* mindsBlockByGC */);
                     addUnigramLocked(word, ContactsDictionaryConstants.FREQUENCY_FOR_CONTACTS,

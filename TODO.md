@@ -27,11 +27,11 @@
 - [x] W4.4 Force-endpoint the session on any touch outside the keyboard.
 - [x] W5.1 Mount `AiFixController` as a pinned toolbar key using HeliBoard's existing toolbar-key mechanism.
 - [x] W5.2 Attribution UI for refined text — the user must be able to see what the model changed.
-- [ ] W6.1 Privacy audit of the whole fork against the never-log-user-content rule, including everything inherited from HeliBoard.
-- [ ] W6.2 Measure and record the ≤60MB typing-only IME memory budget and APK size on the real fork.
-- [ ] W6.3 Hold-to-talk + release-to-send, shipped alongside tap-to-toggle, never replacing it.
-- [ ] W6.4 Mic long-press → session-scoped raw dictation (no cleanup, no refinement).
-- [ ] W6.5 Adaptive endpointing, re-scoped after W6.3 lands.
+- [x] W6.1 Privacy audit of the whole fork against the never-log-user-content rule, including everything inherited from HeliBoard.
+- [x] W6.2 Measure and record the ≤60MB typing-only IME memory budget and APK size on the real fork.
+- [x] W6.3 Hold-to-talk + release-to-send, shipped alongside tap-to-toggle, never replacing it.
+- [x] W6.4 Mic long-press → session-scoped raw dictation (no cleanup, no refinement).
+- [x] W6.5 Adaptive endpointing, re-scoped after W6.3 lands.
 - [ ] W7.1 Transcript normalization + two-model alignment + per-word confidence. Gate: measured disagreement precision against a hand-labeled 200+ utterance corpus, published either way. Cancelled if it lands below ~70%.
 - [ ] W7.2 Spoken-format intelligence — times, money, dates, spoken email addresses. After W7.1; must run before `ContentGuard`.
 - [ ] W7.3 Opt-in, content-free telemetry: send-ready rate, time-to-send-ready.

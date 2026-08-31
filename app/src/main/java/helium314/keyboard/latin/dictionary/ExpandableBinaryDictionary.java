@@ -297,7 +297,8 @@ abstract public class ExpandableBinaryDictionary extends Dictionary {
             runGCIfRequiredLocked(true /* mindsBlockByGC */);
             if (!binaryDictionary.removeUnigramEntry(word)) {
                 if (DEBUG) {
-                    Log.i(TAG, "Cannot remove unigram entry: " + word);
+                    // SuperVoiceBoard: never log user content (PLAN.md §3.4).
+                    Log.i(TAG, "cannot remove a unigram entry");
                 }
             }
         });
@@ -323,7 +324,8 @@ abstract public class ExpandableBinaryDictionary extends Dictionary {
         if (!mBinaryDictionary.addNgramEntry(ngramContext, word, frequency, timestamp)) {
             if (DEBUG) {
                 Log.i(TAG, "Cannot add n-gram entry.");
-                Log.i(TAG, "  NgramContext: " + ngramContext + ", word: " + word);
+                // SuperVoiceBoard: never log user content (PLAN.md §3.4).
+                Log.i(TAG, "  ngram context and word withheld");
             }
         }
     }

@@ -784,6 +784,15 @@ public class LatinIME extends InputMethodService implements
                 toggleVoiceInput();
                 return kotlin.Unit.INSTANCE;
             });
+            // SuperVoiceBoard: hold-to-talk and its raw variant (W6.3/W6.4).
+            mSuggestionStripView.setOnMicHoldStart((raw) -> {
+                voiceController().startHold(raw);
+                return kotlin.Unit.INSTANCE;
+            });
+            mSuggestionStripView.setOnMicHoldEnd(() -> {
+                voiceController().endHold();
+                return kotlin.Unit.INSTANCE;
+            });
         }
         // SuperVoiceBoard: the fix key can live in the toolbar, pinned to the
         // strip, or both; the controller finds every copy under this root.

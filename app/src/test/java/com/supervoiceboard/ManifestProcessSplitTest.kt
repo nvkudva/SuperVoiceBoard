@@ -57,8 +57,10 @@ class ManifestProcessSplitTest {
 
     @Test
     fun `every network-touching component runs in the ui process`() {
+        // ModelDownloadService is a scheduling object, not a Service: the download
+        // itself runs in a WorkManager worker, and WorkManager's own foreground
+        // service is the component that has to be pinned.
         val networked = listOf(
-            "com.vboard.app.models.ModelDownloadService",
             "androidx.work.impl.foreground.SystemForegroundService",
         )
         for (name in networked) {

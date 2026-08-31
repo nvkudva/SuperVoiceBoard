@@ -55,6 +55,12 @@ class VoiceController(
     /** The app being dictated into, captured when the session starts (W4.3). */
     private var sessionPackage: String? = null
 
+    /** True while a press-and-hold owns the session; release ends it (W6.3). */
+    private var holdScoped = false
+
+    /** Session-scoped raw dictation: no cleanup, no refinement (W6.4). */
+    private var rawForSession = false
+
     /**
      * An utterance whose input connection died before the final pass returned.
      * In memory only, replayed into the next editor of the same app and nowhere
@@ -125,15 +131,48 @@ class VoiceController(
         if (isActive) session.stopAndFinalize() else start()
     }
 
+    /**
+     * W6.3: press-and-hold started. Release ends the utterance and sends it, so
+     * the session is marked as hold-scoped; a tap-started session is not.
+     *
+     * W6.4: [raw] is the deeper hold — this session bypasses cleanup and
+     * refinement entirely and types what was heard, verbatim. It is scoped to
+     * this session only; the setting is not touched.
+     */
+    fun startHold(raw: Boolean) {
+        if (raw) {
+            // The hold escalated mid-session: keep listening, drop the cleanup.
+            rawForSession = true
+            if (isActive) return
+        }
+        holdScoped = true
+        // W6.5: the finger is the endpoint while it is down.
+        session.setEndpointingEnabled(false)
+        start()
+    }
+
+    /** W6.3: the finger lifted — finalize and send what was said. */
+    fun endHold() {
+        if (!holdScoped) return
+        holdScoped = false
+        session.setEndpointingEnabled(true)
+        if (isActive) session.stopAndFinalize()
+    }
+
     fun start() {
         if (!fieldKind.allowsVoice) return
+        if (!holdScoped) session.setEndpointingEnabled(true)
         isActive = true
         sessionPackage = ime.currentInputEditorInfo?.packageName
         commits.clear()
         strip?.reset()
         onSessionUiStarted?.invoke()
         strip?.announceSessionStarted()
-        session.startSession(fieldKind, runtime.settings.snapshot())
+        val settings = runtime.settings.snapshot().let {
+            // W6.4: a raw hold overrides the settings for this session only.
+            if (rawForSession) it.copy(rawTranscriptMode = true, llmRefineEnabled = false) else it
+        }
+        session.startSession(fieldKind, settings)
     }
 
     fun cancel() {
@@ -216,6 +255,8 @@ class VoiceController(
 
     override fun onSessionEnded() {
         isActive = false
+        holdScoped = false
+        rawForSession = false
         strip?.announceSessionEnded()
         strip?.reset()
         onSessionUiEnded?.invoke()

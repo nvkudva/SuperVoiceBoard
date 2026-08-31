@@ -148,6 +148,21 @@ class VoiceSessionController(
 
     // ------------------------------------------------------------ public API
 
+    /**
+     * W6.5: silence does not end an utterance while the user is holding the mic.
+     *
+     * The re-scope W6.5 asked for: with hold-to-talk (W6.3) the finger *is* the
+     * endpoint signal, and it is a better one than any silence threshold — a
+     * user pausing mid-sentence with the key held is thinking, not finished.
+     * Endpointing stays exactly as it was for tap-to-toggle sessions, where
+     * there is no such signal.
+     */
+    fun setEndpointingEnabled(enabled: Boolean) {
+        endpointingEnabled = enabled
+    }
+
+    private var endpointingEnabled = true
+
     fun startSession(fieldKind: FieldKind, settings: SettingsSnapshot) {
         // A rapid second tap must not leave the first session's preparation or
         // microphone running: that produced two live AudioRecords feeding two
@@ -429,7 +444,10 @@ class VoiceSessionController(
                 // being rewritten in their text field).
                 withContext(Dispatchers.Main.immediate) { dispatch(Event.Partial(partial)) }
             }
-            if (streaming.isEndpoint()) {
+            // W6.5: while the mic key is held, a silence endpoint is ignored —
+            // the release is the endpoint. The recognizer's own hard length cap
+            // still applies, so a stuck key cannot record forever.
+            if (streaming.isEndpoint() && endpointingEnabled) {
                 lastPartial = ""
                 withContext(Dispatchers.Main.immediate) {
                     val wasListening = machine.state is DictationStateMachine.State.Listening

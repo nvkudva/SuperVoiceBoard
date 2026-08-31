@@ -358,3 +358,56 @@ most of the time trains people to ignore it. Long-pressing the fix key lists the
 lines. Mechanical edits (casing, spacing, a doubled word) are deliberately not
 listed: they are visible at a glance and attributing them would bury the changes
 that matter.
+
+## W6 measurements — 2026-08-31
+
+Measured on an Android 15 emulator (arm64), release build, R8 on.
+
+**IME process memory, typing only: 40.1 MB PSS** (budget ≤60MB, §3.4). Measured
+with `dumpsys meminfo` while typing into a search field with no voice session
+started; only the keyboard process existed — `:ui` and `:llm` had never been
+spawned, which is the point of the split.
+
+**APK size**: 88 MB universal, **37 MB arm64-v8a**, 35 MB armeabi-v7a, 39 MB
+x86/x86_64. HeliBoard's own build is ~21 MB; the difference is ~31 MB of native
+code per ABI from sherpa-onnx (ONNX Runtime) and MediaPipe. Release builds are
+therefore split per ABI (W6.2), so a phone downloads one architecture. Voice
+models are not in the APK at all — they are downloaded.
+
+### R19 — 2026-08-31: privacy audit findings (W6.1)
+
+The fork's own code was clean: every log line in `:voice`, `:llm` and
+`helium314/keyboard/voice` carries ids, counts, durations or enum names, never
+text. HeliBoard's inherited code was not, and its `Log` wrapper keeps an
+in-memory buffer that the about screen can export to a file, so a debug-gated
+log line is still a line that leaves the device. Ten call sites were rewritten
+to log a length or nothing at all: the committed word and its ngram context in
+`InputLogic`, the composing-text read-back in `RichInputConnection`, the
+normalized-score line in `AutoCorrectionUtils`, and contact/app names plus
+dictionary words in `AppsBinaryDictionary`, `ContactsBinaryDictionary` and
+`ExpandableBinaryDictionary`.
+
+### R20 — 2026-08-31: hold-to-talk, raw hold, and what W6.5 became
+
+Tap-to-toggle is unchanged; a press held past 350ms becomes hold-to-talk and the
+release sends (W6.3). Holding past 1.2s escalates to raw dictation for that
+session only — no cleanup, no refinement, no setting touched (W6.4).
+
+W6.5's "adaptive endpointing" is re-scoped to exactly this: while the key is
+held, a silence endpoint is ignored, because the finger is a better endpoint
+signal than any threshold — a user pausing mid-sentence with the key down is
+thinking, not finished. Tap-started sessions keep the existing 0.8s/2.4s rules,
+and the recognizer's hard length cap still applies in both, so a stuck key
+cannot record forever. No learned or per-user thresholds: that would need
+measurement we have not done, and this gets the benefit without it.
+
+### R21 — 2026-08-31: three releases shipped a stale APK
+
+`assembleRelease` had been failing at `lintVitalRelease` (a manifest `<service>`
+entry for `ModelDownloadService`, which is an object, not a Service) and at R8
+(MediaPipe's AutoValue/protobuf annotations needed `-dontwarn`). The release job
+piped gradle through `tail`, so the pipeline's exit status was `tail`'s and the
+failure was invisible; v0.2.0-w2, v0.3.0-w3 and v0.4.0-w4 were published with the
+W0 baseline APK attached. Those assets have been deleted and each release now
+says so. Both build failures are fixed, and release builds are checked by exit
+status rather than by reading the tail of a log.

@@ -90,7 +90,14 @@ android {
             }
             variant.outputs.forEach { output ->
                 if (output is com.android.build.api.variant.impl.VariantOutputImpl) {
-                    output.outputFileName = "SuperVoiceBoard_${defaultConfig.versionName}-${variant.buildType}.apk"
+                    // SuperVoiceBoard: ABI splits mean several outputs per variant,
+                    // so the ABI goes in the name; the universal APK has none.
+                    val abi = output.filters
+                        .firstOrNull { it.filterType == com.android.build.api.variant.FilterConfiguration.FilterType.ABI }
+                        ?.identifier
+                    val suffix = if (abi == null) "universal" else abi
+                    output.outputFileName =
+                        "SuperVoiceBoard_${defaultConfig.versionName}-${variant.buildType}-$suffix.apk"
                 }
             }
         }
@@ -108,6 +115,19 @@ android {
         }
     }
     ndkVersion = "28.0.13004108"
+
+    // SuperVoiceBoard: the ASR and refiner runtimes bring ~31 MB of native code
+    // per ABI, which turns a 21 MB universal APK into a 93 MB one. Release builds
+    // are split per ABI so a phone downloads one architecture, not four; the
+    // universal APK is still produced for anyone who wants it (W6.2).
+    splits {
+        abi {
+            isEnable = true
+            reset()
+            include("armeabi-v7a", "arm64-v8a", "x86", "x86_64")
+            isUniversalApk = true
+        }
+    }
 
     packaging {
         jniLibs {

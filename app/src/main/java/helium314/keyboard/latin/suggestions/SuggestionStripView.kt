@@ -18,6 +18,7 @@ import android.util.TypedValue
 import android.view.GestureDetector
 import android.view.GestureDetector.SimpleOnGestureListener
 import android.view.LayoutInflater
+import android.view.HapticFeedbackConstants
 import android.view.MotionEvent
 import android.view.View
 import android.view.View.OnLongClickListener
@@ -127,6 +128,16 @@ class SuggestionStripView(context: Context, attrs: AttributeSet?, defStyle: Int)
 
     /** Set by LatinIME; null until the IME has built its voice controller. */
     var onMicClick: (() -> Unit)? = null
+
+    /**
+     * SuperVoiceBoard (W6.3/W6.4): press-and-hold on the mic.
+     *
+     * `onMicHoldStart` fires once the press has lasted long enough to be a hold
+     * rather than a tap, `onMicHoldEnd` when the finger lifts. Tap-to-toggle is
+     * untouched: a short press still goes through [onMicClick].
+     */
+    var onMicHoldStart: ((raw: Boolean) -> Unit)? = null
+    var onMicHoldEnd: (() -> Unit)? = null
     private val incognitoIcon = KeyboardIconsSet.instance.getNewDrawable(ToolbarKey.INCOGNITO.name, context)
     private val toolbarArrowIcon = KeyboardIconsSet.instance.getNewDrawable(KeyboardIconsSet.NAME_TOOLBAR_KEY, context)
     private val defaultToolbarBackground: Drawable = toolbarExpandKey.background
@@ -157,6 +168,7 @@ class SuggestionStripView(context: Context, attrs: AttributeSet?, defStyle: Int)
         colors.setColor(micKey, ColorType.TOOL_BAR_KEY)
         colors.setBackground(micKey, ColorType.STRIP_BACKGROUND)
         micKey.setOnClickListener { onMicClick?.invoke() }
+        setUpMicHold()
 
         // background indicator for pinned keys
         val color = colors.get(ColorType.TOOL_BAR_KEY_ENABLED_BACKGROUND) or -0x1000000 // ignore alpha (in Java this is more readable 0xFF000000)
@@ -515,6 +527,53 @@ class SuggestionStripView(context: Context, attrs: AttributeSet?, defStyle: Int)
         }
     }
 
+    /**
+     * Hold-to-talk, shipped alongside tap-to-toggle rather than replacing it
+     * (W6.3), and its long-press variant: holding past the raw threshold starts
+     * a session-scoped raw dictation with no cleanup and no refinement (W6.4).
+     */
+    @SuppressLint("ClickableViewAccessibility") // the click listener above is the accessible path
+    private fun setUpMicHold() {
+        var holding = false
+        var raw = false
+        val startHold = Runnable {
+            holding = true
+            micKey.isPressed = true
+            micKey.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS)
+            onMicHoldStart?.invoke(false)
+        }
+        val escalateToRaw = Runnable {
+            if (!holding) return@Runnable
+            raw = true
+            micKey.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS)
+            onMicHoldStart?.invoke(true)
+        }
+        micKey.setOnTouchListener { view, event ->
+            when (event.actionMasked) {
+                MotionEvent.ACTION_DOWN -> {
+                    holding = false
+                    raw = false
+                    view.postDelayed(startHold, MIC_HOLD_MS)
+                    view.postDelayed(escalateToRaw, MIC_RAW_HOLD_MS)
+                    false // let the click listener see a short press
+                }
+                MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+                    view.removeCallbacks(startHold)
+                    view.removeCallbacks(escalateToRaw)
+                    if (holding) {
+                        micKey.isPressed = false
+                        onMicHoldEnd?.invoke()
+                        holding = false
+                        true // consumed: a hold must not also fire the tap
+                    } else {
+                        false
+                    }
+                }
+                else -> false
+            }
+        }
+    }
+
     fun updateVoiceKey() {
         val show = Settings.getValues().mShowsVoiceInputKey
         toolbar.findViewWithTag<View>(ToolbarKey.VOICE)?.isVisible = show
@@ -570,6 +629,12 @@ class SuggestionStripView(context: Context, attrs: AttributeSet?, defStyle: Int)
         @JvmField
         var DEBUG_SUGGESTIONS = false
         private const val DEBUG_INFO_TEXT_SIZE_IN_DIP = 6.5f
+
+        // SuperVoiceBoard: a press is a hold past this, and raw dictation past
+        // the second one. Both are deliberately longer than the system's
+        // long-press timeout, which fires while a user is still deciding.
+        private const val MIC_HOLD_MS = 350L
+        private const val MIC_RAW_HOLD_MS = 1_200L
         private val TAG = SuggestionStripView::class.java.simpleName
     }
 }

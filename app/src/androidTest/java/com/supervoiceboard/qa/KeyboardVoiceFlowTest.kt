@@ -30,6 +30,9 @@ class KeyboardVoiceFlowTest {
         Qa.makeThisImeCurrent()
         // Whatever the previous case left on screen — a voice row, a dialog —
         // goes away before the field is asked for again.
+        // Whatever the last case left in the foreground — the settings screen
+        // the error row opens, for one — is out of the way before this starts.
+        Qa.shell("input keyevent KEYCODE_HOME")
         Qa.device.pressBack()
         // Never force-stop this package: the instrumentation runs inside it.
         repeat(3) {
@@ -48,6 +51,9 @@ class KeyboardVoiceFlowTest {
     @After
     fun putTheKeyboardAway() {
         Qa.hideKeyboard()
+        // The app under test is a different process, so this is safe, and it
+        // resets an activity stack these cases can leave on the settings screen.
+        Qa.shell("am force-stop ${Qa.appId}")
     }
 
     private fun findField(): UiObject2? =

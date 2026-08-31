@@ -9,12 +9,17 @@ import android.content.Context
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -28,8 +33,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -50,6 +57,7 @@ import helium314.keyboard.latin.utils.previewDark
 import helium314.keyboard.settings.SearchSettingsScreen
 import helium314.keyboard.settings.dialogs.ConfirmationDialog
 import helium314.keyboard.settings.initPreview
+import helium314.keyboard.settings.preferences.PreferenceGroup
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -73,10 +81,15 @@ fun VoiceModelsScreen(
         title = stringResource(R.string.settings_screen_voice_models),
         settings = emptyList(),
     ) {
-        Column(Modifier.verticalScroll(rememberScrollState())) {
+        Column(
+            Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(top = 8.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
             if (runtime == null) {
                 Text(
                     text = stringResource(R.string.voice_models_unavailable),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(16.dp),
                 )
                 return@Column
@@ -96,7 +109,8 @@ fun VoiceModelsScreen(
             Text(
                 text = stringResource(R.string.voice_models_footer),
                 style = MaterialTheme.typography.bodySmall,
-                modifier = Modifier.padding(16.dp),
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(horizontal = 24.dp).padding(top = 4.dp, bottom = 24.dp),
             )
         }
     }
@@ -184,39 +198,73 @@ private fun PackRow(
             },
         )
     }
-    Column(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp)) {
-        Text(pack.displayName, style = MaterialTheme.typography.bodyLarge)
-        Text(
-            text = describe(context, pack, state, queued),
-            style = MaterialTheme.typography.bodySmall,
-        )
-        if (state is PackState.Downloading) {
-            LinearProgressIndicator(
-                progress = { state.fraction.toFloat() },
-                modifier = Modifier.fillMaxWidth().padding(top = 6.dp),
+    PreferenceGroup {
+        Column(
+            Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp),
+            verticalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                // the pack's own state, so a glance down the list reads as a checklist
+                Icon(
+                    painterResource(
+                        if (state is PackState.Installed) R.drawable.ic_setup_check
+                        else R.drawable.ic_settings_voice
+                    ),
+                    null,
+                    Modifier.size(20.dp),
+                    tint = if (state is PackState.Installed) MaterialTheme.colorScheme.primary
+                        else MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Text(
+                    pack.displayName,
+                    style = MaterialTheme.typography.titleSmall,
+                    modifier = Modifier.weight(1f)
+                )
+            }
+            Text(
+                text = describe(context, pack, state, queued),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
-        }
-        message?.let { Text(it, style = MaterialTheme.typography.bodySmall) }
-        Row {
-            when {
-                running || state is PackState.Downloading || state is PackState.Verifying ->
-                    TextButton(onClick = { ModelDownloadService.cancel(context, pack.id) }) {
-                        Text(stringResource(R.string.voice_models_cancel))
-                    }
-                state is PackState.Installed ->
-                    TextButton(onClick = {
-                        scope.launch {
-                            withContext(Dispatchers.IO) { runtime.packInstaller.delete(pack) }
-                            diskState = PackState.NotInstalled
-                            message = null
+            if (state is PackState.Downloading) {
+                LinearProgressIndicator(
+                    progress = { state.fraction.toFloat() },
+                    modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+                )
+            }
+            message?.let {
+                Text(
+                    it,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                when {
+                    running || state is PackState.Downloading || state is PackState.Verifying ->
+                        TextButton(onClick = { ModelDownloadService.cancel(context, pack.id) }) {
+                            Text(stringResource(R.string.voice_models_cancel))
                         }
-                    }) { Text(stringResource(R.string.voice_models_remove)) }
-                else -> {
-                    TextButton(onClick = { requestDownload(meteredConsent = false) }) {
-                        Text(stringResource(R.string.voice_models_download))
-                    }
-                    TextButton(onClick = { importer.launch(arrayOf("*/*")) }) {
-                        Text(stringResource(R.string.voice_models_import))
+                    state is PackState.Installed ->
+                        TextButton(onClick = {
+                            scope.launch {
+                                withContext(Dispatchers.IO) { runtime.packInstaller.delete(pack) }
+                                diskState = PackState.NotInstalled
+                                message = null
+                            }
+                        }) { Text(stringResource(R.string.voice_models_remove)) }
+                    else -> {
+                        // downloading is the expected action; importing is the escape hatch
+                        FilledTonalButton(
+                            onClick = { requestDownload(meteredConsent = false) },
+                            shape = MaterialTheme.shapes.large,
+                        ) { Text(stringResource(R.string.voice_models_download)) }
+                        TextButton(onClick = { importer.launch(arrayOf("*/*")) }) {
+                            Text(stringResource(R.string.voice_models_import))
+                        }
                     }
                 }
             }

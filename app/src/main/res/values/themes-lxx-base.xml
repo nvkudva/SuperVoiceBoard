@@ -23,7 +23,6 @@
     >
         <!-- This should be aligned with KeyboardTheme.THEME_ID_* -->
         <item name="themeId">LXXBase</item>
-        <item name="horizontalGap">@fraction/config_key_horizontal_gap_lxx</item>
     </style>
     <style
         name="KeyboardView.LXX_Base"

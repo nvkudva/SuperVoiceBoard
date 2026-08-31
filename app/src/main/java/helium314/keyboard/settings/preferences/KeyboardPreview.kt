@@ -24,7 +24,6 @@ import helium314.keyboard.keyboard.KeyboardTheme
 import helium314.keyboard.keyboard.KeyboardView
 import helium314.keyboard.latin.R
 import helium314.keyboard.latin.RichInputMethodSubtype
-import helium314.keyboard.latin.suggestions.SuggestionStripView
 import helium314.keyboard.latin.settings.Settings
 import helium314.keyboard.latin.utils.Log
 import helium314.keyboard.latin.utils.ResourceUtils
@@ -98,12 +97,13 @@ private fun buildPreview(context: Context, widthPx: Int): View? = runCatching {
 }.getOrNull()
 
 /**
- * The suggestion strip with its toolbar showing, as the keyboard's top row. The strip
- * builds its own toolbar keys from prefs in its init, so it needs no listener here.
+ * The suggestion strip as the keyboard's top row. It builds its own toolbar keys from
+ * prefs in its init, so it needs no listener — and it is left in whatever mode the user
+ * configured rather than forced open, so the preview shows the strip they will actually
+ * get (in the default Expandable mode, the expand key and the pinned keys).
  */
 private fun stripView(themeContext: Context): View? = runCatching {
     LayoutInflater.from(themeContext).inflate(R.layout.strip_container, null).apply {
-        findViewById<SuggestionStripView>(R.id.suggestion_strip_view)?.setToolbarVisibility(true)
         layoutParams = LinearLayout.LayoutParams(
             LinearLayout.LayoutParams.MATCH_PARENT,
             themeContext.resources.getDimensionPixelSize(R.dimen.config_suggestions_strip_height)

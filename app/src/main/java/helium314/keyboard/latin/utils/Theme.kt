@@ -52,18 +52,18 @@ private val AppTypography = Typography(
         fontWeight = FontWeight.SemiBold, letterSpacing = (-0.2).sp),
     titleMedium = TextStyle(fontFamily = SystemFont, fontSize = 16.sp, lineHeight = 24.sp,
         fontWeight = FontWeight.SemiBold, letterSpacing = 0.1.sp),
-    titleSmall = TextStyle(fontFamily = SystemFont, fontSize = 14.sp, lineHeight = 20.sp,
+    titleSmall = TextStyle(fontFamily = SystemFont, fontSize = 14.sp, lineHeight = 19.sp,
         fontWeight = FontWeight.SemiBold, letterSpacing = 0.1.sp),
 
     // bodyLarge is the preference name, bodyMedium the description underneath it
-    bodyLarge = TextStyle(fontFamily = SystemFont, fontSize = 16.sp, lineHeight = 24.sp,
+    bodyLarge = TextStyle(fontFamily = SystemFont, fontSize = 15.sp, lineHeight = 21.sp,
         fontWeight = FontWeight.Normal, letterSpacing = 0.15.sp),
-    bodyMedium = TextStyle(fontFamily = SystemFont, fontSize = 14.sp, lineHeight = 20.sp,
+    bodyMedium = TextStyle(fontFamily = SystemFont, fontSize = 13.sp, lineHeight = 18.sp,
         fontWeight = FontWeight.Normal, letterSpacing = 0.2.sp),
     bodySmall = TextStyle(fontFamily = SystemFont, fontSize = 12.sp, lineHeight = 16.sp,
         fontWeight = FontWeight.Normal, letterSpacing = 0.3.sp),
 
-    labelLarge = TextStyle(fontFamily = SystemFont, fontSize = 14.sp, lineHeight = 20.sp,
+    labelLarge = TextStyle(fontFamily = SystemFont, fontSize = 13.sp, lineHeight = 18.sp,
         fontWeight = FontWeight.Medium, letterSpacing = 0.1.sp),
     labelMedium = TextStyle(fontFamily = SystemFont, fontSize = 12.sp, lineHeight = 16.sp,
         fontWeight = FontWeight.Medium, letterSpacing = 0.4.sp),

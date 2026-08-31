@@ -41,7 +41,7 @@ fun PreferenceCategory(
 ) {
     Text(
         text = title,
-        modifier = modifier.padding(top = 24.dp, start = 16.dp, end = 16.dp, bottom = 8.dp),
+        modifier = modifier.padding(top = 16.dp, start = 16.dp, end = 16.dp, bottom = 6.dp),
         color = MaterialTheme.colorScheme.primary,
         style = MaterialTheme.typography.labelLarge
     )
@@ -61,7 +61,7 @@ fun PreferenceGroup(
         shape = MaterialTheme.shapes.large,
         color = MaterialTheme.colorScheme.surfaceContainer,
     ) {
-        Column(Modifier.padding(vertical = 4.dp), content = content)
+        Column(Modifier.padding(vertical = 2.dp), content = content)
     }
 }
 
@@ -78,8 +78,8 @@ fun Preference(
         modifier = modifier
             .fillMaxWidth()
             .clickable { onClick() }
-            .heightIn(min = 56.dp)
-            .padding(vertical = 12.dp, horizontal = 16.dp),
+            .heightIn(min = 48.dp)
+            .padding(vertical = 8.dp, horizontal = 16.dp),
         horizontalArrangement = Arrangement.spacedBy(16.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {

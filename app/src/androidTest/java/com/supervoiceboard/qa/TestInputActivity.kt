@@ -17,7 +17,6 @@ class TestInputActivity : Activity() {
         super.onCreate(savedInstanceState)
         input = EditText(this).apply {
             id = FIELD_ID
-            hint = "qa input"
             layoutParams = LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT,

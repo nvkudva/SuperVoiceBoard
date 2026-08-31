@@ -168,3 +168,38 @@ new foreground mark, so it stays a derivative work under CC-BY-SA-4.0 and the
 attribution stays. Only the *base* `values/strings.xml` was rebranded; the ~100
 translated `values-*/strings.xml` still say "HeliBoard Spell Checker" in their
 own languages and are deliberately left for upstream to carry.
+
+### R3 — 2026-08-31: `:core` keeps the `com.vboard.core` package (W1.1)
+
+The module is ported verbatim, package names included. Renaming to
+`com.supervoiceboard.core` would touch all 78 files and every test on the way
+in, which is exactly the diff W1.1 exists to avoid — the point of the gate is
+that the tests pass *unchanged*. The Gradle module is `:core` and its build file
+is rewritten (SuperVoiceBoard has no version catalog; versions are literal).
+A rename, if wanted, is a separate mechanical commit after the module is wired.
+
+### R4 — 2026-08-31: W1.2 and W1.3 arrived already fixed; closed with tests
+
+VBoard's TODO listed both `ClipClassifier` defects as open, but the source we
+ported already carries the fixes: `DIGIT_RUN_PATTERN`'s separator class is
+`[\p{Zs}\p{Pd}]` and the card rule reads the invisible-stripped text. What was
+missing was coverage, so the fix could silently regress. Regression tests now
+pin both shapes — NBSP/narrow-NBSP/thin-space/en-dash/em-dash grouping, a card
+carrying ZWSP/ZWNJ/BOM/soft-hyphen, and cards and OTPs written in Arabic-Indic
+digits.
+
+Writing them found one real gap: U+2212 MINUS SIGN is category Sm, not Pd, so a
+card grouped with it evaded Luhn. It is now listed explicitly in the separator
+class. This is the only change to ported `:core` logic besides W1.4.
+
+### R5 — 2026-08-31: VB-QA-05 idempotency closed (W1.4)
+
+`clean("scratch that scratch that")` used to render the text "Scratch that";
+cleaning that output fired SCRATCH_THAT, and on the VB-124 double-cleanup
+fallback path that deletes an utterance the user already committed. The
+utterance command is now re-detected after the repetition-collapse stage, gated
+on `repetitionsCollapsed > 0` so that a stage-3 spoken-punctuation conversion
+("scratch that period") can never turn dictated words into a command. The
+`@Disabled` test in `CleanupPropertyTest` is enabled and `QaRegressionPinTest`'s
+pin is inverted to assert the fixed behaviour. `:core` now has 795 tests, 0
+failures, 0 ignored.

@@ -5,10 +5,10 @@
 - [x] W0.3 Baseline gate: `./gradlew assembleDebug` green, install on a device or emulator, confirm typing/glide/emoji/clipboard all work before a single line is changed. (glide not verified: needs the closed-source gesture library, absent from this build)
 - [x] W0.4 GPL-3.0 compliance pass: keep all upstream LICENSE files, add HeliBoard + AOSP attribution to README and the about screen, confirm SPDX headers survive on every file touched.
 - [x] W0.5 CI: port VBoard's `.github/workflows/ci.yml` (build + unit tests + lint) to this repo.
-- [ ] W1.1 Copy VBoard `core/` in verbatim as a `:core` Gradle module (pure Kotlin, coroutines only, no Android deps). Wire nothing yet. Gate: all `:core` tests pass in this repo unchanged.
-- [ ] W1.2 Carry over VBoard's one open `:core` defect — `ClipClassifier`'s payment-card rule reads raw text instead of classifying by code point.
-- [ ] W1.3 Carry over VBoard's other open `:core` defect — `DIGIT_RUN_PATTERN`'s separator class is still ASCII-only.
-- [ ] W1.4 VB-QA-05 idempotency: the one remaining `@Disabled` test in `:core`, in `CleanupPropertyTest`.
+- [x] W1.1 Copy VBoard `core/` in verbatim as a `:core` Gradle module (pure Kotlin, coroutines only, no Android deps). Wire nothing yet. Gate: all `:core` tests pass in this repo unchanged.
+- [x] W1.2 Carry over VBoard's one open `:core` defect — `ClipClassifier`'s payment-card rule reads raw text instead of classifying by code point.
+- [x] W1.3 Carry over VBoard's other open `:core` defect — `DIGIT_RUN_PATTERN`'s separator class is still ASCII-only.
+- [x] W1.4 VB-QA-05 idempotency: the one remaining `@Disabled` test in `:core`, in `CleanupPropertyTest`.
 - [ ] W2.1 New `:voice` module: port `app/voice/AsrEngines.kt` and `VoiceSessionController.kt` from VBoard, keeping them IME-agnostic (no reference to any View).
 - [ ] W2.2 Port `app/models/` (download, storage, lifecycle) into `:voice`; the download path must run in the `:ui` process.
 - [ ] W2.3 Manifest: add `RECORD_AUDIO`, and add `INTERNET` scoped so only the `:ui` process can use it. Add an audit test asserting the IME process never gets INTERNET.

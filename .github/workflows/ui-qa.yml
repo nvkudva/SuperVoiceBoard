@@ -63,6 +63,35 @@ jobs:
             adb pull /sdcard/Android/data/com.supervoiceboard.app.debug/files/ui-qa ui-qa-screenshots || true
             exit ${FAILED:-0}
 
+      # The per-test verdicts, in the job log — the artifacts are not always
+      # reachable from where these runs get read.
+      - name: UI QA summary
+        if: always()
+        run: |
+          python3 - <<'PY'
+          import glob, xml.etree.ElementTree as ET
+          files = glob.glob("app/build/outputs/androidTest-results/**/*.xml", recursive=True)
+          if not files:
+              print("no instrumentation results were produced")
+              raise SystemExit(0)
+          total = failed = 0
+          for f in files:
+              for case in ET.parse(f).getroot().iter("testcase"):
+                  total += 1
+                  bad = case.find("failure") is not None or case.find("error") is not None
+                  name = f"{case.get('classname','').rsplit('.',1)[-1]}.{case.get('name')}"
+                  if bad:
+                      failed += 1
+                      node = case.find("failure") if case.find("failure") is not None else case.find("error")
+                      first = (node.text or "").strip().splitlines()[:3]
+                      print(f"FAIL {name}")
+                      for line in first:
+                          print(f"     {line}")
+                  else:
+                      print(f"pass {name}")
+          print(f"--- {total} tests, {failed} failed")
+          PY
+
       - name: Upload UI QA reports
         if: always()
         uses: actions/upload-artifact@v4

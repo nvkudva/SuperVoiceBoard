@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- SuperVoiceBoard: UI QA only. Merged into the test APK, never into the app. -->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <application>
+        <!-- A plain text field to focus so the keyboard actually comes up. -->
+        <activity
+            android:name="com.supervoiceboard.qa.TestInputActivity"
+            android:exported="true"
+            android:label="UI QA input"
+            android:windowSoftInputMode="stateAlwaysVisible|adjustResize" />
+    </application>
+
+</manifest>

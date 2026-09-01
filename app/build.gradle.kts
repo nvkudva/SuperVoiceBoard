@@ -22,6 +22,8 @@ android {
             abiFilters.addAll(listOf("armeabi-v7a", "arm64-v8a", "x86", "x86_64"))
         }
         proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+        // SuperVoiceBoard: the emulator UI QA suite (app/src/androidTest)
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
     // SuperVoiceBoard: release builds must be installable. The keystore lives
@@ -38,6 +40,10 @@ android {
             }
         }
     }
+
+    // SuperVoiceBoard: the UI QA suite runs against debugNoMinify — "debug" here
+    // is minified, and R8 renames the very things the tests look for.
+    testBuildType = "debugNoMinify"
 
     buildTypes {
         release {
@@ -202,4 +208,14 @@ dependencies {
     testImplementation("org.robolectric:robolectric:4.16.1")
     testImplementation("androidx.test:runner:1.7.0")
     testImplementation("androidx.test:core:1.7.0")
+
+    // SuperVoiceBoard: on-device UI QA. Compose for the settings surface,
+    // UiAutomator for the keyboard itself, which lives in another window.
+    androidTestImplementation(platform("androidx.compose:compose-bom:2025.11.01"))
+    androidTestImplementation("androidx.compose.ui:ui-test-junit4")
+    androidTestImplementation("androidx.test.ext:junit:1.3.0")
+    androidTestImplementation("androidx.test:runner:1.7.0")
+    androidTestImplementation("androidx.test:rules:1.7.0")
+    androidTestImplementation("androidx.test.uiautomator:uiautomator:2.3.0")
+    androidTestImplementation("androidx.test.espresso:espresso-core:3.7.0")
 }

@@ -1,0 +1,108 @@
+# SuperVoiceBoard: UI QA on a real emulator. Covers the settings surface and the
+# keyboard's own flows, which no JVM/Robolectric test can reach.
+name: UI QA
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ["claude/**"]
+
+concurrency:
+  group: ui-qa-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ui-qa:
+    name: Instrumented UI flows (API ${{ matrix.api }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        api: [34]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+      - uses: gradle/actions/setup-gradle@v4
+
+      # ubuntu-latest runners expose /dev/kvm but not to the runner user.
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' \
+            | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      # The NDK build floods the log with warnings; drop them so a Kotlin or
+      # resource error is actually findable in the job output.
+      - name: Assemble app + test APKs
+        run: |
+          set -o pipefail
+          ./gradlew :app:assembleDebugNoMinify :app:assembleDebugNoMinifyAndroidTest --no-daemon 2>&1 \
+            | grep -vE '^C/C\+\+:|^\s+\||warning:' | tail -120
+
+      - name: Run UI QA suite
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: ${{ matrix.api }}
+          target: google_apis
+          arch: x86_64
+          profile: pixel_6
+          ram-size: 4096M
+          disable-animations: true
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          # adb only exists on PATH inside this action, so the screenshots are
+          # pulled here rather than in a later step.
+          script: |
+            adb shell settings put secure long_press_timeout 1500
+            ./gradlew :app:connectedDebugNoMinifyAndroidTest --no-daemon || FAILED=1
+            mkdir -p ui-qa-screenshots
+            adb pull /sdcard/Download/ui-qa ui-qa-screenshots || true
+            exit ${FAILED:-0}
+
+      # The per-test verdicts, in the job log — the artifacts are not always
+      # reachable from where these runs get read.
+      - name: UI QA summary
+        if: always()
+        run: |
+          python3 - <<'PY'
+          import glob, xml.etree.ElementTree as ET
+          files = glob.glob("app/build/outputs/androidTest-results/**/*.xml", recursive=True)
+          if not files:
+              print("no instrumentation results were produced")
+              raise SystemExit(0)
+          total = failed = 0
+          for f in files:
+              for case in ET.parse(f).getroot().iter("testcase"):
+                  total += 1
+                  bad = case.find("failure") is not None or case.find("error") is not None
+                  name = f"{case.get('classname','').rsplit('.',1)[-1]}.{case.get('name')}"
+                  if bad:
+                      failed += 1
+                      node = case.find("failure") if case.find("failure") is not None else case.find("error")
+                      detail = (node.text or "").strip() or (node.get("message") or "").strip()
+                      first = detail.splitlines()[:3]
+                      why = first[0] if first else "no detail"
+                      print(f"FAIL {name}")
+                      for line in first:
+                          print(f"     {line}")
+                      # An annotation, so the verdict is readable from the API.
+                      print(f"::error title=UI QA::{name} :: {why}"[:900])
+                  else:
+                      print(f"pass {name}")
+          print(f"--- {total} tests, {failed} failed")
+          raise SystemExit(1 if failed else 0)
+          PY
+
+      - name: Upload UI QA reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ui-qa-reports-api${{ matrix.api }}
+          path: |
+            app/build/reports/androidTests/
+            app/build/outputs/androidTest-results/
+            ui-qa-screenshots/

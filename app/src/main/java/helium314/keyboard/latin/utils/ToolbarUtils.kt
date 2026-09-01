@@ -133,19 +133,23 @@ enum class ToolbarMode {
 
 val toolbarKeyStrings = entries.associateWithTo(EnumMap(ToolbarKey::class.java)) { it.toString().lowercase(Locale.US) }
 
+// SuperVoiceBoard: the mic lives in the suggestion strip itself and is always
+// visible there, so a toolbar VOICE key could only ever be a second mic icon.
+private val hiddenToolbarKeys = setOf(VOICE)
+
 val defaultToolbarPref by lazy {
     // SuperVoiceBoard: AI_FIX is on by default — it is the fork's reason to exist,
-    // and a key nobody can find is a feature nobody has (W5.1). It and VOICE sit at
-    // the end, so in LTR they land under the thumb on the right, with VOICE outermost.
+    // and a key nobody can find is a feature nobody has (W5.1). It sits at the end,
+    // so in LTR it lands under the thumb on the right.
     // LEFT/RIGHT are off by default: single-character cursor nudges earn their place
     // on few keyboards, and the arrow keys remain one toggle away in settings.
-    val default = listOf(SETTINGS, CLIPBOARD, UNDO, REDO, SELECT_WORD, COPY, PASTE, AI_FIX, VOICE)
-    val others = entries.filterNot { it in default || it == CLOSE_HISTORY }
+    val default = listOf(SETTINGS, CLIPBOARD, UNDO, REDO, SELECT_WORD, COPY, PASTE, AI_FIX)
+    val others = entries.filterNot { it in default || it == CLOSE_HISTORY || it in hiddenToolbarKeys }
     default.joinToString(Separators.ENTRY) { it.name + Separators.KV + true } + Separators.ENTRY +
             others.joinToString(Separators.ENTRY) { it.name + Separators.KV + false }
 }
 
-val defaultPinnedToolbarPref = entries.filterNot { it == CLOSE_HISTORY }.joinToString(Separators.ENTRY) {
+val defaultPinnedToolbarPref = entries.filterNot { it == CLOSE_HISTORY || it in hiddenToolbarKeys }.joinToString(Separators.ENTRY) {
     // SuperVoiceBoard: AI_FIX is pinned to the strip by default (W5.1); everything
     // else keeps upstream's "pinned to nothing" default.
     it.name + Separators.KV + (it == AI_FIX)
@@ -153,7 +157,7 @@ val defaultPinnedToolbarPref = entries.filterNot { it == CLOSE_HISTORY }.joinToS
 
 val defaultClipboardToolbarPref by lazy {
     val default = listOf(CLEAR_CLIPBOARD, UP, DOWN, LEFT, RIGHT, UNDO, CUT, COPY, PASTE, SELECT_WORD, CLOSE_HISTORY)
-    val others = entries.filterNot { it in default }
+    val others = entries.filterNot { it in default || it in hiddenToolbarKeys }
     default.joinToString(Separators.ENTRY) { it.name + Separators.KV + true } + Separators.ENTRY +
             others.joinToString(Separators.ENTRY) { it.name + Separators.KV + false }
 }
@@ -224,7 +228,7 @@ private fun getEnabledToolbarKeys(prefs: SharedPreferences, pref: String, defaul
                 null
             }
         } else null
-    }
+    }.filterNot { it in hiddenToolbarKeys }
 }
 
 fun writeCustomKeyCodes(prefs: SharedPreferences, codes: EnumMap<ToolbarKey, Pair<Int?, Int?>>) {

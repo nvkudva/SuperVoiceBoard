@@ -584,12 +584,9 @@ class SuggestionStripView(context: Context, attrs: AttributeSet?, defStyle: Int)
     }
 
     fun updateVoiceKey() {
-        val show = Settings.getValues().mShowsVoiceInputKey
-        toolbar.findViewWithTag<View>(ToolbarKey.VOICE)?.isVisible = show
-        pinnedKeys.findViewWithTag<View>(ToolbarKey.VOICE)?.isVisible = show
-        // SuperVoiceBoard: the strip's own mic follows the same setting, so a
-        // user who turned the voice key off does not get one anyway (W3.2).
-        micKey.isVisible = show
+        // SuperVoiceBoard: the strip's own mic is the only mic — VOICE is not a
+        // toolbar key here — and it follows the voice-input-key setting (W3.2).
+        micKey.isVisible = Settings.getValues().mShowsVoiceInputKey
     }
 
     private fun updateKeys() {

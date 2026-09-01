@@ -35,7 +35,10 @@ fun ReorderSwitchPreference(setting: Setting, default: String) {
     if (showDialog) {
         val ctx = LocalContext.current
         val prefs = ctx.prefs()
-        val items = prefs.getString(setting.key, default)!!.split(Separators.ENTRY).map {
+        // a key dropped from the defaults must not linger in a saved pref
+        val known = default.split(Separators.ENTRY).mapTo(HashSet()) { it.substringBefore(Separators.KV) }
+        val items = prefs.getString(setting.key, default)!!.split(Separators.ENTRY)
+            .filter { it.substringBefore(Separators.KV) in known }.map {
             val both = it.split(Separators.KV)
             KeyAndState(both.first(), both.last().toBoolean())
         }

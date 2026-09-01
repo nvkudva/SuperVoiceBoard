@@ -1,13 +1,12 @@
-# SuperVoiceBoard: on-demand release build. The signing keystore lives outside
-# the repo, so the APK produced here is unsigned — see app/build.gradle.kts.
-name: Release build
+# SuperVoiceBoard: the build to sideload. Debug-signed and arm64 only, which is
+# what a current phone needs — switch back to release when a production build
+# is actually wanted.
+name: Phone build (debug)
 
 on:
   workflow_dispatch:
   push:
     tags: ["v*"]
-    # dispatch-by-API needs the workflow on the default branch; until this
-    # lands on main, pushes to the dev branch are how it gets exercised.
     branches: ["claude/**"]
 
 concurrency:
@@ -16,7 +15,7 @@ concurrency:
 
 jobs:
   release:
-    name: Assemble release APK
+    name: Assemble debug APK (arm64-v8a)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -25,21 +24,18 @@ jobs:
           distribution: temurin
           java-version: "21"
       - uses: gradle/actions/setup-gradle@v4
-      - name: Assemble release
-        run: ./gradlew :app:assembleRelease --no-daemon
+      - name: Assemble debug
+        run: ./gradlew :app:assembleDebug --no-daemon
       - name: APK size
         run: |
-          for f in app/build/outputs/apk/release/*.apk app/build/outputs/mapping/release/mapping.txt; do
-            [ -f "$f" ] && echo "::notice title=Artifact size::$(basename "$f") $(stat -c%s "$f") bytes"
+          for f in app/build/outputs/apk/debug/*arm64-v8a*.apk; do
+            echo "::notice title=Artifact size::$(basename "$f") $(stat -c%s "$f") bytes"
           done
-          unzip -l app/build/outputs/apk/release/*.apk | sort -rn | head -12
-      - name: Upload release APK
+      - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: supervoiceboard-release-apk
-          path: |
-            app/build/outputs/apk/release/*.apk
-            app/build/outputs/mapping/release/mapping.txt
+          name: supervoiceboard-apk
+          path: app/build/outputs/apk/debug/*arm64-v8a*.apk
       - name: Upload reports
         if: failure()
         uses: actions/upload-artifact@v4

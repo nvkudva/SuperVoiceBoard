@@ -1,15 +1,9 @@
 <!--
-    SPDX-FileCopyrightText: Material Design Authors / Google LLC
-    modified
-    SPDX-License-Identifier: Apache-2.0
+    Fluent UI System Icons (Regular 24) - Copyright (c) Microsoft Corporation, MIT License.
+    https://github.com/microsoft/fluentui-system-icons  (ic_fluent_book_letter_24_regular)
+    SPDX-License-Identifier: MIT
 -->
-<vector xmlns:android="http://schemas.android.com/apk/res/android"
-    android:autoMirrored="true"
-    android:width="24dp"
-    android:height="24dp"
-    android:viewportWidth="24"
-    android:viewportHeight="24">
-  <path
-      android:fillColor="@color/foreground"
-      android:pathData="m7.275,1.5c-1.015,0 -1.881,0.359 -2.598,1.077C3.959,3.294 3.6,4.16 3.6,5.175v13.65c0,1.015 0.359,1.881 1.077,2.598C5.394,22.141 6.26,22.5 7.275,22.5L20.4,22.5v-2.1c-0.438,0 -0.809,-0.153 -1.116,-0.459 -0.306,-0.306 -0.459,-0.678 -0.459,-1.116 0,-0.438 0.153,-0.809 0.459,-1.116 0.306,-0.306 0.678,-0.459 1.116,-0.459v-15.75zM7.275,3.6L7.8,3.6v11.55L7.275,15.15c-0.28,0 -0.552,0.025 -0.814,0.078 -0.262,0.052 -0.516,0.14 -0.761,0.262v-10.315c0,-0.438 0.153,-0.809 0.459,-1.116C6.466,3.753 6.838,3.6 7.275,3.6ZM9.9,3.6h8.4v11.55L9.9,15.15ZM7.275,17.25h9.79c-0.123,0.245 -0.21,0.498 -0.262,0.761 -0.052,0.262 -0.078,0.534 -0.078,0.814 0,0.298 0.031,0.573 0.092,0.826 0.061,0.254 0.143,0.504 0.248,0.749L7.275,20.4c-0.455,0 -0.83,-0.15 -1.128,-0.447C5.85,19.655 5.7,19.28 5.7,18.825c0,-0.438 0.15,-0.809 0.447,-1.116C6.445,17.403 6.82,17.25 7.275,17.25Z"/>
+<vector xmlns:android="http://schemas.android.com/apk/res/android" android:width="24dp" android:height="24dp" android:viewportWidth="24" android:viewportHeight="24">
+    <path
+        android:pathData="M12.5 6c-0.305 0-0.58 0.185-0.695 0.468l-3.25 8c-0.156 0.383 0.029 0.82 0.413 0.977 0.383 0.156 0.821-0.029 0.977-0.413L10.77 13h3.46l0.825 2.032c0.156 0.384 0.594 0.569 0.977 0.413 0.384-0.156 0.569-0.594 0.413-0.977l-3.25-8C13.08 6.185 12.805 6 12.5 6zm-1.12 5.5l1.12-2.757 1.12 2.757h-2.24zM4 4.5C4 3.12 5.12 2 6.5 2H18c1.38 0 2.5 1.12 2.5 2.5v14.25c0 0.414-0.336 0.75-0.75 0.75H5.5c0 0.552 0.448 1 1 1h13.25c0.414 0 0.75 0.336 0.75 0.75S20.164 22 19.75 22H6.5C5.12 22 4 20.88 4 19.5v-15zM5.5 18H19V4.5c0-0.552-0.448-1-1-1H6.5c-0.552 0-1 0.448-1 1V18z" android:fillColor="#FFF"/>
 </vector>

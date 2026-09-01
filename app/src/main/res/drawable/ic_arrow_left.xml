@@ -1,12 +1,9 @@
 <!--
-    icon available in Android Studio
-    SPDX-License-Identifier: Apache-2.0
+    Fluent UI System Icons (Regular 24) - Copyright (c) Microsoft Corporation, MIT License.
+    https://github.com/microsoft/fluentui-system-icons  (ic_fluent_chevron_left_24_regular)
+    SPDX-License-Identifier: MIT
 -->
-<vector xmlns:android="http://schemas.android.com/apk/res/android"
-    android:height="24dp"
-    android:width="24dp"
-    android:viewportHeight="24"
-    android:viewportWidth="24"  >
-    <path android:fillColor="#FFF"
-        android:pathData="M15.41,16.59L10.83,12l4.58,-4.59L14,6l-6,6 6,6 1.41,-1.41z"/>
+<vector xmlns:android="http://schemas.android.com/apk/res/android" android:autoMirrored="true" android:width="24dp" android:height="24dp" android:viewportWidth="24" android:viewportHeight="24">
+    <path
+        android:pathData="M15.53 4.22c0.293 0.293 0.293 0.767 0 1.06L8.81 12l6.72 6.72c0.293 0.293 0.293 0.767 0 1.06-0.293 0.293-0.767 0.293-1.06 0l-7.25-7.25c-0.293-0.293-0.293-0.767 0-1.06l7.25-7.25c0.293-0.293 0.767-0.293 1.06 0z" android:fillColor="#FFF"/>
 </vector>

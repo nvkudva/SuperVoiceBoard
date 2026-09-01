@@ -2,6 +2,7 @@
 package helium314.keyboard.settings
 
 import androidx.activity.compose.BackHandler
+import androidx.annotation.StringRes
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -40,7 +41,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.res.painterResource
@@ -53,13 +53,41 @@ import helium314.keyboard.latin.utils.BackButton
 import helium314.keyboard.latin.utils.CloseIcon
 import helium314.keyboard.latin.utils.SearchIcon
 import helium314.keyboard.settings.preferences.PreferenceCategory
+import helium314.keyboard.settings.preferences.PreferenceGroup
+
+/** One card's worth of a settings screen: the entries between two category headers. */
+private class Section(@StringRes val title: Int?, val keys: List<Any?>)
+
+/**
+ * Splits a screen's flat setting list into sections. An [Int] in the list is a category
+ * string resource and opens a new section; everything up to the next one belongs to it.
+ * Entries before the first header form a leading section with no title.
+ */
+private fun sectionsOf(settings: List<Any?>): List<Section> {
+    val sections = mutableListOf<Section>()
+    var title: Int? = null
+    var keys = mutableListOf<Any?>()
+    settings.forEach { item ->
+        if (item is Int) {
+            if (keys.isNotEmpty() || title != null) sections.add(Section(title, keys))
+            title = item
+            keys = mutableListOf()
+        } else {
+            keys.add(item)
+        }
+    }
+    if (keys.isNotEmpty() || title != null) sections.add(Section(title, keys))
+    return sections
+}
 
 @Composable
 fun SearchSettingsScreen(
     onClickBack: () -> Unit,
     title: String,
     settings: List<Any?>,
-    content: @Composable (ColumnScope.() -> Unit)? = null // overrides settings if not null
+    content: @Composable (ColumnScope.() -> Unit)? = null, // overrides settings if not null
+    /** Pinned below the scrolling settings, where the keyboard itself would sit. */
+    footer: (@Composable () -> Unit)? = null,
 ) {
     SearchScreen(
         onClickBack = onClickBack,
@@ -68,20 +96,30 @@ fun SearchSettingsScreen(
             if (content != null) content()
             else {
                 Scaffold(
+                    modifier = if (footer == null) Modifier else Modifier.weight(1f),
                     contentWindowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Bottom)
                 ) { innerPadding ->
                     Column(
-                        Modifier.verticalScroll(rememberScrollState()).then(Modifier.padding(innerPadding))
+                        Modifier.verticalScroll(rememberScrollState())
+                            .then(Modifier.padding(innerPadding))
+                            .padding(bottom = 24.dp)
                     ) {
-                        settings.forEach {
-                            if (it is Int) {
-                                PreferenceCategory(stringResource(it))
-                            } else {
-                                // this only animates appearing prefs
-                                // a solution would be using a list(visible to key)
-                                AnimatedVisibility(visible = it != null) {
-                                    if (it != null)
-                                        SettingsActivity.settingsContainer[it]?.Preference()
+                        sectionsOf(settings).forEach { section ->
+                            // screens null out prefs that don't apply, so a whole
+                            // section can be hidden: drop its header too, rather than
+                            // leaving one standing over an empty card
+                            if (section.keys.any { it != null }) {
+                                if (section.title != null)
+                                    PreferenceCategory(stringResource(section.title))
+                                PreferenceGroup {
+                                    section.keys.forEach {
+                                        // this only animates appearing prefs
+                                        // a solution would be using a list(visible to key)
+                                        AnimatedVisibility(visible = it != null) {
+                                            if (it != null)
+                                                SettingsActivity.settingsContainer[it]?.Preference()
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -104,6 +142,7 @@ fun SearchSettingsScreen(
     //                }
                 }
             }
+            footer?.invoke()
         },
         filteredItems = { SettingsActivity.settingsContainer.filter(it) },
         itemContent = { it.Preference() }
@@ -161,7 +200,7 @@ fun <T: Any?> SearchScreen(
                                     var showMenu by remember { mutableStateOf(false) }
                                     IconButton(
                                         onClick = { showMenu = true }
-                                    ) { Icon(painterResource(R.drawable.ic_arrow_left), "menu", Modifier.rotate(-90f)) }
+                                    ) { Icon(painterResource(R.drawable.ic_more_vert), "menu") }
                                     DropdownMenu(
                                         expanded = showMenu,
                                         onDismissRequest = { showMenu = false }

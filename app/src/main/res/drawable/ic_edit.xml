@@ -1,13 +1,9 @@
 <!--
-    icon from pictogrammers.com
-    SPDX-License-Identifier: Apache-2.0
+    Fluent UI System Icons (Regular 24) - Copyright (c) Microsoft Corporation, MIT License.
+    https://github.com/microsoft/fluentui-system-icons  (ic_fluent_edit_24_regular)
+    SPDX-License-Identifier: MIT
 -->
-<vector xmlns:android="http://schemas.android.com/apk/res/android"
-    android:height="24dp"
-    android:width="24dp"
-    android:viewportWidth="24"
-    android:viewportHeight="24">
+<vector xmlns:android="http://schemas.android.com/apk/res/android" android:width="24dp" android:height="24dp" android:viewportWidth="24" android:viewportHeight="24">
     <path
-        android:fillColor="@color/foreground_weak"
-        android:pathData="M20.71,7.04C21.1,6.65 21.1,6 20.71,5.63L18.37,3.29C18,2.9 17.35,2.9 16.96,3.29L15.12,5.12L18.87,8.87M3,17.25V21H6.75L17.81,9.93L14.06,6.18L3,17.25Z" />
+        android:pathData="M20.952 3.048c-1.398-1.397-3.664-1.397-5.06 0L3.94 15c-0.406 0.406-0.692 0.917-0.825 1.476L2.02 21.078c-0.06 0.253 0.015 0.52 0.2 0.704 0.184 0.184 0.45 0.26 0.704 0.199l4.601-1.096c0.56-0.133 1.07-0.418 1.477-0.825l11.95-11.95c1.397-1.398 1.397-3.663 0-5.06zm-4 1.06c0.811-0.81 2.127-0.811 2.94 0 0.81 0.812 0.81 2.128 0 2.94L19 7.939 16.06 5l0.892-0.891zM15 6.062L17.94 9l-10 10c-0.21 0.21-0.474 0.357-0.763 0.426L3.762 20.24l0.813-3.416c0.069-0.29 0.217-0.554 0.427-0.764L15 6.06z" android:fillColor="#FFF"/>
 </vector>

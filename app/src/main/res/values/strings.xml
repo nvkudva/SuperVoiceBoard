@@ -11,7 +11,7 @@
     <!-- Name of Android spell checker service. The app name should not be translated. -->
     <string name="spell_checker_service_name">SuperVoiceBoard Spell Checker</string>
     <!-- Title for IME settings screen. The app name should not be translated. -->
-    <string name="ime_settings">SuperVoiceBoard Settings</string>
+    <string name="ime_settings">Settings</string>
     <!-- Title for the spell checking service settings screen. The app name should not be translated. -->
     <string name="android_spell_checker_settings">SuperVoiceBoard Spell Checker Settings</string>
     <!-- Option to provide vibrate/haptic feedback on keypress -->
@@ -64,6 +64,10 @@
     <string name="settings_category_experimental">Experimental</string>
     <!-- Settings category title for Appearance & Layout/Misc -->
     <string name="settings_category_miscellaneous">Miscellaneous</string>
+    <!-- Settings category title for Toolbar/Keys -->
+    <string name="settings_category_toolbar_keys">Keys</string>
+    <!-- Settings category title for Toolbar/Behavior -->
+    <string name="settings_category_toolbar_behavior">Behavior</string>
     <!-- Option for enabling or disabling the split keyboard layout in portrait mode.-->
     <string name="enable_split_keyboard">Enable split keyboard</string>
     <!-- Option for setting distance for split keyboard in portrait mode -->
@@ -700,7 +704,7 @@ New dictionary:
     <!-- User dictionary settings. Text button to add a word -->
     <string name="user_dict_add_word_button">Add a word</string>
     <!-- Option for choosing theme style -->
-    <string name="theme_style">Style</string>
+    <string name="theme_style">Keyboard style</string>
     <!-- Option for choosing icon style (same options as theme_style) -->
     <string name="icon_style">Icon style</string>
     <!-- Style name for Rounded style -->

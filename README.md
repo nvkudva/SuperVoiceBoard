@@ -142,6 +142,9 @@ Since the app is based on Apache 2.0 licensed AOSP Keyboard, an [Apache 2.0](LIC
 The launcher icon is derived from HeliBoard's icon (same adaptive-icon background,
 new foreground mark) and so remains licensed under [Creative Commons BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/). A [license file](LICENSE-CC-BY-SA-4.0) is also included.
 
+The default ("Material") keyboard icon style uses [Fluent UI System Icons](https://github.com/microsoft/fluentui-system-icons)
+(Regular 24), Copyright (c) Microsoft Corporation, under the MIT license. A [license file](LICENSE-MIT-fluent-icons) is included.
+
 # Credits
 - [HeliBoard](https://github.com/HeliBorg/HeliBoard) — the keyboard this fork is built on;
   all typing functionality is theirs
@@ -152,6 +155,7 @@ new foreground mark) and so remains licensed under [Creative Commons BY-SA 4.0](
 - [Simple Keyboard](https://github.com/rkkr/simple-keyboard)
 - [Indic Keyboard](https://gitlab.com/indicproject/indic-keyboard)
 - [FlorisBoard](https://github.com/florisboard/florisboard/)
+- [Fluent UI System Icons](https://github.com/microsoft/fluentui-system-icons) — the default keyboard icon set
 - Our [contributors](https://github.com/HeliBorg/HeliBoard/graphs/contributors)
 
 ## Funding

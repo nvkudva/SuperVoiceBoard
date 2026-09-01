@@ -7,11 +7,7 @@
 package helium314.keyboard.settings.screens
 
 import android.content.Context
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Surface
-import androidx.compose.ui.Modifier
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.platform.LocalContext
@@ -31,6 +27,8 @@ import helium314.keyboard.latin.utils.prefs
 import helium314.keyboard.settings.SearchSettingsScreen
 import helium314.keyboard.settings.Setting
 import helium314.keyboard.settings.SettingsActivity
+import helium314.keyboard.settings.SettingsDestination
+import helium314.keyboard.settings.SettingsWithoutKey
 import helium314.keyboard.settings.initPreview
 import helium314.keyboard.settings.preferences.ListPreference
 import helium314.keyboard.settings.preferences.Preference
@@ -39,7 +37,6 @@ import helium314.keyboard.settings.preferences.SwitchPreference
 @Composable
 fun VoiceScreen(
     onClickBack: () -> Unit,
-    onClickModels: () -> Unit = {},
 ) {
     val prefs = LocalContext.current.prefs()
     val b = (LocalContext.current.getActivity() as? SettingsActivity)?.prefChanged?.collectAsState()
@@ -49,8 +46,14 @@ fun VoiceScreen(
     // switches below do anything, so they are hidden rather than left lying.
     val raw = prefs.getBoolean(VoiceKeys.RAW_TRANSCRIPT, VoiceDefaults.RAW_TRANSCRIPT)
     val items = listOfNotNull(
+        // The models are the first thing this screen is about: without them
+        // every switch below is describing something that cannot run.
+        SettingsWithoutKey.VOICE_MODELS,
+        R.string.voice_category_dictation,
         VoiceKeys.INLINE_DICTATION,
         VoiceKeys.SILENCE_TIMEOUT,
+        VoiceKeys.PROVISIONAL_COMMIT,
+        R.string.voice_category_transcript,
         VoiceKeys.RAW_TRANSCRIPT,
         if (raw) null else VoiceKeys.REMOVE_FILLERS,
         if (raw) null else VoiceKeys.AGGRESSIVE_FILLERS,
@@ -58,32 +61,27 @@ fun VoiceScreen(
         if (raw) null else VoiceKeys.AUTO_PUNCTUATE,
         if (raw) null else VoiceKeys.AUTO_CAP,
         if (raw) null else VoiceKeys.SPOKEN_COMMANDS,
-        VoiceKeys.PROVISIONAL_COMMIT,
+        R.string.voice_category_refinement,
         VoiceKeys.LLM_REFINE,
+        R.string.voice_category_privacy,
         VoiceKeys.TELEMETRY,
     )
     SearchSettingsScreen(
         onClickBack = onClickBack,
         title = stringResource(R.string.settings_screen_voice),
         settings = items,
-    ) {
-        Column(Modifier.verticalScroll(rememberScrollState())) {
-            // The models are the first thing this screen is about: without them
-            // every switch below is describing something that cannot run.
-            Preference(
-                name = stringResource(R.string.settings_screen_voice_models),
-                description = stringResource(R.string.voice_models_summary),
-                onClick = onClickModels,
-                icon = R.drawable.ic_settings_voice,
-            ) { NextScreenIcon() }
-            for (key in items) {
-                SettingsActivity.settingsContainer[key]?.Preference()
-            }
-        }
-    }
+    )
 }
 
 fun createVoiceSettings(context: Context) = listOf(
+    Setting(context, SettingsWithoutKey.VOICE_MODELS, R.string.settings_screen_voice_models, R.string.voice_models_summary) {
+        Preference(
+            name = stringResource(R.string.settings_screen_voice_models),
+            description = stringResource(R.string.voice_models_summary),
+            onClick = { SettingsDestination.navigateTo(SettingsDestination.VoiceModels) },
+            icon = R.drawable.ic_settings_voice,
+        ) { NextScreenIcon() }
+    },
     Setting(context, VoiceKeys.INLINE_DICTATION, R.string.voice_inline_dictation, R.string.voice_inline_dictation_summary) {
         SwitchPreference(it, VoiceDefaults.INLINE_DICTATION)
     },

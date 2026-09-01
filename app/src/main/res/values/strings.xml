@@ -819,6 +819,11 @@ New dictionary:
     <string name="setup_voice_instruction">Optional. Downloads about %1$s of speech models, used entirely on this device.</string>
     <!-- SuperVoiceBoard: the voice models screen -->
     <string name="settings_screen_voice_models">Voice models</string>
+    <!-- SuperVoiceBoard: section headers on the Voice typing screen -->
+    <string name="voice_category_dictation">Dictation</string>
+    <string name="voice_category_transcript">Transcript</string>
+    <string name="voice_category_refinement">Refinement</string>
+    <string name="voice_category_privacy">Privacy</string>
     <string name="voice_models_summary">Download, import or remove the on-device speech models</string>
     <string name="voice_models_unavailable">Voice models are unavailable in this process</string>
     <string name="voice_models_footer">Models are stored on this device and used offline. Removing one frees its space; you can download or import it again later.</string>

@@ -109,10 +109,7 @@ fun SettingsNavHost(
             AdvancedSettingsScreen(onClickBack = ::goBack)
         }
         composable(SettingsDestination.Voice) { // SuperVoiceBoard
-            VoiceScreen(
-                onClickBack = ::goBack,
-                onClickModels = { navController.navigate(SettingsDestination.VoiceModels) },
-            )
+            VoiceScreen(onClickBack = ::goBack)
         }
         composable(SettingsDestination.VoiceModels) { // SuperVoiceBoard
             VoiceModelsScreen(onClickBack = ::goBack)

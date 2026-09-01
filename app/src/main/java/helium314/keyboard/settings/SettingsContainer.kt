@@ -87,4 +87,5 @@ object SettingsWithoutKey {
     const val BACKGROUND_IMAGE_LANDSCAPE = "background_image_landscape"
     const val CUSTOM_FONT = "custom_font"
     const val CUSTOM_EMOJI_FONT = "custom_emoji_font"
+    const val VOICE_MODELS = "voice_models_screen" // SuperVoiceBoard
 }

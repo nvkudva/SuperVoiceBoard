@@ -170,6 +170,9 @@ android {
     namespace = "helium314.keyboard.latin"
     lint {
         abortOnError = true
+        // SuperVoiceBoard: this fork adds strings upstream's Weblate never sees,
+        // so every locale is missing them by construction.
+        disable += "MissingTranslation"
     }
 }
 

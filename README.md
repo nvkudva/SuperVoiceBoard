@@ -103,7 +103,6 @@ You can share your themes, layouts and dictionaries with other people:
   * this applies to main keyboard layouts and to special layouts adjustable in advanced settings
   * see [layouts.md](layouts.md) for details
   * you can share custom layouts in a separate [discussion section](https://github.com/HeliBorg/HeliBoard/discussions/categories/custom-layout)
-  * [Roccobot's Layout Maker](https://roccobot.github.io/HeliBoard-RLM/) is a browser-based editor for json layout files
 * Creating dictionaries is a little more work
   * first you will need a wordlist, as described [here](https://codeberg.org/Helium314/aosp-dictionaries/src/branch/main/wordlists/sample.combined) and in the repository readme
   * the you need to compile the dictionary using [external tools](https://github.com/remi0s/aosp-dictionary-tools)

@@ -22,6 +22,8 @@ import com.vboard.core.text.CommitPlanner
 import com.vboard.core.text.FieldKind
 import helium314.keyboard.latin.LatinIME
 import helium314.keyboard.latin.utils.Log
+import helium314.keyboard.latin.utils.prefs
+import helium314.keyboard.settings.screens.PrivacyBreakingSettings
 
 /**
  * Owns the dictation session for one IME instance.
@@ -33,9 +35,21 @@ import helium314.keyboard.latin.utils.Log
 class VoiceController(
     private val ime: LatinIME,
     private val runtime: VoiceRuntime,
-) : VoiceSessionController.Host, VoiceStripView.Listener {
+) : VoiceSessionController.Host, VoiceStripView.Listener, GoogleVoiceSession.Host {
 
     private val session = VoiceSessionController(ime, runtime, this)
+
+    /**
+     * The opt-in Google backend. Created lazily so a user who never turns the
+     * setting on never has a SpeechRecognizer in their keyboard process.
+     */
+    private val googleSession by lazy { GoogleVoiceSession(ime, this) }
+
+    /** Which backend owns the running session; decided at start() and kept. */
+    private var googleForSession = false
+
+    private fun googleBackendEnabled() =
+        PrivacyBreakingSettings.googleVoiceEnabled(ime.prefs())
 
     /** Set by the IME when the strip is inflated; null before the view exists. */
     var strip: VoiceStripView? = null
@@ -160,6 +174,8 @@ class VoiceController(
      */
     fun warmUp() {
         if (!fieldKind.allowsVoice) return
+        // The Google backend has no local engines to warm.
+        if (googleBackendEnabled()) return
         VoiceEngines.warmUp(runtime)
     }
 
@@ -174,7 +190,12 @@ class VoiceController(
     }
 
     fun toggle() {
-        if (isActive) session.stopAndFinalize() else start()
+        if (isActive) stopAndFinalize() else start()
+    }
+
+    /** End the utterance on whichever backend is running it. */
+    private fun stopAndFinalize() {
+        if (googleForSession) googleSession.stopAndFinalize() else session.stopAndFinalize()
     }
 
     /**
@@ -202,7 +223,7 @@ class VoiceController(
         if (!holdScoped) return
         holdScoped = false
         session.setEndpointingEnabled(true)
-        if (isActive) session.stopAndFinalize()
+        if (isActive) stopAndFinalize()
     }
 
     fun start() {
@@ -216,6 +237,11 @@ class VoiceController(
         strip?.reset()
         onSessionUiStarted?.invoke()
         strip?.announceSessionStarted()
+        googleForSession = googleBackendEnabled()
+        if (googleForSession) {
+            googleSession.start()
+            return
+        }
         val settings = runtime.settings.snapshot().let {
             // W6.4: a raw hold overrides the settings for this session only.
             if (rawForSession) it.copy(rawTranscriptMode = true, llmRefineEnabled = false) else it
@@ -225,7 +251,7 @@ class VoiceController(
 
     fun cancel() {
         if (!isActive) return
-        session.cancelSession()
+        if (googleForSession) googleSession.cancel() else session.cancelSession()
     }
 
     // ------------------------------------------------- VoiceStripView.Listener
@@ -233,7 +259,7 @@ class VoiceController(
     override fun onVoiceCancel() = cancel()
 
     override fun onVoiceDone() {
-        if (isActive) session.stopAndFinalize()
+        if (isActive) stopAndFinalize()
     }
 
     override fun onVoiceMinimizeKeyboard() {
@@ -327,6 +353,7 @@ class VoiceController(
 
     override fun onSessionEnded() {
         isActive = false
+        googleForSession = false
         holdScoped = false
         rawForSession = false
         strip?.announceSessionEnded()
@@ -357,6 +384,29 @@ class VoiceController(
     override fun onAmplitude(rms: Float) {
         strip?.onAmplitude(rms)
     }
+
+    // ------------------------------------------- GoogleVoiceSession.Host
+
+    // The Google backend returns finished text, so it joins the same commit and
+    // strip paths as the on-device one and skips only the parts that describe
+    // the local pipeline: no cleanup settings, no refinement, no utterance
+    // indexing beyond the single result Google gives back.
+
+    override fun onGooglePartial(text: String) = updatePartial(text)
+
+    override fun onGoogleFinal(text: String) = commitUtterance(0, text)
+
+    override fun onGoogleAmplitude(rms: Float) = onAmplitude(rms)
+
+    override fun onGoogleListening() = showListening()
+
+    override fun onGooglePreparing() = showPreparing()
+
+    override fun onGoogleFinalizing() = showFinalizing()
+
+    override fun onGoogleError(message: String) = showError(message, VoiceErrorAction.DISMISS)
+
+    override fun onGoogleEnded() = onSessionEnded()
 
     // ------------------------------------------------------------------ misc
 

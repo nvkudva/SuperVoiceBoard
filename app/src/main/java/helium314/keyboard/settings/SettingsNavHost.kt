@@ -16,6 +16,7 @@ import androidx.navigation.compose.rememberNavController
 import helium314.keyboard.latin.common.LocaleUtils.constructLocale
 import helium314.keyboard.latin.settings.SettingsSubtype.Companion.toSettingsSubtype
 import helium314.keyboard.latin.settings.getTransitionAnimationScale
+import helium314.keyboard.settings.screens.PrivacyBreakingScreen // SuperVoiceBoard
 import helium314.keyboard.settings.screens.VoiceModelsScreen // SuperVoiceBoard
 import helium314.keyboard.settings.screens.VoiceScreen // SuperVoiceBoard
 import helium314.keyboard.settings.screens.AboutScreen
@@ -81,6 +82,7 @@ fun SettingsNavHost(
                 onClickLayouts = { navController.navigate(SettingsDestination.Layouts) },
                 onClickDictionaries = { navController.navigate(SettingsDestination.Dictionaries) },
                 onClickVoice = { navController.navigate(SettingsDestination.Voice) }, // SuperVoiceBoard
+                onClickPrivacyBreaking = { navController.navigate(SettingsDestination.PrivacyBreaking) }, // SuperVoiceBoard
                 onClickBack = ::goBack,
             )
         }
@@ -110,6 +112,9 @@ fun SettingsNavHost(
         }
         composable(SettingsDestination.Voice) { // SuperVoiceBoard
             VoiceScreen(onClickBack = ::goBack)
+        }
+        composable(SettingsDestination.PrivacyBreaking) { // SuperVoiceBoard
+            PrivacyBreakingScreen(onClickBack = ::goBack)
         }
         composable(SettingsDestination.VoiceModels) { // SuperVoiceBoard
             VoiceModelsScreen(onClickBack = ::goBack)
@@ -165,6 +170,7 @@ object SettingsDestination {
     const val Advanced = "advanced"
     const val Voice = "voice" // SuperVoiceBoard
     const val VoiceModels = "voice_models" // SuperVoiceBoard
+    const val PrivacyBreaking = "privacy_breaking" // SuperVoiceBoard
     const val Debug = "debug"
     const val Appearance = "appearance"
     const val Colors = "colors/"

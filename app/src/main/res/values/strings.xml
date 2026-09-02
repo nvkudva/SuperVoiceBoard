@@ -814,6 +814,13 @@ New dictionary:
     <string name="voice_cancel">Stop dictating</string>
     <string name="voice_done">Done dictating</string>
     <string name="voice_minimize_keyboard">Hide keyboard, keep listening</string>
+    <!-- SuperVoiceBoard: Google dictation backend -->
+    <string name="voice_google_unavailable">Google voice typing is not available on this device</string>
+    <string name="voice_google_error_audio">Could not record audio</string>
+    <string name="voice_google_error_permission">Google voice typing needs the microphone permission</string>
+    <string name="voice_google_error_network">Google voice typing needs a network connection</string>
+    <string name="voice_google_error_no_match">Nothing was heard</string>
+    <string name="voice_google_error_generic">Google voice typing failed</string>
     <string name="voice_started">Voice typing started</string>
     <string name="voice_stopped">Voice typing stopped</string>
     <!-- SuperVoiceBoard: the optional voice step in the setup wizard -->
@@ -855,6 +862,15 @@ New dictionary:
     <string name="voice_models_import_io">Could not read that file</string>
     <!-- SuperVoiceBoard: voice settings (W2.5) -->
     <string name="settings_screen_voice">Voice typing</string>
+    <!-- SuperVoiceBoard: the features that send data off the device -->
+    <string name="settings_screen_privacy_breaking">Privacy-breaking features</string>
+    <string name="privacy_breaking_summary">Off by default. Each one sends something to Google.</string>
+    <string name="privacy_breaking_category_voice">Voice</string>
+    <string name="privacy_breaking_category_fill">Passwords</string>
+    <string name="privacy_breaking_google_voice">Google voice typing</string>
+    <string name="privacy_breaking_google_voice_summary">Dictate with Google\'s recognizer instead of the on-device models. Your audio is sent to Google.</string>
+    <string name="privacy_breaking_password_manager">Google Password Manager fill</string>
+    <string name="privacy_breaking_password_manager_summary">Show saved logins from Google Password Manager on username and password fields. The keyboard tells Google which field you are filling.</string>
     <string name="voice_inline_dictation">Dictate in place</string>
     <string name="voice_inline_dictation_summary">Keep the keys live while you speak, instead of taking over the screen</string>
     <string name="voice_silence_timeout">Stop after silence</string>

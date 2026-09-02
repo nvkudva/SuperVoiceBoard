@@ -25,7 +25,15 @@ SPDX-License-Identifier: Apache-2.0 AND GPL-3.0-only
          Configuration.Provider in App.kt). Android has no way to scope a
          permission to one process, so this is enforced by keeping networking
          components out of the keyboard process and asserted by
-         ManifestProcessSplitTest. -->
+         ManifestProcessSplitTest.
+
+         Two opt-in exceptions to the on-device-only rule live behind their own
+         switches on the Privacy-breaking features screen, both off by default:
+         Google voice typing (SpeechRecognizer — the audio is recorded and sent
+         by Google's process, not ours) and Google Password Manager fill (the
+         platform's inline autofill). Neither touches the network from this
+         process; both hand data to Google through system IPC, which is the part
+         the user is being asked to consent to. -->
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />

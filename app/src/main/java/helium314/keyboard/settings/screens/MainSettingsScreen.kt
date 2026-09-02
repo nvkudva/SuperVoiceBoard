@@ -46,6 +46,7 @@ fun MainSettingsScreen(
     onClickLayouts: () -> Unit,
     onClickDictionaries: () -> Unit,
     onClickVoice: () -> Unit, // SuperVoiceBoard
+    onClickPrivacyBreaking: () -> Unit, // SuperVoiceBoard
     onClickBack: () -> Unit,
 ) {
     SearchSettingsScreen(
@@ -135,6 +136,13 @@ fun MainSettingsScreen(
                         onClick = onClickAdvanced,
                         icon = R.drawable.ic_settings_advanced
                     ) { NextScreenIcon() }
+                    // SuperVoiceBoard: the opt-outs of on-device-only, in one place.
+                    Preference(
+                        name = stringResource(R.string.settings_screen_privacy_breaking),
+                        description = stringResource(R.string.privacy_breaking_summary),
+                        onClick = onClickPrivacyBreaking,
+                        icon = R.drawable.ic_settings_advanced
+                    ) { NextScreenIcon() }
                     Preference(
                         name = stringResource(R.string.settings_screen_about),
                         onClick = onClickAbout,
@@ -152,7 +160,7 @@ private fun PreviewScreen() {
     initPreview(LocalContext.current)
     Theme(previewDark) {
         Surface {
-            MainSettingsScreen({}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {})
+            MainSettingsScreen({}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {})
         }
     }
 }

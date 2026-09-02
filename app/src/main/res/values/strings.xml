@@ -356,6 +356,8 @@
     <string name="voice" tools:keep="@string/voice">Voice input</string>
     <!-- SuperVoiceBoard: name of the AI fix toolbar key (W5.1) -->
     <string name="ai_fix" tools:keep="@string/ai_fix">AI fix</string>
+    <!-- SuperVoiceBoard: name of the keyboard-switcher toolbar key -->
+    <string name="switch_keyboard" tools:keep="@string/switch_keyboard">Switch keyboard</string>
     <string name="numpad" tools:keep="@string/numpad" translatable="false">@string/layout_numpad</string>
     <string name="dpad" tools:keep="@string/dpad" translatable="false">@string/layout_dpad</string>
     <string name="settings" tools:keep="@string/settings">Settings</string>

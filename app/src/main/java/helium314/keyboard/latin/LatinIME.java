@@ -30,6 +30,7 @@ import android.view.Window;
 import android.view.inputmethod.CompletionInfo;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InlineSuggestion;
+import helium314.keyboard.settings.screens.PrivacyBreakingSettings;
 import android.view.inputmethod.InlineSuggestionsRequest;
 import android.view.inputmethod.InlineSuggestionsResponse;
 import android.view.inputmethod.InputMethodSubtype;
@@ -1441,6 +1442,11 @@ public class LatinIME extends InputMethodService implements
     @RequiresApi(api = Build.VERSION_CODES.R)
     public InlineSuggestionsRequest onCreateInlineSuggestionsRequest(@NonNull Bundle uiExtras) {
         Log.d(TAG,"onCreateInlineSuggestionsRequest called");
+        // SuperVoiceBoard: inline autofill is how Google Password Manager reaches
+        // the keyboard, so it is opt-in like the other privacy-breaking features.
+        if (!isPasswordManagerFillEnabled()) {
+            return null;
+        }
         if (Settings.getValues().mSuggestionStripHiddenPerUserSettings) {
             return null;
         }
@@ -1452,6 +1458,9 @@ public class LatinIME extends InputMethodService implements
     @RequiresApi(api = Build.VERSION_CODES.R)
     public boolean onInlineSuggestionsResponse(InlineSuggestionsResponse response) {
         Log.d(TAG,"onInlineSuggestionsResponse called");
+        if (!isPasswordManagerFillEnabled()) {
+            return false;
+        }
         if (Settings.getValues().mSuggestionStripHiddenPerUserSettings) {
             return false;
         }
@@ -1469,6 +1478,11 @@ public class LatinIME extends InputMethodService implements
         mSuggestionStripView.setExternalSuggestionView(inlineSuggestionView, true);
 
         return true;
+    }
+
+    /** SuperVoiceBoard: the Google Password Manager fill switch, off by default. */
+    private boolean isPasswordManagerFillEnabled() {
+        return PrivacyBreakingSettings.INSTANCE.passwordManagerEnabled(KtxKt.prefs(this));
     }
 
     public int getCurrentAutoCapsState() {

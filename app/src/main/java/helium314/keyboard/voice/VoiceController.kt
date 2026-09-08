@@ -11,6 +11,7 @@ import android.os.SystemClock
 import android.provider.Settings as AndroidSettings
 import android.text.InputType
 import android.view.View
+import android.view.WindowManager
 import android.view.inputmethod.EditorInfo
 import com.vboard.app.settings.SettingsRepository
 import com.vboard.app.voice.VoiceEngines
@@ -151,6 +152,7 @@ class VoiceController(
     }
 
     fun onDestroy() {
+        keepScreenOn(false)
         session.destroy()
         strip = null
     }
@@ -234,6 +236,7 @@ class VoiceController(
         settleTelemetry()
         sessionStartedAt = SystemClock.elapsedRealtime()
         commits.clear()
+        keepScreenOn(true)
         strip?.reset()
         onSessionUiStarted?.invoke()
         strip?.announceSessionStarted()
@@ -247,6 +250,21 @@ class VoiceController(
             if (rawForSession) it.copy(rawTranscriptMode = true, llmRefineEnabled = false) else it
         }
         session.startSession(fieldKind, settings)
+    }
+
+    /**
+     * Holds the display awake for the length of a dictation session, so the
+     * screen timeout — and the lock that follows it — cannot cut a recording
+     * short mid-sentence.
+     *
+     * The flag lives on the IME window only: no system setting is written, so
+     * the user's own timeout applies again the moment the session ends, whether
+     * it ended by send, cancel, error, or the IME being torn down.
+     */
+    private fun keepScreenOn(on: Boolean) {
+        val window = ime.window?.window ?: return
+        if (on) window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        else window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
     }
 
     fun cancel() {
@@ -356,6 +374,7 @@ class VoiceController(
         googleForSession = false
         holdScoped = false
         rawForSession = false
+        keepScreenOn(false)
         strip?.announceSessionEnded()
         strip?.reset()
         onSessionUiEnded?.invoke()

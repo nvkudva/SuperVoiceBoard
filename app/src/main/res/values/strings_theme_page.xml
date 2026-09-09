@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Title of the theme picker page -->
+    <string name="theme_page_title">Theme</string>
+    <!-- Title of the theme picker page for the night/dark mode theme -->
+    <string name="theme_page_title_night">Night theme</string>
+    <!-- Section header above themes with a bright keyboard background -->
+    <string name="theme_page_section_light">Light</string>
+    <!-- Section header above themes with a dark keyboard background -->
+    <string name="theme_page_section_dark">Dark</string>
+    <!-- Section header above themes the user created or imported -->
+    <string name="theme_page_section_user">My themes</string>
+    <!-- Label of the tile that creates a new user theme -->
+    <string name="theme_page_new">New theme</string>
+    <!-- Accessibility description of the check mark on the currently applied theme -->
+    <string name="theme_page_selected">Selected</string>
+    <!-- Label of the text field asking for the name of a new theme -->
+    <string name="theme_page_name">Theme name</string>
+</resources>

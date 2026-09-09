@@ -5,6 +5,8 @@ import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
+import androidx.activity.compose.ManagedActivityResultLauncher
+import androidx.activity.result.ActivityResult
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
@@ -127,44 +129,62 @@ fun ColorThemePickerDialog(
             }
         },
     )
+    val loadFilePicker = themeFilePicker()
+    if (showLoadDialog)
+        LoadThemeDialog({ showLoadDialog = false }, loadFilePicker)
+}
+
+/**
+ * Picks a theme file and stores it, reporting an unreadable one itself. Mirrors layoutFilePicker,
+ * and like it must stay composed while the picker is open, so it belongs next to the screen
+ * rather than inside the dialog that launches it.
+ */
+@Composable
+fun themeFilePicker(): ManagedActivityResultLauncher<Intent, ActivityResult> {
+    val ctx = LocalContext.current
+    val prefs = ctx.prefs()
     var errorDialog by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
-    val loadFilePicker = filePicker { uri ->
+    val picker = filePicker { uri ->
         ctx.getActivity()?.contentResolver?.openInputStream(uri)?.use {
             val text = it.reader().readText()
             // theme not added when done without coroutine (maybe prefs listener is not yet registered?)
             scope.launch { errorDialog = !loadColorString(text, prefs) }
         }
     }
-    if (showLoadDialog) {
-        ConfirmationDialog(
-            onDismissRequest = { showLoadDialog = false },
-            title = { Text(stringResource(R.string.load)) },
-            content = {
-                val link = stringResource(R.string.discussion_section_link).withHtmlLink(Links.CUSTOM_COLORS)
-                val text = stringResource(R.string.get_colors_message, link)
-                Text(text.htmlToAnnotated())
-            },
-            onConfirmed = {
-                val intent = Intent(Intent.ACTION_OPEN_DOCUMENT)
-                    .addCategory(Intent.CATEGORY_OPENABLE)
-                    .putExtra(Intent.EXTRA_MIME_TYPES, arrayOf("text/*", "application/octet-stream", "application/json"))
-                    .setType("*/*")
-                loadFilePicker.launch(intent)
-            },
-            confirmButtonText = stringResource(R.string.button_load_custom),
-            onNeutral = {
-                showLoadDialog = false
-                val cm = ctx.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-                val clip = cm.primaryClip?.takeIf { it.itemCount > 0 } ?: return@ConfirmationDialog
-                val text = clip.getItemAt(0).text
-                errorDialog = !loadColorString(text.toString(), prefs)
-            },
-            neutralButtonText = stringResource(R.string.paste)
-        )
-    }
     if (errorDialog)
         InfoDialog(stringResource(R.string.file_read_error)) { errorDialog = false } // todo: text (not always a file)
+    return picker
+}
+
+/** Asks whether to take the theme to load from a file or from the clipboard. */
+@Composable
+fun LoadThemeDialog(onDismissRequest: () -> Unit, loadFilePicker: ManagedActivityResultLauncher<Intent, ActivityResult>) {
+    val ctx = LocalContext.current
+    ConfirmationDialog(
+        onDismissRequest = onDismissRequest,
+        title = { Text(stringResource(R.string.load)) },
+        content = {
+            val link = stringResource(R.string.discussion_section_link).withHtmlLink(Links.CUSTOM_COLORS)
+            val text = stringResource(R.string.get_colors_message, link)
+            Text(text.htmlToAnnotated())
+        },
+        onConfirmed = {
+            val intent = Intent(Intent.ACTION_OPEN_DOCUMENT)
+                .addCategory(Intent.CATEGORY_OPENABLE)
+                .putExtra(Intent.EXTRA_MIME_TYPES, arrayOf("text/*", "application/octet-stream", "application/json"))
+                .setType("*/*")
+            loadFilePicker.launch(intent)
+        },
+        confirmButtonText = stringResource(R.string.button_load_custom),
+        onNeutral = {
+            onDismissRequest()
+            val cm = ctx.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+            val clip = cm.primaryClip?.takeIf { it.itemCount > 0 } ?: return@ConfirmationDialog
+            loadColorString(clip.getItemAt(0).text.toString(), ctx.prefs())
+        },
+        neutralButtonText = stringResource(R.string.paste)
+    )
 }
 
 @Composable
@@ -254,7 +274,7 @@ private fun ColorItemRow(onDismissRequest: () -> Unit, item: String, isSelected:
 }
 
 // returns whether the string was successfully deserialized and stored in prefs
-private fun loadColorString(colorString: String, prefs: SharedPreferences): Boolean {
+internal fun loadColorString(colorString: String, prefs: SharedPreferences): Boolean {
     try {
         val that = Json.decodeFromString<SaveThoseColors>(colorString)
         val themeName = KeyboardTheme.getUnusedThemeName(that.name ?: "imported colors", prefs)

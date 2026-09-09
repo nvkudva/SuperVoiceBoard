@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- SPDX-License-Identifier: GPL-3.0-only -->
+<!-- WaveKey: labels for the six-door settings hierarchy (docs/settings-ia.md).
+     Kept out of upstream's strings.xml so that file stays mergeable. -->
+<resources>
+    <!-- The six doors -->
+    <string name="settings_door_typing">Typing</string>
+    <string name="settings_door_typing_summary">Corrections, suggestions, swipe, layouts</string>
+    <string name="settings_door_languages_summary">Languages, layouts and dictionaries</string>
+    <string name="settings_door_voice_summary">Dictation, models and transcript</string>
+    <string name="settings_door_look">Look &amp; feel</string>
+    <string name="settings_door_look_summary">Theme, key style, size and spacing</string>
+    <string name="settings_door_toolbar">Toolbar &amp; keys</string>
+    <string name="settings_door_toolbar_summary">The keys above the keyboard, and key behaviour</string>
+    <string name="settings_door_privacy">Privacy &amp; advanced</string>
+    <string name="settings_door_privacy_summary">What leaves this device, backups, everything else</string>
+
+    <!-- Rows inside the Typing door, renamed from developer terms -->
+    <string name="settings_screen_keys_feedback">Keys &amp; feedback</string>
+    <string name="settings_screen_keys_feedback_summary">Hints, popups, sound and vibration</string>
+    <string name="settings_screen_swipe">Swipe to type</string>
+    <string name="settings_screen_symbol_layouts">Symbol &amp; number layouts</string>
+    <string name="settings_screen_correction_summary">Auto-correction, spacing, suggestions</string>
+    <string name="settings_screen_dictionaries_summary">Word lists, per language</string>
+
+    <!-- Rows inside the Privacy &amp; advanced door -->
+    <string name="settings_screen_advanced_summary">Swipes, timeouts, backup, debug</string>
+</resources>

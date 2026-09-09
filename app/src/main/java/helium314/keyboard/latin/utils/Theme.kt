@@ -1,19 +1,15 @@
 // SPDX-License-Identifier: GPL-3.0-only
 package helium314.keyboard.latin.utils
 
-import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Shapes
 import androidx.compose.material3.Typography
 import androidx.compose.material3.darkColorScheme
-import androidx.compose.material3.dynamicDarkColorScheme
-import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -79,14 +75,14 @@ private val AppShapes = Shapes(
     extraLarge = RoundedCornerShape(28.dp),
 )
 
-// Seeded from @color/accent (#1A73E8 / #5E97F6). Only used below API 31, where the
-// platform has no dynamic palette to borrow; without these every role other than
-// primary falls back to Compose's default purple.
+// WaveKey: seeded from the mark's violet (#7C3AED light / #A855F7 dark) rather
+// than upstream's Google blue, and used on every API level — the app has a
+// colour of its own, so it does not borrow the wallpaper's.
 private val LightColors = lightColorScheme(
-    primary = Color(0xFF1A73E8), onPrimary = Color(0xFFFFFFFF),
-    primaryContainer = Color(0xFFD3E3FD), onPrimaryContainer = Color(0xFF041E49),
-    secondary = Color(0xFF565F71), onSecondary = Color(0xFFFFFFFF),
-    secondaryContainer = Color(0xFFDAE2F9), onSecondaryContainer = Color(0xFF131C2B),
+    primary = Color(0xFF7C3AED), onPrimary = Color(0xFFFFFFFF),
+    primaryContainer = Color(0xFFEDE0FF), onPrimaryContainer = Color(0xFF290055),
+    secondary = Color(0xFF635B70), onSecondary = Color(0xFFFFFFFF),
+    secondaryContainer = Color(0xFFE9DEF8), onSecondaryContainer = Color(0xFF1F182B),
     tertiary = Color(0xFF705575), onTertiary = Color(0xFFFFFFFF),
     tertiaryContainer = Color(0xFFFAD8FD), onTertiaryContainer = Color(0xFF28132E),
     error = Color(0xFFBA1A1A), onError = Color(0xFFFFFFFF),
@@ -99,14 +95,14 @@ private val LightColors = lightColorScheme(
     surfaceContainerHighest = Color(0xFFE3E2E6),
     outline = Color(0xFF74777F), outlineVariant = Color(0xFFC4C6D0),
     inverseSurface = Color(0xFF2F3036), inverseOnSurface = Color(0xFFF1F0F4),
-    inversePrimary = Color(0xFFA8C7FA), scrim = Color(0xFF000000),
+    inversePrimary = Color(0xFFD3B4FF), scrim = Color(0xFF000000),
 )
 
 private val DarkColors = darkColorScheme(
-    primary = Color(0xFFA8C7FA), onPrimary = Color(0xFF062E6F),
-    primaryContainer = Color(0xFF0842A0), onPrimaryContainer = Color(0xFFD3E3FD),
-    secondary = Color(0xFFBEC6DC), onSecondary = Color(0xFF283141),
-    secondaryContainer = Color(0xFF3E4759), onSecondaryContainer = Color(0xFFDAE2F9),
+    primary = Color(0xFFD3B4FF), onPrimary = Color(0xFF3F1B78),
+    primaryContainer = Color(0xFF5B32A6), onPrimaryContainer = Color(0xFFEDE0FF),
+    secondary = Color(0xFFCFC3DC), onSecondary = Color(0xFF352E41),
+    secondaryContainer = Color(0xFF4B4358), onSecondaryContainer = Color(0xFFE9DEF8),
     tertiary = Color(0xFFDDBCE0), onTertiary = Color(0xFF3F2844),
     tertiaryContainer = Color(0xFF573E5C), onTertiaryContainer = Color(0xFFFAD8FD),
     error = Color(0xFFFFB4AB), onError = Color(0xFF690005),
@@ -119,17 +115,15 @@ private val DarkColors = darkColorScheme(
     surfaceContainerHighest = Color(0xFF33353A),
     outline = Color(0xFF8E9099), outlineVariant = Color(0xFF44474E),
     inverseSurface = Color(0xFFE2E2E9), inverseOnSurface = Color(0xFF2F3036),
-    inversePrimary = Color(0xFF1A73E8), scrim = Color(0xFF000000),
+    inversePrimary = Color(0xFF7C3AED), scrim = Color(0xFF000000),
 )
 
 @Composable
 fun Theme(dark: Boolean = isSystemInDarkTheme(), content: @Composable () -> Unit) {
-    val colorScheme = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-        if (dark) dynamicDarkColorScheme(LocalContext.current)
-        else dynamicLightColorScheme(LocalContext.current)
-    } else {
-        if (dark) DarkColors else LightColors
-    }
+    // WaveKey: no dynamic colour. The app has one accent, the same violet on
+    // every device, so settings and keyboard agree with each other rather than
+    // each with the wallpaper.
+    val colorScheme = if (dark) DarkColors else LightColors
     MaterialTheme(
         colorScheme = colorScheme,
         typography = AppTypography,

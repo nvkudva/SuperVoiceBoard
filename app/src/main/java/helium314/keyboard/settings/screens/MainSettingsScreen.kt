@@ -26,27 +26,29 @@ import helium314.keyboard.settings.SearchSettingsScreen
 import helium314.keyboard.latin.utils.Theme
 import helium314.keyboard.settings.initPreview
 import helium314.keyboard.settings.preferences.Preference
-import helium314.keyboard.settings.preferences.PreferenceCategory
 import helium314.keyboard.settings.preferences.PreferenceGroup
 import helium314.keyboard.latin.utils.previewDark
 import helium314.keyboard.settings.screens.gesturedata.END_DATE_EPOCH_MILLIS
 import helium314.keyboard.settings.screens.gesturedata.TWO_WEEKS_IN_MILLIS
 
 @Composable
+/**
+ * WaveKey: six doors (docs/settings-ia.md).
+ *
+ * Upstream had eleven rows here, three of which — Preferences, Advanced,
+ * Secondary layouts — were where a setting went when it fit nowhere else. These
+ * six are named after what the user came to do, and every one carries what it
+ * currently holds, so the right door is picked without opening any.
+ */
 fun MainSettingsScreen(
     onClickAbout: () -> Unit,
-    onClickTextCorrection: () -> Unit,
-    onClickPreferences: () -> Unit,
+    onClickTyping: () -> Unit,
     onClickToolbar: () -> Unit,
-    onClickGestureTyping: () -> Unit,
     onClickDataGathering: () -> Unit,
-    onClickAdvanced: () -> Unit,
     onClickAppearance: () -> Unit,
     onClickLanguage: () -> Unit,
-    onClickLayouts: () -> Unit,
-    onClickDictionaries: () -> Unit,
-    onClickVoice: () -> Unit, // SuperVoiceBoard
-    onClickPrivacyBreaking: () -> Unit, // SuperVoiceBoard
+    onClickVoice: () -> Unit,
+    onClickPrivacyAdvanced: () -> Unit,
     onClickBack: () -> Unit,
 ) {
     SearchSettingsScreen(
@@ -61,7 +63,6 @@ fun MainSettingsScreen(
                     .then(Modifier.padding(innerPadding))
                     .padding(bottom = 24.dp)
             ) {
-                PreferenceCategory(stringResource(R.string.settings_category_input))
                 PreferenceGroup {
                     Preference(
                         name = stringResource(R.string.language_and_layouts_title),
@@ -70,79 +71,47 @@ fun MainSettingsScreen(
                         icon = R.drawable.ic_settings_languages
                     ) { NextScreenIcon() }
                     Preference(
-                        name = stringResource(R.string.settings_screen_preferences),
-                        onClick = onClickPreferences,
+                        name = stringResource(R.string.settings_door_typing),
+                        description = stringResource(R.string.settings_door_typing_summary),
+                        onClick = onClickTyping,
                         icon = R.drawable.ic_settings_preferences
                     ) { NextScreenIcon() }
-                    // SuperVoiceBoard: the differentiator sits near the top, not
-                    // buried under Advanced.
+                    // The differentiator sits in the top group, not under Advanced.
                     Preference(
                         name = stringResource(R.string.settings_screen_voice),
+                        description = stringResource(R.string.settings_door_voice_summary),
                         onClick = onClickVoice,
                         icon = R.drawable.ic_settings_voice
                     ) { NextScreenIcon() }
                     Preference(
-                        name = stringResource(R.string.settings_screen_secondary_layouts),
-                        onClick = onClickLayouts,
-                        icon = R.drawable.ic_settings_layout
-                    ) { NextScreenIcon() }
-                }
-
-                PreferenceCategory(stringResource(R.string.settings_screen_appearance))
-                PreferenceGroup {
-                    Preference(
-                        name = stringResource(R.string.settings_screen_appearance),
+                        name = stringResource(R.string.settings_door_look),
+                        description = stringResource(R.string.settings_door_look_summary),
                         onClick = onClickAppearance,
                         icon = R.drawable.ic_settings_appearance
                     ) { NextScreenIcon() }
                     Preference(
-                        name = stringResource(R.string.settings_screen_toolbar),
+                        name = stringResource(R.string.settings_door_toolbar),
+                        description = stringResource(R.string.settings_door_toolbar_summary),
                         onClick = onClickToolbar,
                         icon = R.drawable.ic_settings_toolbar
                     ) { NextScreenIcon() }
+                    Preference(
+                        name = stringResource(R.string.settings_door_privacy),
+                        description = stringResource(R.string.settings_door_privacy_summary),
+                        onClick = onClickPrivacyAdvanced,
+                        icon = R.drawable.ic_settings_advanced
+                    ) { NextScreenIcon() }
                 }
 
-                PreferenceCategory(stringResource(R.string.settings_category_correction))
                 PreferenceGroup {
-                    Preference(
-                        name = stringResource(R.string.settings_screen_correction),
-                        onClick = onClickTextCorrection,
-                        icon = R.drawable.ic_settings_correction
-                    ) { NextScreenIcon() }
-                    Preference(
-                        name = stringResource(R.string.dictionary_settings_category),
-                        onClick = onClickDictionaries,
-                        icon = R.drawable.ic_dictionary
-                    ) { NextScreenIcon() }
-                    if (JniUtils.sHaveGestureLib)
-                        Preference(
-                            name = stringResource(R.string.settings_screen_gesture),
-                            onClick = onClickGestureTyping,
-                            icon = R.drawable.ic_settings_gesture
-                        ) { NextScreenIcon() }
-                    // we don't even show the menu if data gathering phase ended more than 2 weeks ago
+                    // Upstream's research collection, which deletes itself two
+                    // weeks after the gathering phase ends.
                     if (JniUtils.sHaveGestureLib && System.currentTimeMillis() < END_DATE_EPOCH_MILLIS + TWO_WEEKS_IN_MILLIS)
                         Preference(
                             name = stringResource(R.string.gesture_data_screen),
                             onClick = onClickDataGathering,
                             icon = R.drawable.ic_settings_gesture
                         ) { NextScreenIcon() }
-                }
-
-                PreferenceCategory(stringResource(R.string.settings_category_miscellaneous))
-                PreferenceGroup {
-                    Preference(
-                        name = stringResource(R.string.settings_screen_advanced),
-                        onClick = onClickAdvanced,
-                        icon = R.drawable.ic_settings_advanced
-                    ) { NextScreenIcon() }
-                    // SuperVoiceBoard: the opt-outs of on-device-only, in one place.
-                    Preference(
-                        name = stringResource(R.string.settings_screen_privacy_breaking),
-                        description = stringResource(R.string.privacy_breaking_summary),
-                        onClick = onClickPrivacyBreaking,
-                        icon = R.drawable.ic_settings_advanced
-                    ) { NextScreenIcon() }
                     Preference(
                         name = stringResource(R.string.settings_screen_about),
                         onClick = onClickAbout,
@@ -160,7 +129,7 @@ private fun PreviewScreen() {
     initPreview(LocalContext.current)
     Theme(previewDark) {
         Surface {
-            MainSettingsScreen({}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {})
+            MainSettingsScreen({}, {}, {}, {}, {}, {}, {}, {}, {})
         }
     }
 }

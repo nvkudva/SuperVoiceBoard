@@ -178,7 +178,8 @@ private constructor(val themeId: Int, @JvmField val mStyleId: Int) {
                 THEME_LIGHT -> DefaultColors(
                     themeStyle,
                     hasBorders,
-                    ContextCompat.getColor(context, R.color.gesture_trail_color_lxx_light),
+                    // WaveKey's violet, not upstream's Google blue.
+                    ContextCompat.getColor(context, R.color.accent_wavekey_light),
                     ContextCompat.getColor(context, R.color.keyboard_background_lxx_light_border),
                     ContextCompat.getColor(context, R.color.key_background_normal_lxx_light_border),
                     ContextCompat.getColor(context, R.color.key_background_functional_lxx_light_border),
@@ -194,7 +195,7 @@ private constructor(val themeId: Int, @JvmField val mStyleId: Int) {
                 THEME_DARK -> DefaultColors(
                     themeStyle,
                     hasBorders,
-                    ContextCompat.getColor(context, R.color.gesture_trail_color_lxx_dark),
+                    ContextCompat.getColor(context, R.color.accent_wavekey_dark),
                     "#1E1F22".toColorInt(),
                     "#33353A".toColorInt(),
                     "#2A2C30".toColorInt(),

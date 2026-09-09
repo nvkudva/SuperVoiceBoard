@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- SPDX-License-Identifier: GPL-3.0-only -->
+<!-- WaveKey's own accent: the violet from the middle of the spectrum the mark
+     and the voice rail are drawn in. Kept in its own file so upstream's
+     colors.xml stays mergeable. -->
+<resources>
+    <!-- On a dark board. Bright enough to carry the gesture trail. -->
+    <color name="accent_wavekey_dark">#A855F7</color>
+    <!-- On a light board, where #A855F7 is too pale against white. -->
+    <color name="accent_wavekey_light">#7C3AED</color>
+</resources>

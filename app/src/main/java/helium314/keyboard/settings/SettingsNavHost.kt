@@ -35,7 +35,9 @@ import helium314.keyboard.settings.screens.SecondaryLayoutScreen
 import helium314.keyboard.settings.screens.SubtypeScreen
 import helium314.keyboard.settings.screens.TextCorrectionScreen
 import helium314.keyboard.settings.screens.ThemePickerScreen
+import helium314.keyboard.settings.screens.PrivacyAdvancedScreen
 import helium314.keyboard.settings.screens.ToolbarScreen
+import helium314.keyboard.settings.screens.TypingScreen
 import helium314.keyboard.settings.screens.gesturedata.GestureDataScreen
 import helium314.keyboard.settings.screens.gesturedata.ReviewScreen
 import kotlinx.coroutines.CoroutineScope
@@ -72,23 +74,36 @@ fun SettingsNavHost(
         composable(SettingsDestination.Settings) {
             MainSettingsScreen(
                 onClickAbout = { navController.navigate(SettingsDestination.About) },
-                onClickTextCorrection = { navController.navigate(SettingsDestination.TextCorrection) },
-                onClickPreferences = { navController.navigate(SettingsDestination.Preferences) },
+                onClickTyping = { navController.navigate(SettingsDestination.Typing) },
                 onClickToolbar = { navController.navigate(SettingsDestination.Toolbar) },
-                onClickGestureTyping = { navController.navigate(SettingsDestination.GestureTyping) },
                 onClickDataGathering = { navController.navigate(SettingsDestination.DataGathering) },
-                onClickAdvanced = { navController.navigate(SettingsDestination.Advanced) },
                 onClickAppearance = { navController.navigate(SettingsDestination.Appearance) },
                 onClickLanguage = { navController.navigate(SettingsDestination.Languages) },
-                onClickLayouts = { navController.navigate(SettingsDestination.Layouts) },
-                onClickDictionaries = { navController.navigate(SettingsDestination.Dictionaries) },
-                onClickVoice = { navController.navigate(SettingsDestination.Voice) }, // SuperVoiceBoard
-                onClickPrivacyBreaking = { navController.navigate(SettingsDestination.PrivacyBreaking) }, // SuperVoiceBoard
+                onClickVoice = { navController.navigate(SettingsDestination.Voice) },
+                onClickPrivacyAdvanced = { navController.navigate(SettingsDestination.PrivacyAdvanced) },
                 onClickBack = ::goBack,
             )
         }
         composable(SettingsDestination.About) {
             AboutScreen(onClickBack = ::goBack)
+        }
+        // WaveKey: the two hub screens behind the six doors.
+        composable(SettingsDestination.Typing) {
+            TypingScreen(
+                onClickKeysAndFeedback = { navController.navigate(SettingsDestination.Preferences) },
+                onClickCorrections = { navController.navigate(SettingsDestination.TextCorrection) },
+                onClickDictionaries = { navController.navigate(SettingsDestination.Dictionaries) },
+                onClickSwipe = { navController.navigate(SettingsDestination.GestureTyping) },
+                onClickLayouts = { navController.navigate(SettingsDestination.Layouts) },
+                onClickBack = ::goBack,
+            )
+        }
+        composable(SettingsDestination.PrivacyAdvanced) {
+            PrivacyAdvancedScreen(
+                onClickPrivacyBreaking = { navController.navigate(SettingsDestination.PrivacyBreaking) },
+                onClickAdvanced = { navController.navigate(SettingsDestination.Advanced) },
+                onClickBack = ::goBack,
+            )
         }
         composable(SettingsDestination.TextCorrection) {
             TextCorrectionScreen(onClickBack = ::goBack)
@@ -178,6 +193,8 @@ object SettingsDestination {
     const val Voice = "voice" // SuperVoiceBoard
     const val VoiceModels = "voice_models" // SuperVoiceBoard
     const val PrivacyBreaking = "privacy_breaking" // SuperVoiceBoard
+    const val Typing = "typing" // WaveKey: the Typing door
+    const val PrivacyAdvanced = "privacy_advanced" // WaveKey: the Privacy & advanced door
     const val Debug = "debug"
     const val Appearance = "appearance"
     const val ThemePicker = "theme_picker"

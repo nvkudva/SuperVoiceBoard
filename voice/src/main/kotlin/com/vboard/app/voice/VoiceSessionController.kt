@@ -203,8 +203,7 @@ class VoiceSessionController(
      */
     fun stopAndFinalize() {
         stopAudio()
-        val state = machine.state
-        if (state is DictationStateMachine.State.Listening && state.partial.isNotBlank()) {
+        if (machine.state is DictationStateMachine.State.Listening) {
             dispatch(Event.EndpointDetected)
         }
         dispatch(Event.StopRequested)

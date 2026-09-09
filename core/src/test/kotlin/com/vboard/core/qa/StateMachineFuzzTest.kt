@@ -122,11 +122,14 @@ class StateMachineFuzzTest {
                     assertTrue(!audioActive, "audio active while $post: ${ctx()}")
                 }
 
-                // Invariant 6: leaving Listening/Finalizing for Idle stops audio.
+                // Invariant 6: leaving Listening/Finalizing for Idle leaves no
+                // live microphone — either this step stops it, or a deferred stop
+                // already did. A second StopAudio would tear down a record that
+                // is already gone, which the machine deliberately avoids.
                 if ((pre is State.Listening || pre is State.Finalizing) && post is State.Idle) {
                     assertTrue(
-                        Effect.StopAudio in effects,
-                        "left $pre for Idle without StopAudio: ${ctx()}",
+                        Effect.StopAudio in effects || !audioActive,
+                        "left $pre for Idle with the mic still live: ${ctx()}",
                     )
                 }
 

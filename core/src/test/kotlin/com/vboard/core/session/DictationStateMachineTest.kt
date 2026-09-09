@@ -69,10 +69,11 @@ class DictationStateMachineTest {
     }
 
     @Test
-    fun `endpoint with no speech stays listening`() {
+    fun `endpoint with no partial still finalizes`() {
         val machine = startedMachine()
-        machine.onEvent(Event.EndpointDetected)
-        assertEquals(State.Listening("", 0), machine.state)
+        val effects = machine.onEvent(Event.EndpointDetected)
+        assertEquals(State.Finalizing("", 0), machine.state)
+        assertTrue(Effect.BeginFinalize("", 0) in effects)
     }
 
     @Test

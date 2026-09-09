@@ -182,14 +182,15 @@ class DictationStateMachine(private val config: Config = Config()) {
             is Event.Partial ->
                 State.Listening(event.text, state.utteranceIndex) to
                     listOf(Effect.UpdatePartial(event.text))
+            // Finalize whatever the microphone captured, blank partial or not.
+            // The partial used to be the proof that something had been said, but
+            // nothing has produced one since the streaming recognizer was
+            // removed, so gating on it meant the accurate pass never ran and a
+            // tap-stop committed nothing. An empty audio buffer is handled
+            // downstream: it decodes to nothing and commits nothing.
             Event.EndpointDetected ->
-                if (state.partial.isBlank()) {
-                    // Nothing was said in this window; stay listening.
-                    state to emptyList()
-                } else {
-                    State.Finalizing(state.partial, state.utteranceIndex) to
-                        listOf(Effect.BeginFinalize(state.partial, state.utteranceIndex))
-                }
+                State.Finalizing(state.partial, state.utteranceIndex) to
+                    listOf(Effect.BeginFinalize(state.partial, state.utteranceIndex))
             is Event.FinalTranscript -> commitThen(event.text, state.utteranceIndex, stop = false)
             Event.ScratchThat ->
                 State.Listening("", state.utteranceIndex) to listOf(Effect.DeleteLastUtterance)

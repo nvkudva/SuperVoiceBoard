@@ -17,7 +17,6 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -86,7 +85,7 @@ fun WelcomeWizard(
     fun micGranted() = ContextCompat.checkSelfPermission(ctx, Manifest.permission.RECORD_AUDIO) ==
         PackageManager.PERMISSION_GRANTED
     fun determineStep(): Int = when {
-        !UncachedInputMethodManagerUtils.isThisImeEnabled(ctx, imm) -> 0
+        !UncachedInputMethodManagerUtils.isThisImeEnabled(ctx, imm) -> 1
         !UncachedInputMethodManagerUtils.isThisImeCurrent(ctx, imm) -> 2
         !micAsked && !micGranted() -> 3
         else -> LAST_STEP
@@ -108,10 +107,7 @@ fun WelcomeWizard(
     @Composable fun Intro(modifier: Modifier = Modifier) {
         Column(modifier, verticalArrangement = Arrangement.spacedBy(12.dp)) {
             Text(
-                stringResource(
-                    if (step == 0) R.string.setup_welcome_title else R.string.setup_steps_title,
-                    appName
-                ),
+                stringResource(R.string.setup_steps_title, appName),
                 style = MaterialTheme.typography.displaySmall,
                 color = MaterialTheme.colorScheme.onBackground,
             )
@@ -137,7 +133,7 @@ fun WelcomeWizard(
             step = LAST_STEP
         }
         Column(modifier, verticalArrangement = Arrangement.spacedBy(16.dp)) {
-            if (step > 0) StepProgress(step)
+            StepProgress(step)
             AnimatedContent(
                 targetState = step,
                 transitionSpec = {
@@ -150,8 +146,6 @@ fun WelcomeWizard(
             ) { current ->
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     when (current) {
-                        0 -> Welcome { step = 1 }
-
                         1 -> StepCard(
                             title = stringResource(R.string.setup_step1_title, appName),
                             instruction = stringResource(R.string.setup_step1_instruction, appName),
@@ -365,25 +359,6 @@ private fun OptionalCard(
 private fun SecondaryAction(text: String, onClick: () -> Unit) {
     TextButton(onClick = onClick, modifier = Modifier.fillMaxWidth()) {
         Text(text, style = MaterialTheme.typography.labelLarge)
-    }
-}
-
-@Composable
-private fun ColumnScope.Welcome(onClick: () -> Unit) {
-    Image(
-        painterResource(R.drawable.setup_welcome_image),
-        null,
-        Modifier.fillMaxWidth().height(180.dp)
-    )
-    Button(
-        onClick = onClick,
-        modifier = Modifier.fillMaxWidth(),
-        shape = MaterialTheme.shapes.large,
-    ) {
-        Text(
-            stringResource(R.string.setup_start_action),
-            style = MaterialTheme.typography.labelLarge
-        )
     }
 }
 

@@ -1607,14 +1607,20 @@ public class LatinIME extends InputMethodService implements
     // This method is public for testability of LatinIME, but also in the future it should
     // completely replace #onCodeInput.
     public void onEvent(@NonNull final Event event) {
-        // SuperVoiceBoard (W5.1/W5.2): the AI fix key and its long-press.
+        // SuperVoiceBoard (W5.1/W5.2): the AI fix key and its long-press, and the
+        // dictation-engine toggle. Each returns: these keycodes mean nothing to
+        // InputLogic, and falling through to it threw "Unknown event" — every
+        // press of one of these keys crashed the keyboard.
         if (KeyCode.AI_FIX == event.getKeyCode()) {
             aiFixKey().onFixKeyPressed();
+            return;
         } else if (KeyCode.AI_FIX_ATTRIBUTION == event.getKeyCode()) {
             showFixAttribution();
+            return;
         } else if (KeyCode.TOGGLE_ASR_ENGINE == event.getKeyCode()) {
             // SuperVoiceBoard: swap the dictation engine for the next session.
             voiceController().toggleAsrEngine();
+            return;
         }
         if (KeyCode.VOICE_INPUT == event.getKeyCode()) {
             // SuperVoiceBoard (W3.6): upstream hands off to the system voice IME

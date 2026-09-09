@@ -97,6 +97,7 @@ fun getCodeForToolbarKey(key: ToolbarKey) = Settings.getInstance().getCustomTool
     BACKGROUND_GATHERING -> KeyCode.BACKGROUND_GATHERING
     AI_FIX -> KeyCode.AI_FIX // SuperVoiceBoard
     SWITCH_KEYBOARD -> KeyCode.SYSTEM_INPUT_METHOD_PICKER // SuperVoiceBoard
+    RESIZE -> KeyCode.TOGGLE_RESIZE_MODE // SuperVoiceBoard
 }
 
 fun getCodeForToolbarKeyLongClick(key: ToolbarKey) = Settings.getInstance().getCustomToolbarLongpressCode(key) ?: when (key) {
@@ -126,7 +127,8 @@ enum class ToolbarKey {
     INCOGNITO, AUTOCORRECT, CLEAR_CLIPBOARD, CLOSE_HISTORY, EMOJI, LEFT, RIGHT, UP, DOWN, WORD_LEFT, WORD_RIGHT,
     PAGE_UP, PAGE_DOWN, FULL_LEFT, FULL_RIGHT, PAGE_START, PAGE_END, BACKGROUND_GATHERING,
     AI_FIX, // SuperVoiceBoard (W5.1)
-    SWITCH_KEYBOARD // SuperVoiceBoard: opens the system input-method picker
+    SWITCH_KEYBOARD, // SuperVoiceBoard: opens the system input-method picker
+    RESIZE // SuperVoiceBoard: enters interactive keyboard resize mode
 }
 
 enum class ToolbarMode {
@@ -145,7 +147,7 @@ val defaultToolbarPref by lazy {
     // so in LTR it lands under the thumb on the right.
     // LEFT/RIGHT are off by default: single-character cursor nudges earn their place
     // on few keyboards, and the arrow keys remain one toggle away in settings.
-    val default = listOf(SETTINGS, CLIPBOARD, UNDO, REDO, SELECT_WORD, COPY, PASTE, SWITCH_KEYBOARD, AI_FIX)
+    val default = listOf(SETTINGS, CLIPBOARD, UNDO, REDO, SELECT_WORD, COPY, PASTE, SWITCH_KEYBOARD, RESIZE, AI_FIX)
     val others = entries.filterNot { it in default || it == CLOSE_HISTORY || it in hiddenToolbarKeys }
     default.joinToString(Separators.ENTRY) { it.name + Separators.KV + true } + Separators.ENTRY +
             others.joinToString(Separators.ENTRY) { it.name + Separators.KV + false }

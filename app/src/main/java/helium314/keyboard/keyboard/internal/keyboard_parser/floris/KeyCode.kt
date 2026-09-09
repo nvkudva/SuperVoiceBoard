@@ -60,7 +60,7 @@ object KeyCode {
     //const val COMPACT_LAYOUT_TO_RIGHT =     -112
     const val SPLIT_LAYOUT =                -113
     //const val MERGE_LAYOUT =                -114
-    //const val TOGGLE_RESIZE_MODE =          -115
+    const val TOGGLE_RESIZE_MODE =          -115 // SuperVoiceBoard: interactive keyboard resize
 
     const val UNDO =                        -131
     const val REDO =                        -132
@@ -216,6 +216,7 @@ object KeyCode {
         TIMESTAMP, CTRL_LEFT, CTRL_RIGHT, ALT_LEFT, ALT_RIGHT, META_LEFT, META_RIGHT, SEND_INTENT_ONE, SEND_INTENT_TWO,
         SEND_INTENT_THREE, EMOJI_SEARCH, INLINE_EMOJI_SEARCH_DONE, META_LOCK,
         BACKGROUND_GATHERING, BACKGROUND_GATHERING_TEMP_OFF, DPAD,
+        TOGGLE_RESIZE_MODE // SuperVoiceBoard
         -> this
 
         KEY_REPEAT if (longPress) -> this

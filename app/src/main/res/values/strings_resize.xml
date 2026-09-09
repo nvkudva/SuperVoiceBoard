@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    SuperVoiceBoard: strings for interactive keyboard resize mode.
+    SPDX-License-Identifier: GPL-3.0-only
+-->
+<resources>
+    <!-- Name of the toolbar key that starts interactive keyboard resizing (must match ToolbarKey.RESIZE) -->
+    <string name="resize">Resize keyboard</string>
+    <!-- Button that leaves resize mode and keeps the new size -->
+    <string name="resize_done">Done</string>
+    <!-- Button that restores the default keyboard size -->
+    <string name="resize_reset">Reset</string>
+    <!-- Accessibility label of the handle that changes the keyboard height -->
+    <string name="resize_handle_height">Adjust keyboard height</string>
+    <!-- Accessibility label of the handle that changes the space below the keyboard -->
+    <string name="resize_handle_bottom">Adjust bottom padding</string>
+    <!-- Accessibility label of the handles that change the space left and right of the keyboard -->
+    <string name="resize_handle_side">Adjust side padding</string>
+</resources>

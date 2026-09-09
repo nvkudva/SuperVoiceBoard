@@ -56,6 +56,7 @@ import helium314.keyboard.latin.utils.getActivity
 import helium314.keyboard.latin.utils.prefs
 import helium314.keyboard.latin.utils.CloseIcon
 import helium314.keyboard.settings.SearchScreen
+import helium314.keyboard.settings.preferences.KeyboardPreview
 import helium314.keyboard.settings.SettingsActivity
 import helium314.keyboard.latin.utils.Theme
 import helium314.keyboard.settings.contentTextDirectionStyle
@@ -172,6 +173,10 @@ fun ColorsScreen(
             if (moreColors == 2) result.toMutableList<ColorSetting?>().apply { add(0, null) }
             else result
         },
+        // WaveKey: the keyboard being recoloured, under the colour being
+        // changed. Editing used to be judged by the settings chrome recolouring
+        // itself, a proxy for the thing in hand (docs/settings-ia.md).
+        footer = { KeyboardPreview() },
         itemContent = { colorSetting ->
             if (colorSetting == null)
                 Text( // not a colorSetting, but still best done as part of the list

@@ -145,6 +145,8 @@ fun <T: Any?> SearchScreen(
     icon: @Composable (() -> Unit)? = null,
     menu: List<Pair<String, () -> Unit>>? = null,
     content: @Composable (ColumnScope.() -> Unit)? = null,
+    /** Pinned below the list, where the keyboard itself would sit. */
+    footer: (@Composable () -> Unit)? = null,
 ) {
     // searchText and showSearch should have the same remember or rememberSaveable
     // saveable survives orientation changes and switching between screens, but shows the
@@ -217,12 +219,13 @@ fun <T: Any?> SearchScreen(
             }
             CompositionLocalProvider(LocalTextStyle provides MaterialTheme.typography.bodyLarge) {
                 if (searchText.text.isBlank() && content != null) {
-                    Column {
+                    Column(if (footer == null) Modifier else Modifier.weight(1f)) {
                         content()
                     }
                 } else {
                     val items = filteredItems(searchText.text)
                     Scaffold(
+                        modifier = if (footer == null) Modifier else Modifier.weight(1f),
                         contentWindowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Bottom)
                     ) { innerPadding ->
                         LazyColumn(contentPadding = innerPadding) {
@@ -232,6 +235,7 @@ fun <T: Any?> SearchScreen(
                         }
                     }
                 }
+                footer?.invoke()
             }
         }
     }

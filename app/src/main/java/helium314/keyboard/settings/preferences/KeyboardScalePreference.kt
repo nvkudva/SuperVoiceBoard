@@ -20,6 +20,7 @@ import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import android.content.res.Configuration
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
@@ -35,6 +36,8 @@ import androidx.compose.ui.unit.dp
 import helium314.keyboard.latin.R
 import helium314.keyboard.latin.settings.createPrefKeyForBooleanSettings
 import helium314.keyboard.latin.utils.FoldableUtils
+import helium314.keyboard.latin.settings.createPrefKeyForBooleanSettings
+import helium314.keyboard.latin.settings.findIndexOfDefaultSetting
 import helium314.keyboard.latin.utils.prefs
 import helium314.keyboard.latin.utils.Theme
 import helium314.keyboard.settings.WithSmallTitle
@@ -58,10 +61,21 @@ fun KeyboardScalePreference(
     if (defaults.size != 1.shl(dimensions.size))
         throw ArithmeticException("defaults size does not match with dimensions, expected ${1.shl(dimensions.size)}, got ${defaults.size}")
     var showDialog by remember { mutableStateOf(false) }
+    // WaveKey: the value for the orientation the user is in right now. Upstream
+    // showed nothing — every scale row read as blank, and the only way to learn
+    // a size was to open its dialog (docs/settings-ia.md). One number fits.
+    val ctx = LocalContext.current
+    val prefs = ctx.prefs()
+    val landscape = ctx.resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+    val index = findIndexOfDefaultSetting(landscape, FoldableUtils.isFolded)
+    val current = prefs.getFloat(
+        createPrefKeyForBooleanSettings(baseKey, index, dimensions.size),
+        defaults.getOrElse(index) { defaults[0] }
+    )
     Preference(
         name = name,
+        description = description(current),
         onClick = { showDialog = true },
-        // no description because it can easily take up too much space
     )
     if (showDialog)
         KeyboardScaleDialog(

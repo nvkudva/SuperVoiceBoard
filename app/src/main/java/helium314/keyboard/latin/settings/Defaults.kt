@@ -91,7 +91,10 @@ object Defaults {
     @JvmField
     val PREF_SPLIT_SPACER_SCALE = Array(4) { DEFAULT_SIZE_SCALE }
     @JvmField
-    val PREF_KEYBOARD_HEIGHT_SCALE = Array(4) { DEFAULT_SIZE_SCALE }
+    // SuperVoiceBoard: 10% taller than upstream out of the box. The keys were
+    // under the 48dp target on a phone, and every other scale here stays at 100%
+    // so the user's own height setting still reads as a delta from a round number.
+    val PREF_KEYBOARD_HEIGHT_SCALE = Array(4) { 1.1f }
     @JvmField
     val PREF_BOTTOM_ROW_SCALE = Array(4) { DEFAULT_SIZE_SCALE }
     @JvmField

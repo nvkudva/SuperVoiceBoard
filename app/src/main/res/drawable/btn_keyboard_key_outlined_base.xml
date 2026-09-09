@@ -6,11 +6,13 @@
     <!-- The action key keeps the style's own shape rather than LXX's circle:
          that circle is drawn with keepBackgroundAspectRatio, which these styles
          do not set, so it stretched into an oval on a wide enter key. It is the
-         accent colour that marks it as the action, not a different silhouette. -->
+         accent colour that marks it as the action, not a different silhouette:
+         it takes the same resting drawable as every other key, so it carries the
+         same outline or the same gradient and depth. -->
     <item android:state_active="true" android:state_pressed="true"
           android:drawable="@drawable/btn_keyboard_key_pressed_outlined_base" />
     <item android:state_active="true"
-          android:drawable="@drawable/btn_keyboard_key_pressed_outlined_base" />
+          android:drawable="@drawable/btn_keyboard_key_normal_outlined_base" />
 
     <item android:state_checkable="true" android:state_checked="true" android:state_pressed="true"
           android:drawable="@drawable/btn_keyboard_key_pressed_outlined_base" />

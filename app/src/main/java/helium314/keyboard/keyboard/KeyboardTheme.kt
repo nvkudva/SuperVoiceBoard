@@ -187,14 +187,18 @@ private constructor(val themeId: Int, @JvmField val mStyleId: Int) {
                     ContextCompat.getColor(context, R.color.key_hint_letter_color_lxx_light),
                     keyboardBackground = backgroundImage
                 )
+                // SuperVoiceBoard: upstream's dark is Material blue-grey 900, which
+                // reads green next to a neutral phone UI. These are the same
+                // values pulled onto the grey axis, keeping the three steps —
+                // board, key, functional key — the same distance apart.
                 THEME_DARK -> DefaultColors(
                     themeStyle,
                     hasBorders,
                     ContextCompat.getColor(context, R.color.gesture_trail_color_lxx_dark),
-                    "#263238".toColorInt(),
-                    "#364248".toColorInt(),
-                    "#2d393f".toColorInt(),
-                    "#364248".toColorInt(),
+                    "#1E1F22".toColorInt(),
+                    "#33353A".toColorInt(),
+                    "#2A2C30".toColorInt(),
+                    "#33353A".toColorInt(),
                     ContextCompat.getColor(context, R.color.key_text_color_lxx_dark),
                     ContextCompat.getColor(context, R.color.key_hint_letter_color_lxx_dark),
                     keyboardBackground = backgroundImage

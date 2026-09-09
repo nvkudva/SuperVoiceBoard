@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- SPDX-License-Identifier: GPL-3.0-only -->
+<!-- SuperVoiceBoard: the privacy-breaking screen, where each switch turns on
+     something that leaves the device. Kept out of the upstream strings.xml so
+     that file stays mergeable. -->
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- SuperVoiceBoard: the features that send data off the device -->
+    <string name="settings_screen_privacy_breaking">Privacy-breaking features</string>
+    <string name="privacy_breaking_summary">Off by default. Each one sends something to Google.</string>
+    <string name="privacy_breaking_category_voice">Voice</string>
+    <string name="privacy_breaking_category_fill">Passwords</string>
+    <string name="privacy_breaking_google_voice">Google voice typing</string>
+    <string name="privacy_breaking_google_voice_summary">Dictate with Google\'s recognizer instead of the on-device models. Your audio is sent to Google.</string>
+    <string name="privacy_breaking_password_manager">Google Password Manager fill</string>
+    <string name="privacy_breaking_password_manager_summary">Show saved logins from Google Password Manager on username and password fields. The keyboard tells Google which field you are filling.</string>
+</resources>

@@ -680,7 +680,6 @@ New dictionary:
     <string name="dictionary_load_error">"Error loading dictionary file"</string>
     <!-- Message about some dictionary indicating it can be downloaded, but hasn't been yet -->
     <string name="dictionary_available">Dictionary available</string>
-    <!-- Hint to tell when the data was last updated. Usage : "Last updated [date]", may contain a : or so. -->
     <!-- Action to delete (a file) -->
     <string name="delete">Delete</string>
     <!-- Text for application version -->
@@ -757,7 +756,6 @@ New dictionary:
     <string name="theme_name_violette" tools:keep="@string/theme_name_violette">Violette</string>
     <!-- Theme name for user-defined theme -->
     <string name="theme_name_user" tools:keep="@string/theme_name_user">User-Defined</string>
-    <!-- Theme name for user-defined theme night mode theme -->
     <!-- Text when determining color automatically -->
     <string name="auto_user_color">Choose color automatically</string>
     <!-- Menu item for showing fewer colors -->
@@ -798,110 +796,10 @@ New dictionary:
     <string name="settings_screen_about">About</string>
     <!-- version for about screen -->
     <string name="version">Version</string>
-    <!-- github repo link for about screen -->
     <!-- SuperVoiceBoard: AI fix attribution (W5.2) -->
     <string name="ai_fix_attribution_line">“%1$s” → “%2$s”</string>
     <string name="ai_fix_attribution_title">What the model changed</string>
     <string name="ai_fix_attribution_none">The model changed no wording — only spelling and spacing</string>
-    <string name="voice_telemetry">Measure how well dictation works</string>
-    <string name="voice_telemetry_summary">Counts how often dictated text is sent without editing, and how long that takes. No text, ever, and nothing leaves this device</string>
-    <string name="voice_telemetry_measured">%1$d%% of %2$d dictations sent unedited, %3$.1fs on average</string>
-    <!-- SuperVoiceBoard: the voice strip (W3.4) -->
-    <string name="voice_listening">Listening…</string>
-    <string name="voice_preparing">Getting ready…</string>
-    <string name="voice_finalizing">Finishing…</string>
-    <string name="voice_cleaning">Cleaning up…</string>
-    <string name="voice_cancel">Stop dictating</string>
-    <string name="voice_done">Done dictating</string>
-    <string name="voice_minimize_keyboard">Hide keyboard, keep listening</string>
-    <!-- SuperVoiceBoard: Google dictation backend -->
-    <string name="voice_google_unavailable">Google voice typing is not available on this device</string>
-    <string name="voice_google_error_audio">Could not record audio</string>
-    <string name="voice_google_error_permission">Google voice typing needs the microphone permission</string>
-    <string name="voice_google_error_network">Google voice typing needs a network connection</string>
-    <string name="voice_google_error_no_match">Nothing was heard</string>
-    <string name="voice_google_error_generic">Google voice typing failed</string>
-    <string name="voice_started">Voice typing started</string>
-    <string name="voice_stopped">Voice typing stopped</string>
-    <!-- SuperVoiceBoard: the microphone step in the setup wizard. %s is the application name. -->
-    <string name="setup_mic_title">Turn on voice typing</string>
-    <string name="setup_mic_instruction">"%s types what you say, and the speech never leaves your device. Allow the microphone so the voice key is ready when you are."</string>
-    <string name="setup_mic_action">Allow microphone</string>
-    <string name="setup_mic_skip_action">Not now</string>
-    <!-- SuperVoiceBoard: subtitle on the setup wizard welcome screen -->
-    <string name="setup_welcome_voice_description">with on-device Voice Typing</string>
-    <!-- SuperVoiceBoard: the optional voice step in the setup wizard -->
-    <string name="setup_voice_action">Set up voice typing</string>
-    <string name="setup_voice_instruction">Optional. Downloads about %1$s of speech models, used entirely on this device.</string>
-    <!-- SuperVoiceBoard: the voice models screen -->
-    <string name="settings_screen_voice_models">Voice models</string>
-    <!-- SuperVoiceBoard: section headers on the Voice typing screen -->
-    <string name="voice_category_dictation">Dictation</string>
-    <string name="voice_category_transcript">Transcript</string>
-    <string name="voice_category_refinement">Refinement</string>
-    <string name="voice_category_privacy">Privacy</string>
-    <string name="voice_models_summary">Download, import or remove the on-device speech models</string>
-    <string name="voice_models_unavailable">Voice models are unavailable in this process</string>
-    <string name="voice_models_footer">Models are stored on this device and used offline. Removing one frees its space; you can download or import it again later.</string>
-    <string name="voice_models_needed">Needed for dictation · %1$s</string>
-    <string name="voice_models_optional">Optional · %1$s</string>
-    <string name="voice_models_installed">Installed · %1$s</string>
-    <string name="voice_models_downloading">Downloading %1$d%% of %2$s</string>
-    <string name="voice_models_queued">Waiting for Wi-Fi</string>
-    <string name="voice_models_verifying">Checking the download…</string>
-    <string name="voice_models_failed_network">Download failed — no connection</string>
-    <string name="voice_models_failed_checksum">Download failed — the file did not match</string>
-    <string name="voice_models_failed_storage">Not enough free space</string>
-    <string name="voice_models_failed_cancelled">Download cancelled</string>
-    <string name="voice_models_failed_io">Download failed — could not write to storage</string>
-    <string name="voice_models_metered_title">Use mobile data?</string>
-    <string name="voice_models_metered_message">You are not on Wi-Fi. This download is %1$s and will use your mobile data. It can also wait until you are on Wi-Fi.</string>
-    <string name="voice_models_use_mobile_data">Use mobile data</string>
-    <string name="voice_models_download">Download</string>
-    <string name="voice_models_cancel">Cancel</string>
-    <string name="voice_models_remove">Remove</string>
-    <string name="voice_models_import">Import a file</string>
-    <string name="voice_models_importing">Checking the file…</string>
-    <string name="voice_models_import_ok">Imported — finishing the install</string>
-    <string name="voice_models_import_wrong_file">That file does not match this model</string>
-    <string name="voice_models_import_unknown_file">This model does not use a file with that name</string>
-    <string name="voice_models_import_installed">Already installed</string>
-    <string name="voice_models_import_io">Could not read that file</string>
-    <!-- SuperVoiceBoard: voice settings (W2.5) -->
-    <string name="settings_screen_voice">Voice typing</string>
-    <!-- SuperVoiceBoard: the features that send data off the device -->
-    <string name="settings_screen_privacy_breaking">Privacy-breaking features</string>
-    <string name="privacy_breaking_summary">Off by default. Each one sends something to Google.</string>
-    <string name="privacy_breaking_category_voice">Voice</string>
-    <string name="privacy_breaking_category_fill">Passwords</string>
-    <string name="privacy_breaking_google_voice">Google voice typing</string>
-    <string name="privacy_breaking_google_voice_summary">Dictate with Google\'s recognizer instead of the on-device models. Your audio is sent to Google.</string>
-    <string name="privacy_breaking_password_manager">Google Password Manager fill</string>
-    <string name="privacy_breaking_password_manager_summary">Show saved logins from Google Password Manager on username and password fields. The keyboard tells Google which field you are filling.</string>
-    <string name="voice_inline_dictation">Dictate in place</string>
-    <string name="voice_inline_dictation_summary">Keep the keys live while you speak, instead of taking over the screen</string>
-    <string name="voice_silence_timeout">Stop after silence</string>
-    <string name="voice_silence_timeout_summary">How long the mic stays open with nothing being said</string>
-    <string name="voice_silence_timeout_off">Never</string>
-    <string name="voice_silence_timeout_seconds">%1$d seconds</string>
-    <string name="voice_raw_transcript">Raw transcript</string>
-    <string name="voice_raw_transcript_summary">Type exactly what was heard — no cleanup at all</string>
-    <string name="voice_remove_fillers">Remove fillers</string>
-    <string name="voice_remove_fillers_summary">Drop “um”, “uh” and the like</string>
-    <string name="voice_aggressive_fillers">Remove discourse fillers</string>
-    <string name="voice_aggressive_fillers_summary">Also drop “you know”, “I mean”, “sort of”</string>
-    <string name="voice_self_corrections">Resolve self-corrections</string>
-    <string name="voice_self_corrections_summary">“to John no wait to Mary” becomes “to Mary”</string>
-    <string name="voice_auto_punctuate">Add punctuation</string>
-    <string name="voice_auto_punctuate_summary">Punctuate dictated sentences automatically</string>
-    <string name="voice_auto_capitalize">Capitalize dictated text</string>
-    <string name="voice_auto_capitalize_summary">Separate from the keyboard\'s own auto-capitalization</string>
-    <string name="voice_spoken_commands">Spoken punctuation</string>
-    <string name="voice_spoken_commands_summary">“comma”, “new line”, “question mark” become the mark itself</string>
-    <string name="voice_provisional_commit">Show text immediately</string>
-    <string name="voice_provisional_commit_summary">Types the live model\'s text the moment you stop speaking, then corrects it in place when the accurate model finishes. The text you keep is always the accurate one</string>
-    <string name="voice_llm_refine">AI refinement</string>
-    <string name="voice_llm_refine_summary">Tidy dictated text with the on-device model. Runs outside the keyboard, and needs the refiner model downloaded</string>
     <!-- SuperVoiceBoard: attribution entry for the upstream project this fork is built on -->
     <string name="about_based_on">Based on HeliBoard</string>
     <string name="about_based_on_description">All typing functionality comes from HeliBoard (GPL-3.0), itself a fork of OpenBoard and AOSP LatinIME</string>

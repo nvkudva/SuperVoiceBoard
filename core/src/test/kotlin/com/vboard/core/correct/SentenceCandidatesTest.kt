@@ -33,7 +33,8 @@ class SentenceCandidatesTest {
         val c = candidates()
         c.record("done", listOf("dine"), " ")
         assertTrue(SentenceCandidates.endsSentence(".\n"))
-        assertEquals(1, c.record("now", listOf("not"), "! ")?.size)
+        // Both words belong to the sentence the "!" closed.
+        assertEquals(2, c.record("now", listOf("not"), "! ")?.size)
     }
 
     @Test

@@ -145,6 +145,9 @@ public class LatinIME extends InputMethodService implements
     // because the voice runtime is only reachable once the Application exists.
     private helium314.keyboard.voice.VoiceController mVoiceController;
     private helium314.keyboard.voice.VoiceStripView mVoiceStripView;
+    // SuperVoiceBoard: the correction ghost. Null until the strip is inflated,
+    // and null again on every input-view teardown; nothing else depends on it.
+    private helium314.keyboard.correct.GhostSwapView mCorrectionGhost;
     // SuperVoiceBoard: the AI fix toolbar key (W5.1) and its attribution (W5.2).
     private helium314.keyboard.voice.AiFixKey mAiFixKey;
     // SuperVoiceBoard (W7.3): so the settings screen can read the running
@@ -815,6 +818,8 @@ public class LatinIME extends InputMethodService implements
         if (mVoiceStripView != null) {
             voiceController().setStrip(mVoiceStripView);
         }
+        // SuperVoiceBoard: correction ghost (see helium314.keyboard.correct).
+        mCorrectionGhost = view.findViewById(R.id.correction_ghost);
     }
 
     /**
@@ -839,6 +844,19 @@ public class LatinIME extends InputMethodService implements
             });
         }
         return mVoiceController;
+    }
+
+    /**
+     * SuperVoiceBoard: shows that a word was replaced, by lifting the old one
+     * away and settling the new one in its place.
+     *
+     * The whole feature is this method, the view it talks to, and the
+     * helium314.keyboard.correct package. Nothing reads its return value and
+     * nothing breaks if it does nothing, so dropping the feature is deleting
+     * those three things.
+     */
+    public void showCorrectionGhost(final String from, final String to) {
+        if (mCorrectionGhost != null) mCorrectionGhost.show(from, to);
     }
 
     /** SuperVoiceBoard: swap the strip row between suggestions and voice. */

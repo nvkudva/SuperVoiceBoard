@@ -23,7 +23,9 @@ import androidx.core.graphics.ColorUtils
 import androidx.core.graphics.drawable.DrawableCompat
 import androidx.core.graphics.drawable.toBitmap
 import helium314.keyboard.keyboard.KeyboardTheme.Companion.STYLE_HOLO
+import helium314.keyboard.keyboard.KeyboardTheme.Companion.STYLE_EDGE_LIT
 import helium314.keyboard.keyboard.KeyboardTheme.Companion.STYLE_MATERIAL
+import helium314.keyboard.keyboard.KeyboardTheme.Companion.STYLE_OUTLINED
 import helium314.keyboard.latin.common.ColorType.*
 import helium314.keyboard.latin.R
 import helium314.keyboard.latin.utils.adjustLuminosityAndKeepAlpha
@@ -230,8 +232,11 @@ class DynamicColors(context: Context, override val themeStyle: String, override 
                 if (!isNight) pressedStateList(doubleAdjustedFunctionalKey, functionalKey)
                 else pressedStateList(functionalKey, doubleAdjustedKeyBackground)
 
-            actionKeyStateList =
-                if (!isNight) pressedStateList(gesture, accent)
+            // SuperVoiceBoard: in these two styles the action key is a key like
+            // any other — one key treatment across the board, and an accent slab
+            // in the corner reads as a different kind of control.
+            actionKeyStateList = if (themeStyle == STYLE_OUTLINED || themeStyle == STYLE_EDGE_LIT) keyStateList
+                else if (!isNight) pressedStateList(gesture, accent)
                 else pressedStateList(doubleAdjustedAccent, accent)
 
             spaceBarStateList =
@@ -252,8 +257,11 @@ class DynamicColors(context: Context, override val themeStyle: String, override 
                 if (themeStyle == STYLE_HOLO) pressedStateList(functionalKey, Color.TRANSPARENT)
                 else keyStateList
 
-            actionKeyStateList =
-                if (themeStyle == STYLE_HOLO) pressedStateList(accent, Color.TRANSPARENT)
+            // SuperVoiceBoard: in these two styles the action key is a key like
+            // any other — one key treatment across the board, and an accent slab
+            // in the corner reads as a different kind of control.
+            actionKeyStateList = if (themeStyle == STYLE_OUTLINED || themeStyle == STYLE_EDGE_LIT) keyStateList
+                else if (themeStyle == STYLE_HOLO) pressedStateList(accent, Color.TRANSPARENT)
                 else if (!isNight) pressedStateList(gesture, accent)
                 else pressedStateList(doubleAdjustedAccent, accent)
 
@@ -447,7 +455,8 @@ class DefaultColors (
             keyStateList = if (themeStyle == STYLE_HOLO) pressedStateList(keyBackground, keyBackground)
                 else pressedStateList(brightenOrDarken(keyBackground, true), keyBackground)
             functionalKeyStateList = pressedStateList(brightenOrDarken(functionalKey, true), functionalKey)
-            actionKeyStateList = if (themeStyle == STYLE_HOLO) functionalKeyStateList
+            actionKeyStateList = if (themeStyle == STYLE_OUTLINED || themeStyle == STYLE_EDGE_LIT) keyStateList
+                else if (themeStyle == STYLE_HOLO) functionalKeyStateList
                 else pressedStateList(brightenOrDarken(accent, true), accent)
             spaceBarStateList = if (themeStyle == STYLE_HOLO) pressedStateList(spaceBar, spaceBar)
                 else pressedStateList(brightenOrDarken(spaceBar, true), spaceBar)
@@ -456,13 +465,16 @@ class DefaultColors (
             backgroundStateList = pressedStateList(brightenOrDarken(background, true), background)
             keyStateList = pressedStateList(keyBackground, Color.TRANSPARENT)
             functionalKeyStateList = keyStateList
-            actionKeyStateList = if (themeStyle == STYLE_HOLO) functionalKeyStateList
+            actionKeyStateList = if (themeStyle == STYLE_OUTLINED || themeStyle == STYLE_EDGE_LIT) keyStateList
+                else if (themeStyle == STYLE_HOLO) functionalKeyStateList
                 else pressedStateList(brightenOrDarken(accent, true), accent)
             spaceBarStateList = pressedStateList(brightenOrDarken(spaceBar, true), spaceBar)
         }
         keyTextFilter = colorFilter(keyText)
         actionKeyIconColorFilter = when {
             themeStyle == STYLE_HOLO -> keyTextFilter
+            // Same reason: no accent behind it, so no accent-contrast icon.
+            themeStyle == STYLE_OUTLINED || themeStyle == STYLE_EDGE_LIT -> keyTextFilter
             // the white icon may not have enough contrast, and can't be adjusted by the user
             isBrightColor(accent) -> colorFilter(Color.DKGRAY)
             else -> null

@@ -4,6 +4,7 @@ package helium314.keyboard.keyboard
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.res.Configuration
+import android.os.SystemClock
 import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.View
@@ -36,6 +37,9 @@ class KeyboardResizeOverlayView(context: Context, attrs: AttributeSet?) : FrameL
     private var startScale = 0f
     private var baseSizePx = 1f
     private var lastWritten = 0f
+
+    /** When the keyboard was last rebuilt, to keep a drag from rebuilding per frame. */
+    private var lastReloadAt = 0L
 
     private val anchorLayoutListener = View.OnLayoutChangeListener { _, _, _, _, _, _, _, _, _ -> updateSize() }
 
@@ -96,7 +100,8 @@ class KeyboardResizeOverlayView(context: Context, attrs: AttributeSet?) : FrameL
                     (parent as? ViewGroup)?.requestDisallowInterceptTouchEvent(true)
                     startDrag(edge, event)
                 }
-                MotionEvent.ACTION_MOVE -> applyDrag(edge, event)
+                MotionEvent.ACTION_MOVE -> applyDrag(edge, event, finished = false)
+                MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> applyDrag(edge, event, finished = true)
             }
             true
         }
@@ -127,7 +132,7 @@ class KeyboardResizeOverlayView(context: Context, attrs: AttributeSet?) : FrameL
         lastWritten = startScale
     }
 
-    private fun applyDrag(edge: Edge, event: MotionEvent) {
+    private fun applyDrag(edge: Edge, event: MotionEvent, finished: Boolean) {
         val movedPx = when (edge) {
             Edge.TOP, Edge.BOTTOM -> dragStart - event.rawY // up is taller / more bottom padding
             Edge.LEFT -> event.rawX - dragStart // inwards is more side padding
@@ -141,9 +146,15 @@ class KeyboardResizeOverlayView(context: Context, attrs: AttributeSet?) : FrameL
             Edge.LEFT, Edge.RIGHT -> { key = sidePaddingKey(); range = SIDE_PADDING_RANGE }
         }
         val value = (startScale + movedPx / baseSizePx).coerceIn(range)
-        if (abs(value - lastWritten) < STEP) return
+        if (!finished && abs(value - lastWritten) < STEP) return
         lastWritten = value
         prefs.edit { putFloat(key, value) }
+        // Rebuilding the keyboard costs far more than a touch frame, so a drag
+        // repaints at most every RELOAD_INTERVAL_MS. The lift always reloads, so
+        // what the user let go of is what they end up with.
+        val now = SystemClock.uptimeMillis()
+        if (!finished && now - lastReloadAt < RELOAD_INTERVAL_MS) return
+        lastReloadAt = now
         KeyboardSwitcher.getInstance().reloadKeyboard()
     }
 
@@ -165,5 +176,6 @@ class KeyboardResizeOverlayView(context: Context, attrs: AttributeSet?) : FrameL
         private val BOTTOM_PADDING_RANGE = 0f..5f
         private val SIDE_PADDING_RANGE = 0f..3f
         private const val STEP = 0.005f
+        private const val RELOAD_INTERVAL_MS = 50L
     }
 }

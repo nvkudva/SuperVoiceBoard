@@ -320,6 +320,9 @@ public final class KeyboardSwitcher implements KeyboardState.SwitchActions {
         if (DEBUG_ACTION) {
             Log.d(TAG, "setEmojiKeyboard");
         }
+        // SuperVoiceBoard: the resize overlay belongs to the main keyboard; it must
+        // not stay drawn over the view that replaces it.
+        if (mResizeOverlay != null) mResizeOverlay.hide();
         mMainKeyboardFrame.setVisibility(View.VISIBLE);
         // The visibility of {@link #mKeyboardView} must be aligned with {@link #MainKeyboardFrame}.
         // @see #getVisibleKeyboardView() and
@@ -341,6 +344,9 @@ public final class KeyboardSwitcher implements KeyboardState.SwitchActions {
         if (DEBUG_ACTION) {
             Log.d(TAG, "setClipboardKeyboard");
         }
+        // SuperVoiceBoard: the resize overlay belongs to the main keyboard; it must
+        // not stay drawn over the view that replaces it.
+        if (mResizeOverlay != null) mResizeOverlay.hide();
         mMainKeyboardFrame.setVisibility(View.VISIBLE);
         // The visibility of {@link #mKeyboardView} must be aligned with {@link #MainKeyboardFrame}.
         // @see #getVisibleKeyboardView() and

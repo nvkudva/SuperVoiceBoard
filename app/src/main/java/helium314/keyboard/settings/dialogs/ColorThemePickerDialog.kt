@@ -161,6 +161,7 @@ fun themeFilePicker(): ManagedActivityResultLauncher<Intent, ActivityResult> {
 @Composable
 fun LoadThemeDialog(onDismissRequest: () -> Unit, loadFilePicker: ManagedActivityResultLauncher<Intent, ActivityResult>) {
     val ctx = LocalContext.current
+    var pasteError by remember { mutableStateOf(false) }
     ConfirmationDialog(
         onDismissRequest = onDismissRequest,
         title = { Text(stringResource(R.string.load)) },
@@ -178,13 +179,17 @@ fun LoadThemeDialog(onDismissRequest: () -> Unit, loadFilePicker: ManagedActivit
         },
         confirmButtonText = stringResource(R.string.button_load_custom),
         onNeutral = {
-            onDismissRequest()
+            // Only a theme that actually loaded closes the dialog; an unreadable
+            // clipboard has to say so, as the file path already does.
             val cm = ctx.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-            val clip = cm.primaryClip?.takeIf { it.itemCount > 0 } ?: return@ConfirmationDialog
-            loadColorString(clip.getItemAt(0).text.toString(), ctx.prefs())
+            val clip = cm.primaryClip?.takeIf { it.itemCount > 0 }
+            val loaded = clip != null && loadColorString(clip.getItemAt(0).text.toString(), ctx.prefs())
+            if (loaded) onDismissRequest() else pasteError = true
         },
         neutralButtonText = stringResource(R.string.paste)
     )
+    if (pasteError)
+        InfoDialog(stringResource(R.string.file_read_error)) { pasteError = false }
 }
 
 @Composable

@@ -41,6 +41,13 @@ class SuggestionEngine(
     private val userHistory: UserHistory = UserHistory(),
 ) {
 
+    /**
+     * The common words a prediction falls back on. The lexicon does not change
+     * under an engine, so this was the same walk repeated on every committed
+     * word.
+     */
+    private val predictionFillers by lazy { lexicon.wordsWithPrefix("", PREDICTION_FILLER_COUNT) }
+
     fun suggest(request: SuggestionRequest): SuggestionResult {
         val kind = request.fieldKind
         if (kind == FieldKind.PASSWORD || kind == FieldKind.NUMBER) return SuggestionResult.EMPTY
@@ -96,7 +103,7 @@ class SuggestionEngine(
                 }
             }
         }
-        for (scored in lexicon.wordsWithPrefix("", PREDICTION_FILLER_COUNT)) {
+        for (scored in predictionFillers) {
             scores.merge(scored.word, ln(1.0 + scored.score) / 4.0, ::maxOf)
         }
         if (prev != null) scores.remove(prev)

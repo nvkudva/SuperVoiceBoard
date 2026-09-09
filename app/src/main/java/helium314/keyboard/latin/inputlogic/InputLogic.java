@@ -2464,6 +2464,9 @@ public final class InputLogic {
      * ended one.
      */
     private void recordSentenceCandidates(final String chosenWord, final String separatorString) {
+        // Off by default, and the copy below runs on every committed word, so the
+        // cheap check comes first.
+        if (!mLatinIME.isSentenceRescoringEnabled()) return;
         final java.util.ArrayList<String> alternatives = new java.util.ArrayList<>();
         final SuggestedWords suggestions = mSuggestedWords;
         for (int i = 0; i < suggestions.size(); i++) {

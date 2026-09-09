@@ -149,6 +149,8 @@ public class LatinIME extends InputMethodService implements
     // and null again on every input-view teardown; nothing else depends on it.
     private helium314.keyboard.correct.GhostSwapView mCorrectionGhost;
     private helium314.keyboard.correct.RescoreController mRescoreController;
+    /** SuperVoiceBoard: sentence rescoring is off unless asked for; refreshed in loadSettings(). */
+    private volatile boolean mRescoreSentences;
     // SuperVoiceBoard: the AI fix toolbar key (W5.1) and its attribution (W5.2).
     private helium314.keyboard.voice.AiFixKey mAiFixKey;
     // SuperVoiceBoard (W7.3): so the settings screen can read the running
@@ -616,6 +618,11 @@ public class LatinIME extends InputMethodService implements
         refreshPersonalizationDictionarySession(currentSettingsValues);
         mInputLogic.mSuggest.clearNextWordSuggestionsCache();
         mInputLogic.updateEmojiDictionary(locale);
+        // SuperVoiceBoard: cached here because the alternative was a
+        // SharedPreferences read on the main thread for every sentence typed.
+        mRescoreSentences = helium314.keyboard.latin.utils.DeviceProtectedUtils
+                .getSharedPreferences(this)
+                .getBoolean(helium314.keyboard.correct.RescoreController.PREF_RESCORE_SENTENCES, false);
         mStatsUtilsManager.onLoadSettings(this, currentSettingsValues);
     }
 
@@ -853,9 +860,13 @@ public class LatinIME extends InputMethodService implements
      *
      * Off unless the user turned it on: it spends a model call per sentence.
      */
+    /** SuperVoiceBoard: see mRescoreSentences; read per committed word by InputLogic. */
+    public boolean isSentenceRescoringEnabled() {
+        return mRescoreSentences;
+    }
+
     public void onSentenceComplete(final java.util.List<com.vboard.core.correct.WordSlot> sentence) {
-        if (!helium314.keyboard.latin.utils.DeviceProtectedUtils.getSharedPreferences(this)
-                .getBoolean(helium314.keyboard.correct.RescoreController.PREF_RESCORE_SENTENCES, false)) {
+        if (!mRescoreSentences) {
             return;
         }
         if (mRescoreController == null) {

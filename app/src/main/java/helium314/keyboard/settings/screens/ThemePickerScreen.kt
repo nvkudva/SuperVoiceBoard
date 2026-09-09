@@ -97,16 +97,23 @@ fun ThemePickerScreen(
     val targetScreen = if (isNight) SettingsDestination.ColorsNight else SettingsDestination.Colors
     val selected = prefs.getString(prefKey, default)!!
 
-    val defaultThemes = KeyboardTheme.getAvailableDefaultColors(prefs, isNight)
-    // prefs.all is null in preview only
-    val userThemes = (prefs.all ?: mapOf(Settings.PREF_USER_COLORS_PREFIX + "usercolor" to "")).keys.mapNotNull {
-        when {
-            it.startsWith(Settings.PREF_USER_COLORS_PREFIX) -> it.substringAfter(Settings.PREF_USER_COLORS_PREFIX)
-            it.startsWith(Settings.PREF_USER_ALL_COLORS_PREFIX) -> it.substringAfter(Settings.PREF_USER_ALL_COLORS_PREFIX)
-            it.startsWith(Settings.PREF_USER_MORE_COLORS_PREFIX) -> it.substringAfter(Settings.PREF_USER_MORE_COLORS_PREFIX)
-            else -> null
-        }
-    }.toSortedSet()
+    // Both of these read the whole preference store — prefs.all copies every
+    // entry, user themes included — so they are keyed to the same triggers as
+    // the palette map below rather than re-run on every recomposition.
+    val defaultThemes = remember(b?.value, isNight) {
+        KeyboardTheme.getAvailableDefaultColors(prefs, isNight)
+    }
+    val userThemes = remember(b?.value) {
+        // prefs.all is null in preview only
+        (prefs.all ?: mapOf(Settings.PREF_USER_COLORS_PREFIX + "usercolor" to "")).keys.mapNotNull {
+            when {
+                it.startsWith(Settings.PREF_USER_COLORS_PREFIX) -> it.substringAfter(Settings.PREF_USER_COLORS_PREFIX)
+                it.startsWith(Settings.PREF_USER_ALL_COLORS_PREFIX) -> it.substringAfter(Settings.PREF_USER_ALL_COLORS_PREFIX)
+                it.startsWith(Settings.PREF_USER_MORE_COLORS_PREFIX) -> it.substringAfter(Settings.PREF_USER_MORE_COLORS_PREFIX)
+                else -> null
+            }
+        }.toSortedSet()
+    }
     if (selected !in defaultThemes)
         userThemes.add(selected) // there are cases where we have no settings for a user theme
 

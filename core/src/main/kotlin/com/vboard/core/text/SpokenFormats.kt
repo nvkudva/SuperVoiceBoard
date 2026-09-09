@@ -21,6 +21,30 @@ package com.vboard.core.text
  */
 object SpokenFormats {
 
+    // Compiled once. These used to be built inside the rewrite functions, which
+    // meant recompiling five patterns on every utterance — and two more per
+    // address match. The three that interpolate NUMBER are lazy because it is
+    // declared further down and object properties initialize in source order.
+    private val ADDRESS_PATTERN = Regex(
+        """\b([A-Za-z0-9]+(?:\s+dot\s+[A-Za-z0-9]+)*)\s+at\s+([A-Za-z0-9]+(?:\s+dot\s+[A-Za-z0-9]+)+)\b""",
+        RegexOption.IGNORE_CASE,
+    )
+    private val SPOKEN_DOT = Regex("""\s+dot\s+""", RegexOption.IGNORE_CASE)
+    private val LEADING_OH = Regex("^oh\\s+", RegexOption.IGNORE_CASE)
+    private val MONEY_PATTERN by lazy {
+        Regex(
+            """\b($NUMBER)\s+(dollars?|euros?|pounds?)(?:\s+(?:and\s+)?($NUMBER)(?:\s+cents?|\s+pence)?)?\b""",
+            RegexOption.IGNORE_CASE,
+        )
+    }
+    private val CLOCK_PATTERN by lazy {
+        val minuteWord = """(?:$NUMBER|o'?clock|oh\s+$NUMBER)"""
+        Regex(
+            """\b($NUMBER)(?:\s+($minuteWord))?\s+([ap])[.\s]*m\b\.?""",
+            RegexOption.IGNORE_CASE,
+        )
+    }
+
     /** Rewrites [text] in place of the recognizer's spoken forms. */
     fun apply(text: String): String {
         if (text.isBlank()) return text
@@ -44,13 +68,9 @@ object SpokenFormats {
      * dictated word-by-word looks like.
      */
     private fun spokenAddresses(text: String): String {
-        val pattern = Regex(
-            """\b([A-Za-z0-9]+(?:\s+dot\s+[A-Za-z0-9]+)*)\s+at\s+([A-Za-z0-9]+(?:\s+dot\s+[A-Za-z0-9]+)+)\b""",
-            RegexOption.IGNORE_CASE,
-        )
-        return pattern.replace(text) { match ->
-            val local = match.groupValues[1].replace(Regex("""\s+dot\s+""", RegexOption.IGNORE_CASE), ".")
-            val domain = match.groupValues[2].replace(Regex("""\s+dot\s+""", RegexOption.IGNORE_CASE), ".")
+        return ADDRESS_PATTERN.replace(text) { match ->
+            val local = match.groupValues[1].replace(SPOKEN_DOT, ".")
+            val domain = match.groupValues[2].replace(SPOKEN_DOT, ".")
             // A domain has to end in something that could be a TLD; "meet me at
             // building dot two" is not an address.
             if (!domain.substringAfterLast('.').all { it.isLetter() }) match.value
@@ -89,11 +109,7 @@ object SpokenFormats {
      * figure, and getting it wrong is worse than leaving it.
      */
     private fun money(text: String): String {
-        val pattern = Regex(
-            """\b($NUMBER)\s+(dollars?|euros?|pounds?)(?:\s+(?:and\s+)?($NUMBER)(?:\s+cents?|\s+pence)?)?\b""",
-            RegexOption.IGNORE_CASE,
-        )
-        return pattern.replace(text) { match ->
+        return MONEY_PATTERN.replace(text) { match ->
             val whole = parseNumber(match.groupValues[1]) ?: return@replace match.value
             val symbol = CURRENCIES[match.groupValues[2].lowercase()] ?: return@replace match.value
             val fractionWords = match.groupValues[3]
@@ -143,12 +159,7 @@ object SpokenFormats {
      * a bare pair of numbers is a time only in context this cannot see.
      */
     private fun clockTimes(text: String): String {
-        val minuteWord = """(?:$NUMBER|o'?clock|oh\s+$NUMBER)"""
-        val pattern = Regex(
-            """\b($NUMBER)(?:\s+($minuteWord))?\s+([ap])[.\s]*m\b\.?""",
-            RegexOption.IGNORE_CASE,
-        )
-        return pattern.replace(text) { match ->
+        return CLOCK_PATTERN.replace(text) { match ->
             val hour = parseNumber(match.groupValues[1]) ?: return@replace match.value
             if (hour !in 1..12) return@replace match.value
             val meridiem = match.groupValues[3].uppercase() + "M"
@@ -157,7 +168,7 @@ object SpokenFormats {
             // "o'clock" and "oh five" are the two spoken zero-minute forms.
             val minute = when (minuteRaw.lowercase().replace("-", " ")) {
                 "o'clock", "oclock" -> 0
-                else -> parseNumber(minuteRaw.replace(Regex("^oh\\s+", RegexOption.IGNORE_CASE), ""))
+                else -> parseNumber(minuteRaw.replace(LEADING_OH, ""))
             } ?: return@replace match.value
             if (minute !in 0..59) return@replace match.value
             "$hour:${minute.toString().padStart(2, '0')} $meridiem"

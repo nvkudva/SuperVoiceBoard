@@ -71,7 +71,10 @@ android {
     buildTypes {
         release {
             isMinifyEnabled = true
-            isShrinkResources = false
+            // SuperVoiceBoard: safe-mode shrinking (the default), so resources
+            // reached by name at runtime survive; 117 locale folders and the
+            // whole Compose resource set ship in every one of the five ABI APKs.
+            isShrinkResources = true
             isDebuggable = false
             isJniDebuggable = false
             // SuperVoiceBoard: sign when the local keystore is present
@@ -83,7 +86,7 @@ android {
             // SuperVoiceBoard: :core/:voice/:llm only have debug and release
             matchingFallbacks += "release"
             isMinifyEnabled = true
-            isShrinkResources = false
+            isShrinkResources = true
             isDebuggable = false
             isJniDebuggable = false
         }

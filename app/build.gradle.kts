@@ -170,6 +170,11 @@ android {
     namespace = "helium314.keyboard.latin"
     lint {
         abortOnError = true
+        // Without this Gradle prints only "First failure:", so a red lint run says
+        // nothing about the other sixty-odd errors and the report is only reachable
+        // as a CI artifact.
+        textReport = true
+        textOutput = file("stdout")
     }
 }
 

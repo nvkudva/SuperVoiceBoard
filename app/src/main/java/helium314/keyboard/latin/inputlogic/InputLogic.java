@@ -97,13 +97,6 @@ public final class InputLogic {
     // Never null
     public SuggestedWords mSuggestedWords = SuggestedWords.getEmptyInstance();
 
-    /**
-     * SuperVoiceBoard: what the decoder nearly typed, kept for the length of one
-     * sentence so a rescoring pass can choose among words the decoder itself
-     * ranked. Capture only for now — nothing reads the sentences yet.
-     */
-    public final com.vboard.core.correct.SentenceCandidates mSentenceCandidates =
-            new com.vboard.core.correct.SentenceCandidates();
     public Suggest mSuggest; // non-final for active gesture data gathering, revert when data gathering phase is done (end of 2026 latest)
     public DictionaryFacilitator mDictionaryFacilitator; // non-final for active gesture data gathering, revert when data gathering phase is done (end of 2026 latest)
     private SingleDictionaryFacilitator mEmojiDictionaryFacilitator;
@@ -184,7 +177,7 @@ public final class InputLogic {
         mRecapitalizeStatus.disable(); // Do not perform recapitalize until the cursor is moved once
         mCurrentlyPressedHardwareKeys.clear();
         mSuggestedWords = SuggestedWords.getEmptyInstance();
-        mSentenceCandidates.reset(); // SuperVoiceBoard: a new field, a new sentence
+        mLatinIME.resetSentenceCandidates(); // SuperVoiceBoard: a new field, a new sentence
         // In some cases (e.g. after rotation of the device, or when scrolling the text before bringing up keyboard)
         // editorInfo.initialSelStart is not the actual cursor position, so we try using some heuristics to find the correct position.
         mConnection.tryFixIncorrectCursorPosition();
@@ -2187,8 +2180,8 @@ public final class InputLogic {
         final boolean shouldFinishComposition = mWordComposer.isComposingWord();
         resetComposingState(true /* alsoResetLastComposedWord */);
         // SuperVoiceBoard: the cursor moved, so the words before it are no longer
-        // a sentence this object watched being typed.
-        mSentenceCandidates.reset();
+        // a sentence anything watched being typed.
+        mLatinIME.resetSentenceCandidates();
         if (clearSuggestionStrip) {
             mSuggestionStripViewAccessor.setNeutralSuggestionStrip();
         }
@@ -2463,6 +2456,11 @@ public final class InputLogic {
      * being committed, and hands the finished sentence over when the separator
      * ended one.
      */
+    /**
+     * SuperVoiceBoard: hands the alternatives the decoder had to the fork, which
+     * owns the sentence buffer. Everything but the copy lives on that side, so
+     * this file carries no type of ours and no state of ours.
+     */
     private void recordSentenceCandidates(final String chosenWord, final String separatorString) {
         // Off by default, and the copy below runs on every committed word, so the
         // cheap check comes first.
@@ -2472,16 +2470,8 @@ public final class InputLogic {
         for (int i = 0; i < suggestions.size(); i++) {
             alternatives.add(suggestions.getWord(i));
         }
-        final java.util.List<com.vboard.core.correct.WordSlot> sentence =
-                mSentenceCandidates.record(chosenWord, alternatives,
-                        separatorString == null ? "" : separatorString);
-        if (sentence != null) {
-            if (DebugFlags.DEBUG_ENABLED) {
-                // Counts only: never the words themselves (PLAN.md §3.4).
-                Log.d(TAG, "sentence ready to rescore: " + sentence.size() + " words");
-            }
-            mLatinIME.onSentenceComplete(sentence);
-        }
+        mLatinIME.onWordCommitted(chosenWord, alternatives,
+                separatorString == null ? "" : separatorString);
     }
 
     private void commitChosenWord(final SettingsValues settingsValues, final String chosenWord,

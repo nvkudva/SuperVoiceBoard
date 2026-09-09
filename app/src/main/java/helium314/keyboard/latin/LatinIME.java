@@ -861,6 +861,33 @@ public class LatinIME extends InputMethodService implements
         return mRescoreSentences;
     }
 
+    /**
+     * SuperVoiceBoard: what the decoder nearly typed, kept for the length of one
+     * sentence so the rescoring pass can choose among words the decoder itself
+     * ranked. The buffer lives here rather than in InputLogic so upstream's
+     * hottest class holds no state of ours.
+     */
+    private final com.vboard.core.correct.SentenceCandidates mSentenceCandidates =
+            new com.vboard.core.correct.SentenceCandidates();
+
+    /** A committed word and the alternatives it beat. */
+    public void onWordCommitted(final String word, final java.util.List<String> alternatives,
+            final String separator) {
+        final java.util.List<com.vboard.core.correct.WordSlot> sentence =
+                mSentenceCandidates.record(word, alternatives, separator);
+        if (sentence == null) return;
+        if (helium314.keyboard.latin.define.DebugFlags.DEBUG_ENABLED) {
+            // Counts only: never the words themselves (PLAN.md §3.4).
+            Log.d(TAG, "sentence ready to rescore: " + sentence.size() + " words");
+        }
+        onSentenceComplete(sentence);
+    }
+
+    /** The cursor moved or the field changed: whatever was being watched is not a sentence. */
+    public void resetSentenceCandidates() {
+        mSentenceCandidates.reset();
+    }
+
     public void onSentenceComplete(final java.util.List<com.vboard.core.correct.WordSlot> sentence) {
         if (!mRescoreSentences) {
             return;

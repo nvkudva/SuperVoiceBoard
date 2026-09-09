@@ -2,6 +2,7 @@
 package helium314.keyboard.settings.dialogs
 
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -11,6 +12,10 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -41,6 +46,7 @@ import helium314.keyboard.latin.utils.Theme
 import helium314.keyboard.latin.utils.previewDark
 import helium314.keyboard.settings.isWideScreen
 
+@OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
 @Composable
 fun ColorPickerDialog(
     onDismissRequest: () -> Unit,
@@ -81,9 +87,11 @@ fun ColorPickerDialog(
     }
     @Composable fun picker() {
         HsvColorPicker(
+            // Smaller than the old dialog's 300dp: the sheet has to leave the
+            // keyboard above it visible, which is the point of dragging a hue.
             modifier = Modifier
-                .size(300.dp)
-                .padding(10.dp),
+                .size(230.dp)
+                .padding(8.dp),
             controller = controller,
             onColorChanged = {
                 if (it.fromUser)
@@ -128,11 +136,19 @@ fun ColorPickerDialog(
             }
         )
     }
-    ThreeButtonAlertDialog(
+    // WaveKey: a sheet, not a modal that covers everything. The keyboard being
+    // recoloured is pinned at the top of the colour screen, and the point of
+    // dragging a hue is watching it change there (docs/settings-ia.md).
+    ModalBottomSheet(
         onDismissRequest = onDismissRequest,
-        onConfirmed = { onConfirmed(controller.selectedColor.value.toArgb()) },
-        title = { Text(title) },
-        content = {
+        sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
+    ) {
+        Column(Modifier.padding(horizontal = 8.dp).padding(bottom = 16.dp)) {
+            Text(
+                title,
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.padding(start = 10.dp, bottom = 8.dp)
+            )
             if (useWideLayout)
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     picker()
@@ -141,17 +157,27 @@ fun ColorPickerDialog(
                         slidersAndTextField()
                     }
                 }
-            else
-                Column {
-                    topBar()
-                    picker()
-                    slidersAndTextField()
-                }
-        },
-        neutralButtonText = if (showDefault) stringResource(R.string.button_default) else null,
-        onNeutral = onDefault,
-        properties = DialogProperties(usePlatformDefaultWidth = !useWideLayout)
-    )
+            else {
+                topBar()
+                picker()
+                slidersAndTextField()
+            }
+            Row(
+                Modifier.fillMaxWidth().padding(top = 8.dp, end = 8.dp),
+                horizontalArrangement = Arrangement.End,
+            ) {
+                if (showDefault)
+                    TextButton(onClick = { onDismissRequest(); onDefault() }) {
+                        Text(stringResource(R.string.button_default))
+                    }
+                TextButton(onClick = onDismissRequest) { Text(stringResource(android.R.string.cancel)) }
+                TextButton(onClick = {
+                    onDismissRequest()
+                    onConfirmed(controller.selectedColor.value.toArgb())
+                }) { Text(stringResource(android.R.string.ok)) }
+            }
+        }
+    }
 }
 
 @Preview

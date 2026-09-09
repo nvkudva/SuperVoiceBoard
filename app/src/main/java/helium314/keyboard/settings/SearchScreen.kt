@@ -147,6 +147,8 @@ fun <T: Any?> SearchScreen(
     content: @Composable (ColumnScope.() -> Unit)? = null,
     /** Pinned below the list, where the keyboard itself would sit. */
     footer: (@Composable () -> Unit)? = null,
+    /** Pinned above the list, for a preview of whatever the list edits. */
+    header: (@Composable () -> Unit)? = null,
 ) {
     // searchText and showSearch should have the same remember or rememberSaveable
     // saveable survives orientation changes and switching between screens, but shows the
@@ -217,6 +219,7 @@ fun <T: Any?> SearchScreen(
                     )
                 }
             }
+            header?.invoke()
             CompositionLocalProvider(LocalTextStyle provides MaterialTheme.typography.bodyLarge) {
                 if (searchText.text.isBlank() && content != null) {
                     Column(if (footer == null) Modifier else Modifier.weight(1f)) {

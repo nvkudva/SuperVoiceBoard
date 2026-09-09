@@ -33,6 +33,8 @@
         <item quantity="other">%d keys above the keyboard</item>
     </plurals>
 
+    <string name="wk_day">Day</string>
+    <string name="wk_night">Night</string>
     <string name="wk_category_key_behaviour">Key behaviour</string>
     <string name="wk_overrides_note">The settings below override the global ones for this language. The button beside a row puts it back.</string>
     <string name="wk_category_size">Size &amp; spacing</string>

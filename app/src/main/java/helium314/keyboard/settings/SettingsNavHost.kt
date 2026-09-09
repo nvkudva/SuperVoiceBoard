@@ -165,10 +165,10 @@ fun SettingsNavHost(
             SecondaryLayoutScreen(onClickBack = ::goBack)
         }
         composable(SettingsDestination.ThemePicker) {
-            ThemePickerScreen(isNight = false, onClickBack = ::goBack)
+            ThemePickerScreen(initialNight = false, onClickBack = ::goBack)
         }
         composable(SettingsDestination.ThemePickerNight) {
-            ThemePickerScreen(isNight = true, onClickBack = ::goBack)
+            ThemePickerScreen(initialNight = true, onClickBack = ::goBack)
         }
         composable(SettingsDestination.Colors + "{theme}") {
             ColorsScreen(isNight = false, theme = it.arguments?.getString("theme"), onClickBack = ::goBack)

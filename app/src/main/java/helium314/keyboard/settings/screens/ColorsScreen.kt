@@ -173,10 +173,11 @@ fun ColorsScreen(
             if (moreColors == 2) result.toMutableList<ColorSetting?>().apply { add(0, null) }
             else result
         },
-        // WaveKey: the keyboard being recoloured, under the colour being
+        // WaveKey: the keyboard being recoloured, above the colour being
         // changed. Editing used to be judged by the settings chrome recolouring
-        // itself, a proxy for the thing in hand (docs/settings-ia.md).
-        footer = { KeyboardPreview() },
+        // itself, a proxy for the thing in hand; and it sits at the top so the
+        // picker sheet does not cover the thing it is changing.
+        header = { KeyboardPreview() },
         itemContent = { colorSetting ->
             if (colorSetting == null)
                 Text( // not a colorSetting, but still best done as part of the list

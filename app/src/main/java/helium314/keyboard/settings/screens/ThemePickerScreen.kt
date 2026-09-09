@@ -29,12 +29,14 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -83,9 +85,13 @@ import helium314.keyboard.settings.preferences.PreferenceCategory
  */
 @Composable
 fun ThemePickerScreen(
-    isNight: Boolean,
+    initialNight: Boolean,
     onClickBack: () -> Unit,
 ) {
+    // WaveKey: one picker for both, with a Day | Night switch at the top. There
+    // used to be two rows opening two screens, and setting the night theme meant
+    // leaving, flipping a switch, and coming back (docs/settings-ia.md).
+    var isNight by rememberSaveable { mutableStateOf(initialNight) }
     val ctx = LocalContext.current
     val prefs = ctx.prefs()
     val b = (ctx.getActivity() as? SettingsActivity)?.prefChanged?.collectAsState()
@@ -139,7 +145,7 @@ fun ThemePickerScreen(
 
     SearchScreen(
         onClickBack = onClickBack,
-        title = { Text(stringResource(if (isNight) R.string.theme_page_title_night else R.string.theme_page_title)) },
+        title = { Text(stringResource(R.string.theme_page_title)) },
         menu = listOf(stringResource(R.string.load) to { showLoadDialog = true }),
         filteredItems = { search ->
             (userThemes + defaultThemes).filter { it.contains(search, true) || it.displayName(ctx).contains(search, true) }
@@ -153,6 +159,23 @@ fun ThemePickerScreen(
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
+                item(span = { GridItemSpan(maxLineSpan) }) {
+                    Row(
+                        Modifier.fillMaxWidth().padding(bottom = 4.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        FilterChip(
+                            selected = !isNight,
+                            onClick = { isNight = false },
+                            label = { Text(stringResource(R.string.wk_day)) },
+                        )
+                        FilterChip(
+                            selected = isNight,
+                            onClick = { isNight = true },
+                            label = { Text(stringResource(R.string.wk_night)) },
+                        )
+                    }
+                }
                 fun section(title: Int, names: List<String>) {
                     if (names.isEmpty()) return
                     item(span = { GridItemSpan(maxLineSpan) }) { PreferenceCategory(stringResource(title)) }
@@ -375,7 +398,7 @@ private fun Preview() {
     initPreview(LocalContext.current)
     Theme(previewDark) {
         Surface {
-            ThemePickerScreen(isNight = false) { }
+            ThemePickerScreen(initialNight = false) { }
         }
     }
 }

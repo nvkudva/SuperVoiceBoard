@@ -15,8 +15,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import com.vboard.app.settings.SettingsRepository.Defaults as VoiceDefaults
 import com.vboard.app.settings.SettingsRepository.Keys as VoiceKeys
+import com.vboard.app.voice.voiceRuntimeOrNull
 import com.vboard.core.session.SilenceTimeout
-import helium314.keyboard.latin.LatinIME
 import helium314.keyboard.latin.R
 import helium314.keyboard.latin.utils.Log
 import helium314.keyboard.latin.utils.NextScreenIcon
@@ -133,7 +133,7 @@ fun createVoiceSettings(context: Context) = listOf(
         val ctx = LocalContext.current
         // W7.3: whoever is asked to turn measurement on gets to see what it
         // measured. The numbers live in the running IME and vanish with it.
-        val snapshot = LatinIME.getVoiceMetricsSnapshot()
+        val snapshot = voiceRuntimeOrNull(ctx)?.metrics?.snapshot()
         val rate = snapshot?.sendReadyRate
         SwitchPreference(
             name = setting.title,

@@ -156,8 +156,6 @@ public class LatinIME extends InputMethodService implements
     // SuperVoiceBoard (W7.3): so the settings screen can read the running
     // keyboard's measurement aggregates. Weak, and cleared on destroy: an IME
     // instance outliving its process would be a leak, not a feature.
-    private static java.lang.ref.WeakReference<LatinIME> sVoiceMetricsInstance =
-            new java.lang.ref.WeakReference<>(null);
 
     private RichInputMethodManager mRichImm;
     final KeyboardSwitcher mKeyboardSwitcher;
@@ -717,7 +715,6 @@ public class LatinIME extends InputMethodService implements
     public void onDestroy() {
         // SuperVoiceBoard: releases the microphone and the ASR engines.
         if (mVoiceController != null) mVoiceController.onDestroy();
-        sVoiceMetricsInstance = new java.lang.ref.WeakReference<>(null);
         if (mAiFixKey != null) mAiFixKey.destroy();
         mClipboardHistoryManager.onDestroy();
         mDictionaryFacilitator.closeDictionaries();
@@ -838,7 +835,6 @@ public class LatinIME extends InputMethodService implements
      */
     private helium314.keyboard.voice.VoiceController voiceController() {
         if (mVoiceController == null) {
-            sVoiceMetricsInstance = new java.lang.ref.WeakReference<>(this);
             final com.vboard.app.voice.VoiceRuntime runtime =
                     ((com.vboard.app.voice.VoiceRuntimeHost) getApplicationContext()).getVoiceRuntime();
             mVoiceController = new helium314.keyboard.voice.VoiceController(this, runtime);
@@ -909,12 +905,6 @@ public class LatinIME extends InputMethodService implements
      * SuperVoiceBoard (W7.3): the running keyboard's measurement aggregates, for
      * the settings screen. Null when no keyboard is running or nothing has been
      * dictated; the numbers live in the IME process and die with it.
-     */
-    public static com.vboard.core.session.VoiceMetrics.Snapshot getVoiceMetricsSnapshot() {
-        final LatinIME ime = sVoiceMetricsInstance.get();
-        if (ime == null || ime.mVoiceController == null) return null;
-        return ime.mVoiceController.metricsSnapshot();
-    }
 
     /** SuperVoiceBoard: the AI fix key's controller, created on first use. */
     private helium314.keyboard.voice.AiFixKey aiFixKey() {

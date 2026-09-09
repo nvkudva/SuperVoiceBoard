@@ -105,11 +105,11 @@ class VoiceController(
     private var screenLock: PowerManager.WakeLock? = null
 
     /**
-     * W7.3: opt-in, content-free measurement. Held in memory for this IME
-     * instance only — there is no endpoint to send it to and no file to write
-     * it into; the user's own settings screen is the only reader (PLAN.md R24).
+     * W7.3: opt-in, content-free measurement. Held by the runtime — there is no
+     * endpoint to send it to and no file to write it into; the user's own
+     * settings screen is the only reader (PLAN.md R24).
      */
-    private val metrics = VoiceMetrics()
+    private val metrics get() = runtime.metrics
 
     /** When the session that is currently committing started, for the mean. */
     private var sessionStartedAt = 0L

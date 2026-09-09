@@ -1,8 +1,10 @@
 // SPDX-License-Identifier: GPL-3.0-only
 package helium314.keyboard.settings
 
+import android.Manifest
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.provider.Settings
 import android.view.inputmethod.InputMethodManager
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -43,6 +45,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -55,6 +58,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
 import com.vboard.core.model.ByteSize
 import com.vboard.core.model.ModelCatalog
 import helium314.keyboard.latin.R
@@ -66,7 +70,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-private const val LAST_STEP = 3
+private const val LAST_STEP = 4
 
 @Composable
 fun WelcomeWizard(
@@ -75,10 +79,17 @@ fun WelcomeWizard(
 ) {
     val ctx = LocalContext.current
     val imm = ctx.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+    // SuperVoiceBoard: the microphone is asked for during setup, not on the
+    // first press of the voice key, because dictation is the headline feature
+    // and a permission dialog mid-sentence is the worst place to meet it.
+    var micAsked by rememberSaveable { mutableStateOf(false) }
+    fun micGranted() = ContextCompat.checkSelfPermission(ctx, Manifest.permission.RECORD_AUDIO) ==
+        PackageManager.PERMISSION_GRANTED
     fun determineStep(): Int = when {
         !UncachedInputMethodManagerUtils.isThisImeEnabled(ctx, imm) -> 0
         !UncachedInputMethodManagerUtils.isThisImeCurrent(ctx, imm) -> 2
-        else -> 3
+        !micAsked && !micGranted() -> 3
+        else -> LAST_STEP
     }
     var step by rememberSaveable { mutableIntStateOf(determineStep()) }
     val scope = rememberCoroutineScope { Dispatchers.IO }
@@ -88,7 +99,7 @@ fun WelcomeWizard(
                 while (step == 2 && !UncachedInputMethodManagerUtils.isThisImeCurrent(ctx, imm)) {
                     delay(50)
                 }
-                step = 3
+                step = determineStep()
             }
     }
     val useWideLayout = isWideScreen()
@@ -110,12 +121,20 @@ fun WelcomeWizard(
                     style = MaterialTheme.typography.bodyLarge,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
+            Text(
+                stringResource(R.string.setup_welcome_voice_description),
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
         }
     }
 
     @Composable fun Steps(modifier: Modifier = Modifier) {
         val launcher = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) {
             step = determineStep()
+        }
+        val micLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) {
+            step = LAST_STEP
         }
         Column(modifier, verticalArrangement = Arrangement.spacedBy(16.dp)) {
             if (step > 0) StepProgress(step)
@@ -156,6 +175,22 @@ fun WelcomeWizard(
                             SecondaryAction(stringResource(R.string.setup_step3_action), close)
                         }
 
+                        3 -> {
+                            StepCard(
+                                title = stringResource(R.string.setup_mic_title),
+                                instruction = stringResource(R.string.setup_mic_instruction, appName),
+                                icon = painterResource(R.drawable.ic_settings_voice),
+                                actionText = stringResource(R.string.setup_mic_action),
+                            ) {
+                                micAsked = true
+                                micLauncher.launch(Manifest.permission.RECORD_AUDIO)
+                            }
+                            SecondaryAction(stringResource(R.string.setup_mic_skip_action)) {
+                                micAsked = true
+                                step = LAST_STEP
+                            }
+                        }
+
                         else -> {
                             StepCard(
                                 title = stringResource(R.string.setup_step3_title),
@@ -164,11 +199,11 @@ fun WelcomeWizard(
                                 actionText = stringResource(R.string.setup_step3_action),
                                 action = close,
                             )
-                            // SuperVoiceBoard: voice typing is offered here and nowhere
-                            // earlier, because it is optional and costs a several-hundred
-                            // megabyte download. Setup completes without it; this card
-                            // leads to the models screen, and skipping it is the default
-                            // path (the finish action below is unchanged).
+                            // SuperVoiceBoard: the model download is offered here rather
+                            // than with the microphone step, because it costs a several-
+                            // hundred megabyte download. Setup completes without it; this
+                            // card leads to the models screen, and skipping it is the
+                            // default path (the finish action below is unchanged).
                             OptionalCard(
                                 title = stringResource(R.string.setup_voice_action),
                                 subtitle = stringResource(

@@ -5,6 +5,7 @@
 // down to lifecycle calls (PLAN.md §3.2).
 package helium314.keyboard.voice
 
+import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.PowerManager
@@ -323,7 +324,8 @@ class VoiceController(
     @Suppress("DEPRECATION") // The only way to keep the screen on with no window.
     private fun acquireScreenLock() {
         if (screenLock?.isHeld == true) return
-        val power = ime.getSystemService(PowerManager::class.java) ?: return
+        // getSystemService(Class) is API 23; this keyboard still runs on 21.
+        val power = ime.getSystemService(Context.POWER_SERVICE) as? PowerManager ?: return
         val lock = screenLock ?: power.newWakeLock(
             PowerManager.SCREEN_DIM_WAKE_LOCK, SCREEN_LOCK_TAG
         ).also { it.setReferenceCounted(false); screenLock = it }

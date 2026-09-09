@@ -12,6 +12,9 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
@@ -128,6 +131,13 @@ fun ColorsScreen(
         val uri = result.data?.data ?: return@rememberLauncherForActivityResult
         ctx.getActivity()?.contentResolver?.openOutputStream(uri)?.writer()?.use { it.write(getColorString(prefs, newThemeName.text)) }
     }
+    // WaveKey: jump straight from a part of the keyboard to its colour, so the
+    // name of a colour never has to be mapped to the thing it paints.
+    fun pickColor(name: String) {
+        val setting = shownColors.firstOrNull { it.name == name } ?: return
+        chosenColorString = Json.encodeToString(setting)
+    }
+
     SearchScreen(
         title = {
             var nameValid by rememberSaveable { mutableStateOf(true) }
@@ -177,7 +187,31 @@ fun ColorsScreen(
         // changed. Editing used to be judged by the settings chrome recolouring
         // itself, a proxy for the thing in hand; and it sits at the top so the
         // picker sheet does not cover the thing it is changing.
-        header = { KeyboardPreview() },
+        header = {
+            Column {
+                Box {
+                    KeyboardPreview()
+                    // Tap the thing you want to change. The regions match the
+                    // preview's own layout: strip, keys, and the bottom row's
+                    // function key, space bar and action key.
+                    Column(Modifier.matchParentSize()) {
+                        Box(Modifier.weight(0.16f).fillMaxWidth().clickable { pickColor(KeyboardTheme.COLOR_BACKGROUND) })
+                        Box(Modifier.weight(0.63f).fillMaxWidth().clickable { pickColor(KeyboardTheme.COLOR_KEYS) })
+                        Row(Modifier.weight(0.21f).fillMaxWidth()) {
+                            Box(Modifier.weight(0.22f).fillMaxHeight().clickable { pickColor(KeyboardTheme.COLOR_FUNCTIONAL_KEYS) })
+                            Box(Modifier.weight(0.56f).fillMaxHeight().clickable { pickColor(KeyboardTheme.COLOR_SPACEBAR) })
+                            Box(Modifier.weight(0.22f).fillMaxHeight().clickable { pickColor(KeyboardTheme.COLOR_ACCENT) })
+                        }
+                    }
+                }
+                Text(
+                    stringResource(R.string.wk_tap_the_keyboard),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp)
+                )
+            }
+        },
         itemContent = { colorSetting ->
             if (colorSetting == null)
                 Text( // not a colorSetting, but still best done as part of the list

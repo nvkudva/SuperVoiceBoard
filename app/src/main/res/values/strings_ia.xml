@@ -33,6 +33,7 @@
         <item quantity="other">%d keys above the keyboard</item>
     </plurals>
 
+    <string name="wk_tap_the_keyboard">Tap a part of the keyboard above to change its colour.</string>
     <string name="wk_day">Day</string>
     <string name="wk_night">Night</string>
     <string name="wk_category_key_behaviour">Key behaviour</string>

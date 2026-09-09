@@ -16,7 +16,12 @@ plugins {
  * phone build passes `-Pabi=arm64-v8a`. It stays opt-in because the emulator
  * QA suite runs on x86_64 and the default has to keep working for it.
  */
-val buildAbis: List<String> = (findProperty("abi") as String?)
+val abiProperty = findProperty("abi") as String?
+
+/** True when the build was narrowed with -Pabi, i.e. it targets one device. */
+val abiNarrowed: Boolean = abiProperty != null
+
+val buildAbis: List<String> = abiProperty
     ?.split(",")
     ?.map { it.trim() }
     ?.filter { it.isNotEmpty() }
@@ -34,7 +39,10 @@ android {
         versionName = "4.1"
         ndk {
             abiFilters.clear()
-            abiFilters.addAll(buildAbis)
+            // Left empty when -Pabi narrowed the build: AGP rejects an ABI named
+            // in both abiFilters and the split filters ("Conflicting
+            // configuration"), and the split alone already decides what is built.
+            if (!abiNarrowed) abiFilters.addAll(buildAbis)
         }
         proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         // SuperVoiceBoard: the emulator UI QA suite (app/src/androidTest)
@@ -147,7 +155,7 @@ android {
             reset()
             include(*buildAbis.toTypedArray())
             // A universal APK next to a single-ABI build is the same file twice.
-            isUniversalApk = buildAbis.size > 1
+            isUniversalApk = !abiNarrowed
         }
     }
 

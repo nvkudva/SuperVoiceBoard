@@ -49,6 +49,24 @@ class ModelStore(context: Context) {
     private val appContext: Context = context.applicationContext
 
     /**
+     * Resolved model paths per extraction directory.
+     *
+     * [findTransducer] walks the whole extraction tree, and the readiness checks
+     * that call it run on every mic press and on every settings screen that asks
+     * whether dictation is available. A hit is re-validated with one stat, so a
+     * pack removed by the `:ui` process cannot leave this process reporting
+     * models it no longer has.
+     */
+    private val transducerCache = ConcurrentHashMap<String, SpeechModelPaths>()
+
+    /**
+     * Extraction directories already verified this process, keyed by pack and
+     * version. Every mic press asks each pack to ensure its extraction, and the
+     * answer only changes when a pack is installed or removed.
+     */
+    private val extractedCache = ConcurrentHashMap<String, File>()
+
+    /**
      * Device-protected storage, explicitly.
      *
      * The IME is `directBootAware`: the system starts its process before the
@@ -140,7 +158,7 @@ class ModelStore(context: Context) {
             if (language == null) ModelCatalog.byKind(ModelKind.FINAL_ASR)
             else ModelCatalog.asrPacksFor(language)
         return candidates.firstNotNullOfOrNull { pack ->
-            extractedDir(installer, pack)?.let { findTransducer(it) }
+            extractedDir(installer, pack)?.let { cachedTransducer(it) }
         }
     }
 
@@ -171,8 +189,15 @@ class ModelStore(context: Context) {
      * installed.marker, so the UI reported it Installed and offered no repair.
      */
     @Throws(IOException::class)
-    fun ensureExtracted(installer: PackInstaller, pack: ModelPack): File? =
-        synchronized(lockFor(pack)) { ensureExtractedLocked(installer, pack) }
+    fun ensureExtracted(installer: PackInstaller, pack: ModelPack): File? {
+        val key = "${pack.id}:v${pack.version}"
+        extractedCache[key]?.let { cached ->
+            if (File(cached, COMPLETE_MARKER).exists()) return cached
+            extractedCache.remove(key)
+        }
+        return synchronized(lockFor(pack)) { ensureExtractedLocked(installer, pack) }
+            ?.also { extractedCache[key] = it }
+    }
 
     private fun ensureExtractedLocked(installer: PackInstaller, pack: ModelPack): File? {
         if (installer.stateOf(pack) != PackState.Installed) {
@@ -214,6 +239,8 @@ class ModelStore(context: Context) {
         }
 
         val staging = File(installDir, EXTRACTED_STAGING)
+        transducerCache.remove(target.absolutePath)
+        extractedCache.remove("${pack.id}:v${pack.version}")
         deleteQuietly(staging)
         deleteQuietly(target) // remnants of an interrupted attempt
         if (!staging.mkdirs() && !staging.isDirectory) {
@@ -258,6 +285,15 @@ class ModelStore(context: Context) {
         val installDir = installer.installedDir(pack)?.toFile() ?: return null
         val dir = File(installDir, EXTRACTED_DIR)
         return if (File(dir, COMPLETE_MARKER).exists()) dir else null
+    }
+
+    private fun cachedTransducer(dir: File): SpeechModelPaths? {
+        val key = dir.absolutePath
+        transducerCache[key]?.let { cached ->
+            if (File(cached.encoder).exists()) return cached
+            transducerCache.remove(key)
+        }
+        return findTransducer(dir)?.also { transducerCache[key] = it }
     }
 
     /** Locates encoder/decoder/joiner/tokens anywhere under [dir] (archives nest a folder). */

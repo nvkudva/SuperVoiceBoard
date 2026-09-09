@@ -25,7 +25,9 @@ jobs:
           java-version: "21"
       - uses: gradle/actions/setup-gradle@v4
       - name: Assemble debug
-        run: ./gradlew :app:assembleDebug --no-daemon
+        # One architecture: this build exists to be sideloaded onto a phone, and
+        # every Android phone shipping today is arm64.
+        run: ./gradlew :app:assembleDebug -Pabi=arm64-v8a --no-daemon
       - name: APK size
         run: |
           for f in app/build/outputs/apk/debug/*arm64-v8a*.apk; do

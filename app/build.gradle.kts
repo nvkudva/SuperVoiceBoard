@@ -8,6 +8,21 @@ plugins {
     kotlin("plugin.compose") version "2.3.20"
 }
 
+/**
+ * SuperVoiceBoard: which architectures to build.
+ *
+ * A phone needs one. Building four (plus the universal APK that is a copy of
+ * all of them) is three quarters of the native compile thrown away, so the
+ * phone build passes `-Pabi=arm64-v8a`. It stays opt-in because the emulator
+ * QA suite runs on x86_64 and the default has to keep working for it.
+ */
+val buildAbis: List<String> = (findProperty("abi") as String?)
+    ?.split(",")
+    ?.map { it.trim() }
+    ?.filter { it.isNotEmpty() }
+    ?.takeIf { it.isNotEmpty() }
+    ?: listOf("armeabi-v7a", "arm64-v8a", "x86", "x86_64")
+
 android {
     compileSdk = 36
 
@@ -19,7 +34,7 @@ android {
         versionName = "4.1"
         ndk {
             abiFilters.clear()
-            abiFilters.addAll(listOf("armeabi-v7a", "arm64-v8a", "x86", "x86_64"))
+            abiFilters.addAll(buildAbis)
         }
         proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         // SuperVoiceBoard: the emulator UI QA suite (app/src/androidTest)
@@ -130,8 +145,9 @@ android {
         abi {
             isEnable = true
             reset()
-            include("armeabi-v7a", "arm64-v8a", "x86", "x86_64")
-            isUniversalApk = true
+            include(*buildAbis.toTypedArray())
+            // A universal APK next to a single-ABI build is the same file twice.
+            isUniversalApk = buildAbis.size > 1
         }
     }
 

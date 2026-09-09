@@ -543,7 +543,6 @@ class SuggestionStripView(context: Context, attrs: AttributeSet?, defStyle: Int)
     @SuppressLint("ClickableViewAccessibility") // the click listener above is the accessible path
     private fun setUpMicHold() {
         var holding = false
-        var raw = false
         val startHold = Runnable {
             holding = true
             micKey.isPressed = true
@@ -552,7 +551,6 @@ class SuggestionStripView(context: Context, attrs: AttributeSet?, defStyle: Int)
         }
         val escalateToRaw = Runnable {
             if (!holding) return@Runnable
-            raw = true
             micKey.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS)
             onMicHoldStart?.invoke(true)
         }
@@ -560,7 +558,6 @@ class SuggestionStripView(context: Context, attrs: AttributeSet?, defStyle: Int)
             when (event.actionMasked) {
                 MotionEvent.ACTION_DOWN -> {
                     holding = false
-                    raw = false
                     onMicTouchDown?.invoke()
                     view.postDelayed(startHold, MIC_HOLD_MS)
                     view.postDelayed(escalateToRaw, MIC_RAW_HOLD_MS)

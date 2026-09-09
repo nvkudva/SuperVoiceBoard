@@ -848,15 +848,6 @@ public class LatinIME extends InputMethodService implements
     }
 
     /**
-     * SuperVoiceBoard: shows that a word was replaced, by lifting the old one
-     * away and settling the new one in its place.
-     *
-     * The whole feature is this method, the view it talks to, and the
-     * helium314.keyboard.correct package. Nothing reads its return value and
-     * nothing breaks if it does nothing, so dropping the feature is deleting
-     * those three things.
-     */
-    /**
      * SuperVoiceBoard: a sentence just finished being typed. Hands it to the
      * rescoring pass, which may swap a word the decoder ranked second.
      *
@@ -876,6 +867,15 @@ public class LatinIME extends InputMethodService implements
         mRescoreController.onSentenceComplete(sentence);
     }
 
+    /**
+     * SuperVoiceBoard: shows that a word was replaced, by lifting the old one
+     * away and settling the new one in its place.
+     *
+     * The whole feature is this method, the view it talks to, and the
+     * helium314.keyboard.correct package. Nothing reads its return value and
+     * nothing breaks if it does nothing, so dropping the feature is deleting
+     * those three things.
+     */
     public void showCorrectionGhost(final String from, final String to) {
         if (mCorrectionGhost != null) mCorrectionGhost.show(from, to);
     }

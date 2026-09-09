@@ -24,7 +24,6 @@ class DictationStateMachineTest {
         val effects = machine.onEvent(Event.MicPressed)
         assertIs<State.PreparingModels>(machine.state)
         assertTrue(Effect.ShowVoiceBar in effects)
-        assertTrue(effects.any { it is Effect.Haptic })
     }
 
     @Test

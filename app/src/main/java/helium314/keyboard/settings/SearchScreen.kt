@@ -6,6 +6,8 @@ import androidx.annotation.StringRes
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
@@ -14,8 +16,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
@@ -124,22 +124,8 @@ fun SearchSettingsScreen(
                             }
                         }
                     }
-                    // lazyColumn has janky scroll for a while (not sure why compose gets smoother after a while)
-                    // maybe related to unnecessary recompositions? but even for just displaying text it's there
-                    // didn't manage to improve things with @Immutable list wrapper and other lazy list hints
-                    // so for now: just use "normal" Column
-                    //  even though it takes up to ~50% longer to load it's much better UX
-                    //  and the missing appear animations could be added
-    //                LazyColumn {
-    //                    items(prefs.filterNotNull(), key = { it }) {
-    //                        Box(Modifier.animateItem()) {
-    //                            if (it is Int)
-    //                                PreferenceCategory(stringResource(it))
-    //                            else
-    //                                SettingsActivity.settingsContainer[it]!!.Preference()
-    //                        }
-    //                    }
-    //                }
+                    // A plain Column, not a LazyColumn: the lazy version scrolls
+                    // janky here for a while and loads ~50% faster at best.
                 }
             }
             footer?.invoke()

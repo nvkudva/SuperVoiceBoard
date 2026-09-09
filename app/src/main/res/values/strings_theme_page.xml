@@ -15,5 +15,4 @@
     <!-- Accessibility description of the check mark on the currently applied theme -->
     <string name="theme_page_selected">Selected</string>
     <!-- Label of the text field asking for the name of a new theme -->
-    <string name="theme_page_name">Theme name</string>
 </resources>

@@ -746,7 +746,6 @@ class VoiceSessionController(
                 )
             }
             is Effect.SignalError -> showError(effect.kind)
-            is Effect.Haptic -> Unit // views already emit haptics on their own events
         }
     }
 

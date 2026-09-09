@@ -125,7 +125,6 @@ class DictationStateMachine(private val config: Config = Config()) {
         data class CommitUtterance(val text: String, val utteranceIndex: Int, val refine: Boolean) : Effect
         data object DeleteLastUtterance : Effect
         data class SignalError(val kind: ErrorKind) : Effect
-        data class Haptic(val kind: HapticKind) : Effect
 
         /**
          * Audio was dropped before it reached the streaming recognizer. The app
@@ -139,7 +138,6 @@ class DictationStateMachine(private val config: Config = Config()) {
         ) : Effect
     }
 
-    enum class HapticKind { SESSION_START, UTTERANCE_COMMIT, SESSION_END, ERROR }
 
     var state: State = State.Idle
         private set
@@ -163,10 +161,7 @@ class DictationStateMachine(private val config: Config = Config()) {
         is State.Idle -> when (event) {
             Event.MicPressed -> {
                 droppedSamplesThisSession = 0L
-                State.PreparingModels to listOf(
-                    Effect.ShowVoiceBar,
-                    Effect.Haptic(HapticKind.SESSION_START),
-                )
+                State.PreparingModels to listOf(Effect.ShowVoiceBar)
             }
             else -> state to emptyList()
         }
@@ -197,10 +192,7 @@ class DictationStateMachine(private val config: Config = Config()) {
                 }
             is Event.FinalTranscript -> commitThen(event.text, state.utteranceIndex, stop = false)
             Event.ScratchThat ->
-                State.Listening("", state.utteranceIndex) to listOf(
-                    Effect.DeleteLastUtterance,
-                    Effect.Haptic(HapticKind.UTTERANCE_COMMIT),
-                )
+                State.Listening("", state.utteranceIndex) to listOf(Effect.DeleteLastUtterance)
             Event.StopRequested, Event.MicPressed -> stopEffects(started = true)
             Event.SilenceTimeout -> stopEffects(started = true)
             Event.AudioError -> errorState(ErrorKind.AUDIO_UNAVAILABLE, stopAudio = true)
@@ -281,9 +273,7 @@ class DictationStateMachine(private val config: Config = Config()) {
         is State.Error -> when (event) {
             Event.ErrorDismissed, Event.StopRequested ->
                 State.Idle to listOf(Effect.HideVoiceBar)
-            Event.MicPressed -> State.PreparingModels to listOf(
-                Effect.Haptic(HapticKind.SESSION_START),
-            )
+            Event.MicPressed -> State.PreparingModels to emptyList()
             else -> state to emptyList()
         }
     }
@@ -302,7 +292,6 @@ class DictationStateMachine(private val config: Config = Config()) {
         val effects = mutableListOf<Effect>()
         if (text.isNotBlank()) {
             effects.add(Effect.CommitUtterance(text, index, refine = config.refineEnabled))
-            effects.add(Effect.Haptic(HapticKind.UTTERANCE_COMMIT))
         } else {
             effects.add(Effect.UpdatePartial(""))
         }
@@ -311,13 +300,11 @@ class DictationStateMachine(private val config: Config = Config()) {
             // words reach the field and the bar then says why the mic stopped.
             // StopAudio already went out when the interruption was reported.
             effects.add(Effect.SignalError(endWithError))
-            effects.add(Effect.Haptic(HapticKind.ERROR))
             return State.Error(endWithError) to effects
         }
         if (!stop) return State.Listening("", index + 1) to effects
         // StopAudio already went out when the stop was requested.
         effects.add(Effect.HideVoiceBar)
-        effects.add(Effect.Haptic(HapticKind.SESSION_END))
         return State.Idle to effects
     }
 
@@ -331,13 +318,11 @@ class DictationStateMachine(private val config: Config = Config()) {
         State.Idle to buildList {
             if (started) add(Effect.StopAudio)
             add(Effect.HideVoiceBar)
-            add(Effect.Haptic(HapticKind.SESSION_END))
         }
 
     private fun errorState(kind: ErrorKind, stopAudio: Boolean = false): Pair<State, List<Effect>> =
         State.Error(kind) to buildList {
             if (stopAudio) add(Effect.StopAudio)
             add(Effect.SignalError(kind))
-            add(Effect.Haptic(HapticKind.ERROR))
         }
 }

@@ -4,8 +4,4 @@
      upstream strings.xml stays mergeable. -->
 <resources>
     <string name="glide_decoder_note">Built-in decoder. Less accurate than a commercial keyboard — wrong words can be fixed from the suggestion strip.</string>
-    <string name="glide_decoder_unavailable">Not available for %s — this language\'s dictionary is too small for gesture typing.</string>
-    <string name="glide_native_active">Using the gesture typing library.</string>
-    <string name="glide_first_swipe_hint">Slide to type? Turn on gesture typing</string>
-    <string name="glide_first_swipe_hint_action">Turn on</string>
 </resources>

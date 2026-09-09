@@ -6,6 +6,7 @@ import android.util.Log
 import com.vboard.core.model.ModelCatalog
 import com.vboard.core.model.ModelKind
 import com.vboard.core.model.ModelPack
+import com.vboard.core.model.ModelReadiness
 import com.vboard.core.model.PackInstaller
 import com.vboard.core.model.PackState
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream
@@ -125,11 +126,38 @@ class ModelStore(context: Context) {
         return file.takeIf { it.exists() }?.absolutePath
     }
 
-    fun parakeetPaths(installer: PackInstaller): SpeechModelPaths? {
-        val pack = ModelCatalog.byKind(ModelKind.FINAL_ASR).firstOrNull() ?: return null
-        val dir = extractedDir(installer, pack) ?: return null
-        return findTransducer(dir)
+    /**
+     * Model files for the on-device recognizer, or null when there is nothing loadable.
+     *
+     * [language] null keeps the old meaning — "the ASR pack", whatever it is — for callers
+     * that have no subtype in hand. A non-null BCP-47 tag resolves through
+     * [ModelCatalog.asrPacksFor] and returns null when no installed pack covers it. That null
+     * is the load-bearing part of this whole change: it is what stops Spanish audio being fed
+     * to an English-only Parakeet, which does not fail, it just returns confident nonsense.
+     */
+    fun parakeetPaths(installer: PackInstaller, language: String? = null): SpeechModelPaths? {
+        val candidates =
+            if (language == null) ModelCatalog.byKind(ModelKind.FINAL_ASR)
+            else ModelCatalog.asrPacksFor(language)
+        return candidates.firstNotNullOfOrNull { pack ->
+            extractedDir(installer, pack)?.let { findTransducer(it) }
+        }
     }
+
+    /**
+     * True when an on-device recognizer for [language] is installed, i.e. the mic can be
+     * offered on the local path for this subtype.
+     *
+     * Note this asks about *installation*, not extraction: it is the gate the UI consults
+     * before a mic press, whereas [parakeetPaths] answers the stricter "can I load a model
+     * right now?" that the session itself needs (extraction happens lazily, on first use).
+     *
+     * [ModelReadiness] is untouched by construction — locale-awareness comes from handing it
+     * a filtered pack list, so readiness stays "do I have these packs?" and coverage stays a
+     * catalog fact.
+     */
+    fun dictationReadyFor(installer: PackInstaller, language: String): Boolean =
+        ModelReadiness.canDictate(installedPackIds(installer), ModelCatalog.asrPacksFor(language))
 
     /**
      * Ensures the pack's archive is extracted; call off the main thread.

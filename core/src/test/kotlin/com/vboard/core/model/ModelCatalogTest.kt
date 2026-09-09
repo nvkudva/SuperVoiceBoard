@@ -21,7 +21,7 @@ class ModelCatalogTest {
     fun `byId returns matching pack and null for unknown id`() {
         val parakeet = ModelCatalog.byId("parakeet-tdt-0.6b-v2")
         assertSame(ModelCatalog.packs[0], parakeet)
-        assertEquals("High-accuracy transcription (English)", parakeet?.displayName)
+        assertEquals("High-accuracy transcription (English only)", parakeet?.displayName)
         assertNull(ModelCatalog.byId("does-not-exist"))
     }
 
@@ -47,9 +47,81 @@ class ModelCatalogTest {
         assertFalse(refiner.files.single().archive)
 
         assertEquals(ModelKind.FINAL_ASR, parakeet.kind)
-        assertEquals("High-accuracy transcription (English)", parakeet.displayName)
+        assertEquals("High-accuracy transcription (English only)", parakeet.displayName)
         assertEquals("Qwen2.5, Apache-2.0 (LiteRT community build)", refiner.licenseNote)
     }
+
+    @Test
+    fun `every shipping pack declares its language coverage explicitly`() {
+        // Both packs are English-only: the v2 weights, and the refiner whose instruction
+        // prompt is English prose. Asserted rather than left to the constructor default so
+        // that a pack added later has to state what it covers instead of inheriting "en".
+        for (pack in ModelCatalog.packs) {
+            assertEquals(setOf("en"), pack.languages, "${pack.id} languages")
+        }
+    }
+
+    @Test
+    fun `asrPacksFor covers english variants and nothing else`() {
+        val parakeet = ModelCatalog.byId("parakeet-tdt-0.6b-v2")!!
+        assertEquals(listOf(parakeet), ModelCatalog.asrPacksFor("en"))
+        assertEquals(listOf(parakeet), ModelCatalog.asrPacksFor("en-GB"))
+        // Android hands out underscored tags when a Locale is stringified.
+        assertEquals(listOf(parakeet), ModelCatalog.asrPacksFor("en_US"))
+        assertEquals(listOf(parakeet), ModelCatalog.asrPacksFor("EN"))
+
+        // The refiner declares "en" too, but it is not a recognizer and must never be
+        // offered as one - asrPacksFor filters by kind before it filters by language.
+        assertTrue(ModelCatalog.asrPacksFor("en").none { it.kind == ModelKind.REFINER_LLM })
+
+        // No on-device model for these, which is the state this whole feature turns on.
+        assertTrue(ModelCatalog.asrPacksFor("fr").isEmpty())
+        assertTrue(ModelCatalog.asrPacksFor("fr-CA").isEmpty())
+        // "eng" is a different tag, not a longer spelling of "en".
+        assertTrue(ModelCatalog.asrPacksFor("eng").isEmpty())
+        // An unknown language is not English.
+        assertTrue(ModelCatalog.asrPacksFor("").isEmpty())
+        assertTrue(ModelCatalog.asrPacksFor("   ").isEmpty())
+    }
+
+    @Test
+    fun `covers matches on a subtag boundary and treats an empty set as language-agnostic`() {
+        val zhHans = languagePack(setOf("zh-Hans"))
+        assertTrue(zhHans.covers("zh-Hans"))
+        assertTrue(zhHans.covers("zh-hans-CN"))
+        // Different script, not a narrower variant: matching these would feed a model
+        // audio it cannot read.
+        assertFalse(zhHans.covers("zh-Hant"))
+        assertFalse(zhHans.covers("zh"))
+
+        val multilingual = languagePack(setOf("en", "fr", "de"))
+        assertTrue(multilingual.covers("fr-CA"))
+        assertFalse(multilingual.covers("es"))
+
+        val agnostic = languagePack(emptySet())
+        assertTrue(agnostic.covers("ja"))
+        assertTrue(agnostic.covers(""))
+    }
+
+    @Test
+    fun `readiness filtered by language answers false where no pack covers the language`() {
+        // The seam: ModelReadiness stays a pure "do I have these packs?" question and
+        // becomes locale-aware only through the list it is handed.
+        val installed = setOf("parakeet-tdt-0.6b-v2")
+        assertTrue(ModelReadiness.canDictate(installed, ModelCatalog.asrPacksFor("en-GB")))
+        assertFalse(ModelReadiness.canDictate(installed, ModelCatalog.asrPacksFor("fr")))
+    }
+
+    private fun languagePack(languages: Set<String>) = ModelPack(
+        id = "test-pack",
+        displayName = "Test pack",
+        kind = ModelKind.FINAL_ASR,
+        version = 1,
+        files = listOf(ModelFileSpec("m.onnx", "https://models.test/m.onnx", "", 1L)),
+        licenseNote = "test",
+        required = true,
+        languages = languages,
+    )
 
     @Test
     fun `pinned hashes are well formed and sizes sum into totalBytes`() {

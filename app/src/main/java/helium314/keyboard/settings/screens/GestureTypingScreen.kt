@@ -2,10 +2,16 @@
 package helium314.keyboard.settings.screens
 
 import android.content.Context
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import helium314.keyboard.keyboard.KeyboardSwitcher
@@ -36,7 +42,13 @@ fun GestureTypingScreen(
         Log.v("irrelevant", "stupid way to trigger recomposition on preference change")
     val gestureFloatingPreviewEnabled = prefs.getBoolean(Settings.PREF_GESTURE_FLOATING_PREVIEW_TEXT, Defaults.PREF_GESTURE_FLOATING_PREVIEW_TEXT)
     val gestureEnabled = prefs.getBoolean(Settings.PREF_GESTURE_INPUT, Defaults.PREF_GESTURE_INPUT)
-    val items = listOf(
+    val trailEnabled = prefs.getBoolean(Settings.PREF_GESTURE_PREVIEW_TRAIL, Defaults.PREF_GESTURE_PREVIEW_TRAIL)
+    // SuperVoiceBoard: the native library decodes while the finger is still down, so all
+    // seven options mean something and its screen is left exactly as upstream wrote it.
+    // The built-in decoder produces one word on lift, so floating preview, dynamic
+    // floating preview and phrase gesture would be switches that control nothing —
+    // they are absent rather than shown lying, and an accuracy note takes their place.
+    val items = if (JniUtils.sHaveGestureLib) listOf(
         Settings.PREF_GESTURE_INPUT,
         if (gestureEnabled)
             Settings.PREF_GESTURE_PREVIEW_TRAIL else null,
@@ -48,9 +60,17 @@ fun GestureTypingScreen(
             Settings.PREF_GESTURE_SPACE_AWARE else null,
         if (gestureEnabled)
             Settings.PREF_GESTURE_FAST_TYPING_COOLDOWN else null,
-        if (gestureEnabled &&
-            (prefs.getBoolean(Settings.PREF_GESTURE_PREVIEW_TRAIL, Defaults.PREF_GESTURE_PREVIEW_TRAIL) || gestureFloatingPreviewEnabled))
+        if (gestureEnabled && (trailEnabled || gestureFloatingPreviewEnabled))
             Settings.PREF_GESTURE_TRAIL_FADEOUT_DURATION else null
+        ) else listOf(
+        Settings.PREF_GESTURE_INPUT,
+        GLIDE_DECODER_NOTE,
+        if (gestureEnabled)
+            Settings.PREF_GESTURE_PREVIEW_TRAIL else null,
+        if (gestureEnabled && trailEnabled)
+            Settings.PREF_GESTURE_TRAIL_FADEOUT_DURATION else null,
+        if (gestureEnabled)
+            Settings.PREF_GESTURE_FAST_TYPING_COOLDOWN else null
         )
     SearchSettingsScreen(
         onClickBack = onClickBack,
@@ -59,9 +79,27 @@ fun GestureTypingScreen(
     )
 }
 
+// SuperVoiceBoard: not a preference, so it has no Settings key of its own; it still needs
+// one here because SearchSettingsScreen resolves every row through the settings container.
+const val GLIDE_DECODER_NOTE = "glide_decoder_note"
+
+/** A row that only says something: no switch and no click target, but a preference row's metrics. */
+@Composable
+private fun NoteRow(text: String) {
+    Text(
+        text = text,
+        modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp, horizontal = 16.dp),
+        style = MaterialTheme.typography.bodyMedium,
+        color = MaterialTheme.colorScheme.onSurfaceVariant
+    )
+}
+
 fun createGestureTypingSettings(context: Context) = listOf(
     Setting(context, Settings.PREF_GESTURE_INPUT, R.string.gesture_input, R.string.gesture_input_summary) {
         SwitchPreference(it, Defaults.PREF_GESTURE_INPUT)
+    },
+    Setting(context, GLIDE_DECODER_NOTE, R.string.glide_decoder_note) {
+        NoteRow(it.title)
     },
     Setting(context, Settings.PREF_GESTURE_PREVIEW_TRAIL, R.string.gesture_preview_trail) {
         SwitchPreference(it, Defaults.PREF_GESTURE_PREVIEW_TRAIL)

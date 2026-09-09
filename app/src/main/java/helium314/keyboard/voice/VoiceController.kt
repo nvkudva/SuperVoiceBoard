@@ -53,6 +53,22 @@ class VoiceController(
     /** Which backend owns the running session; decided at start() and kept. */
     private var googleForSession = false
 
+    /**
+     * SuperVoiceBoard: true when this session is on the platform recognizer
+     * because Parakeet is not downloaded yet, rather than because the user
+     * asked for it. Only that case gets the download-shaped error recovery.
+     */
+    private var fallbackForSession = false
+
+    /**
+     * An error the strip is still showing after its session ended. The Google
+     * backend releases itself the moment it errors, and the local path leaves
+     * the bar up in that case (DictationStateMachine.State.Error emits no
+     * HideVoiceBar); without this the message and its action key would be
+     * cleared in the same frame they were set.
+     */
+    private var errorOnStrip = false
+
     private fun googleBackendEnabled() =
         PrivacyBreakingSettings.googleVoiceEnabled(ime.prefs())
 
@@ -130,6 +146,9 @@ class VoiceController(
         minimizedForSession = false
         releaseScreenLock()
         fieldKind = fieldKindOf(editorInfo)
+        // An error bar belongs to the field that produced it, not to the next
+        // one: its session is already over, so nothing else would clear it.
+        if (!isActive && errorOnStrip) endSessionUi()
         // A field that must never be dictated into ends any session that was
         // running when focus moved into it.
         if (!fieldKind.allowsVoice && isActive) cancel()
@@ -233,10 +252,28 @@ class VoiceController(
         val toSystem = !PrivacyBreakingSettings.googleVoiceEnabled(prefs)
         prefs.edit().putBoolean(PrivacyBreakingSettings.PREF_GOOGLE_VOICE, toSystem).apply()
         val message = ime.getString(
-            if (toSystem) R.string.asr_engine_system else R.string.asr_engine_ondevice
+            when {
+                toSystem -> R.string.asr_engine_system
+                // Saying "switched to the on-device model" with no model
+                // downloaded is a lie the user finds out about at the next
+                // mic press; name what will actually run.
+                fallbackWouldRun() -> R.string.asr_engine_ondevice_fallback
+                else -> R.string.asr_engine_ondevice
+            }
         )
         Toast.makeText(ime, message, Toast.LENGTH_SHORT).show()
     }
+
+    /**
+     * SuperVoiceBoard: true when a mic press with the local engine selected
+     * would land on the platform's on-device recognizer instead of Parakeet.
+     *
+     * Ordered so a device with Parakeet installed never touches the recognizer
+     * lookup, and a device without the platform recognizer — pre-API-31, or a
+     * ROM with no speech service — answers false and keeps the download prompt.
+     */
+    private fun fallbackWouldRun() =
+        !runtime.modelStore.dictationReady(runtime.packInstaller) && googleSession.onDeviceAvailable()
 
     /** End the utterance on whichever backend is running it. */
     private fun stopAndFinalize() {
@@ -280,12 +317,29 @@ class VoiceController(
         sessionStartedAt = SystemClock.elapsedRealtime()
         commits.clear()
         keepScreenOn(true)
+        errorOnStrip = false
         strip?.reset()
         onSessionUiStarted?.invoke()
         strip?.announceSessionStarted()
         googleForSession = googleBackendEnabled()
         if (googleForSession) {
             googleSession.start()
+            return
+        }
+        // SuperVoiceBoard: a fresh install has no Parakeet and a 482 MB wait
+        // before the mic key does anything. Where the platform has an offline
+        // recognizer of its own, borrow it until ours is downloaded. Bound to
+        // the on-device one — the fallback is automatic, so it must never be
+        // the thing that starts sending audio off the device.
+        if (fallbackWouldRun()) {
+            fallbackForSession = true
+            // Reuses the Google backend's stop/cancel/end routing wholesale.
+            googleForSession = true
+            if (!fallbackNoticeShown) {
+                fallbackNoticeShown = true
+                Toast.makeText(ime, R.string.voice_fallback_system_notice, Toast.LENGTH_LONG).show()
+            }
+            googleSession.start(onDeviceOnly = true)
             return
         }
         val settings = runtime.settings.snapshot().let {
@@ -339,7 +393,13 @@ class VoiceController(
     }
 
     fun cancel() {
-        if (!isActive) return
+        if (!isActive) {
+            // The bar an error left behind outlives its session, so dismissing
+            // it is the one thing cancel still has to do once the session is
+            // over — the back arrow is what the user reaches for either way.
+            if (errorOnStrip) endSessionUi()
+            return
+        }
         if (googleForSession) googleSession.cancel() else session.cancelSession()
     }
 
@@ -446,11 +506,20 @@ class VoiceController(
     override fun onSessionEnded() {
         isActive = false
         googleForSession = false
+        fallbackForSession = false
         holdScoped = false
         rawForSession = false
         minimizedForSession = false
         keepScreenOn(false)
         releaseScreenLock()
+        // An error the user has not answered yet keeps the bar: it is carrying
+        // the only control that recovers from it.
+        if (errorOnStrip) return
+        endSessionUi()
+    }
+
+    private fun endSessionUi() {
+        errorOnStrip = false
         strip?.announceSessionEnded()
         strip?.reset()
         onSessionUiEnded?.invoke()
@@ -499,7 +568,33 @@ class VoiceController(
 
     override fun onGoogleFinalizing() = showFinalizing()
 
-    override fun onGoogleError(message: String) = showError(message, VoiceErrorAction.DISMISS)
+    /**
+     * SuperVoiceBoard: the recognizer's own message, routed to the recovery it
+     * actually needs. A missing microphone permission is the likeliest error on
+     * the very first press — this path has no permission gate of its own, it
+     * finds out from the recognizer — and answering that with "download 482 MB"
+     * would be a dead end.
+     */
+    override fun onGoogleError(message: String, kind: GoogleVoiceSession.ErrorKind) {
+        errorOnStrip = true
+        when (kind) {
+            GoogleVoiceSession.ErrorKind.PERMISSION ->
+                showError(message, VoiceErrorAction.OPEN_PERMISSION)
+            GoogleVoiceSession.ErrorKind.ENGINE_UNUSABLE ->
+                // Only the automatic fallback has somewhere better to send the
+                // user: on the opt-in path the model is not what failed.
+                if (fallbackForSession) {
+                    showError(
+                        ime.getString(R.string.voice_fallback_failed),
+                        VoiceErrorAction.OPEN_DOWNLOAD,
+                    )
+                } else {
+                    showError(message, VoiceErrorAction.DISMISS)
+                }
+            GoogleVoiceSession.ErrorKind.TRANSIENT ->
+                showError(message, VoiceErrorAction.DISMISS)
+        }
+    }
 
     override fun onGoogleEnded() = onSessionEnded()
 
@@ -551,5 +646,14 @@ class VoiceController(
         private const val SCREEN_LOCK_TAG = "SuperVoiceBoard:dictation"
         /** Longer than any dictation, short enough to bound a leak. */
         private const val SCREEN_LOCK_TIMEOUT_MS = 10L * 60L * 1000L
+
+        /**
+         * SuperVoiceBoard: the "we borrowed your phone's recognizer" toast is
+         * shown once per keyboard process, not once per session — it explains a
+         * state, and a state does not need re-explaining every time the mic
+         * opens. Deliberately not a preference: nothing to migrate, and a fresh
+         * process is a fair time to say it again.
+         */
+        private var fallbackNoticeShown = false
     }
 }

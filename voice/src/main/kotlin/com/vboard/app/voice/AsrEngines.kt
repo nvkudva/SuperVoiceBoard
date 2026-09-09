@@ -8,17 +8,6 @@ import com.k2fsa.sherpa.onnx.OfflineTransducerModelConfig
 import com.vboard.app.models.ModelStore
 import com.vboard.core.text.RecognizerCase
 
-/** Resets decoding state for the next utterance. */
-    fun resetUtterance() {
-        recognizer.reset(stream)
-    }
-
-    fun release() {
-        runCatching { stream.release() }
-        runCatching { recognizer.release() }
-    }
-}
-
 class FinalAsr(paths: ModelStore.SpeechModelPaths) {
 
     private val recognizer = OfflineRecognizer(

@@ -292,7 +292,7 @@ class VoiceSessionController(
     // ------------------------------------------------------------ audio loop
 
     private fun startAudio() {
-        val streaming = VoiceEngines.streaming ?: run {
+        if (VoiceEngines.finalPass == null) {
             dispatch(Event.ModelsMissing)
             return
         }
@@ -303,7 +303,6 @@ class VoiceSessionController(
         lastChunkAt = now
         latestAmplitude = 0f
         audioStopRequested = false
-        streaming.resetUtterance()
 
         // Never leave a previous reader running against a new record.
         audioJob?.cancel()
@@ -341,7 +340,7 @@ class VoiceSessionController(
             VoiceEngines.beginUse()
             try {
                 coroutineScope {
-                    val consumer = launch(streamDispatcher) { decodeLoop(streaming, pipe) }
+                    val consumer = launch(streamDispatcher) { decodeLoop(pipe) }
                     withContext(Dispatchers.IO) { readLoop(pipe) }
                     // The reader has exited, so nothing more will be offered;
                     // let the decoder finish what is already queued rather than
@@ -407,8 +406,14 @@ class VoiceSessionController(
                 AudioCapture.Read.Stopped -> break
                 is AudioCapture.Read.Chunk -> {
                     val samples = chunk.samples
-                    lastChunkAt = System.currentTimeMillis()
-                    latestAmplitude = samples.rmsLevel()
+                    val now = System.currentTimeMillis()
+                    lastChunkAt = now
+                    val level = samples.rmsLevel()
+                    latestAmplitude = level
+                    // The streaming decoder used to say when speech happened. With
+                    // it gone the level meter is the only speech signal left, so
+                    // the silence timeout reads it directly.
+                    if (level > SPEECH_LEVEL) lastSpeechAt = now
                     // Never lost for the final pass; may be dropped (and counted)
                     // for the streaming decoder if it has fallen behind.
                     pipe.offer(samples)
@@ -427,48 +432,16 @@ class VoiceSessionController(
     }
 
     /**
-     * Consumer. Owns the streaming recognizer's stream, on a thread of its own
-     * so a slow decode delays only the live partial — never the microphone, and
-     * never the final pass.
+     * Consumer. Drains the decode queue so the pipeline's decoded position keeps
+     * up with the reader; there is no live recognizer behind it any more.
+     *
+     * The queue still exists because it is what tells the pipeline how much audio
+     * has been accounted for, and because dropping from it — rather than from the
+     * buffer the final pass reads — is what keeps a slow moment from costing words.
      */
-    private suspend fun decodeLoop(streaming: StreamingAsr, pipe: AudioPipeline) {
-        var lastPartial = ""
+    private suspend fun decodeLoop(pipe: AudioPipeline) {
         while (true) {
-            val chunk = pipe.take() ?: break
-            streaming.acceptAudio(chunk.samples)
-            val partial = streaming.partialText()
-            if (partial != lastPartial) {
-                lastPartial = partial
-                lastSpeechAt = System.currentTimeMillis()
-                // Partials go to the voice bar only (VB-103 is not implemented:
-                // this 20M-parameter stream would show the user wrong words
-                // being rewritten in their text field).
-                withContext(Dispatchers.Main.immediate) { dispatch(Event.Partial(partial)) }
-            }
-            // W6.5: while the mic key is held, a silence endpoint is ignored —
-            // the release is the endpoint. The recognizer's own hard length cap
-            // still applies, so a stuck key cannot record forever.
-            if (streaming.isEndpoint() && endpointingEnabled) {
-                lastPartial = ""
-                withContext(Dispatchers.Main.immediate) {
-                    val wasListening = machine.state is DictationStateMachine.State.Listening
-                    // Any finalize this triggers takes the utterance audio from
-                    // inside dispatch, split at this decoder's stream position,
-                    // so the reset has to come after it.
-                    dispatch(Event.EndpointDetected)
-                    // The recognizer stream is owned by this loop, which is
-                    // suspended for the duration of this block; resetting it
-                    // here rather than off the finalize path keeps it that way.
-                    streaming.resetUtterance()
-                    if (wasListening && machine.state is DictationStateMachine.State.Listening) {
-                        // Endpoint on silence with nothing recognized: drop the
-                        // buffered dead air up to here — but not the audio the
-                        // reader has captured since, which belongs to whatever
-                        // the user is saying now.
-                        pipe.discardUtteranceThrough(pipe.decodedPosition)
-                    }
-                }
-            }
+            pipe.take() ?: break
         }
     }
 
@@ -798,6 +771,13 @@ class VoiceSessionController(
         /** UI/overrun tick; matches the ~100ms capture cadence. */
         private const val MONITOR_TICK_MS = 100L
 
+        /**
+         * Level above which a chunk counts as speech for the silence timeout.
+         * [rmsLevel] scales speech into roughly 0.16..1, and a quiet room sits
+         * an order of magnitude below that, so this sits between the two.
+         */
+        private const val SPEECH_LEVEL = 0.08f
+
         /** Mic-health, call and silence checks run every 500ms. */
         private const val WATCHDOG_EVERY_N_TICKS = 5
 
@@ -855,9 +835,6 @@ object VoiceEngines {
         BROKEN,
     }
 
-    @Volatile var streaming: StreamingAsr? = null
-        private set
-
     @Volatile var finalPass: FinalAsr? = null
         private set
 
@@ -890,7 +867,7 @@ object VoiceEngines {
      */
     private val claims = AtomicInteger(0)
 
-    val isLoaded: Boolean get() = streaming != null && finalPass != null
+    val isLoaded: Boolean get() = finalPass != null
 
     fun beginUse() {
         claims.incrementAndGet()
@@ -903,25 +880,15 @@ object VoiceEngines {
     @Synchronized
     fun load(app: VoiceRuntime): LoadResult {
         if (isLoaded) return LoadResult.READY
-        val streamingPaths = app.modelStore.streamingPaths(app.packInstaller)
-            ?: return LoadResult.MISSING
         val parakeetPaths = app.modelStore.parakeetPaths(app.packInstaller)
             ?: return LoadResult.MISSING
 
-        // Built into locals and published only on full success: assigning field by
-        // field meant a throw from the second constructor (OOM is realistic at
-        // this size) left the first recognizer as an orphaned native handle that
-        // nothing could reach, and the next mic press allocated another on top.
-        var streamingAsr: StreamingAsr? = null
         var finalAsr: FinalAsr? = null
         return try {
-            streamingAsr = StreamingAsr(streamingPaths)
             finalAsr = FinalAsr(parakeetPaths)
-            streaming = streamingAsr
             finalPass = finalAsr
             LoadResult.READY
         } catch (e: Throwable) {
-            runCatching { streamingAsr?.release() }
             runCatching { finalAsr?.release() }
             Log.e(TAG, "ASR engine load failed", e)
             LoadResult.BROKEN
@@ -950,10 +917,8 @@ object VoiceEngines {
             Log.w(TAG, "engine release refused: engines in use")
             return
         }
-        runCatching { streaming?.release() }
         runCatching { finalPass?.release() }
         runCatching { refiner?.disconnect() }
-        streaming = null
         finalPass = null
         refiner = null
     }

@@ -51,4 +51,12 @@
                 android:layout_weight="1" />
         </LinearLayout>
     </HorizontalScrollView>
+    <!-- SuperVoiceBoard: the correction ghost draws over whichever mode is
+         showing and never takes a touch. Removing the feature is removing this
+         view and the helium314.keyboard.correct package. -->
+    <helium314.keyboard.correct.GhostSwapView
+        android:id="@+id/correction_ghost"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone" />
 </FrameLayout>

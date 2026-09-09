@@ -5,21 +5,20 @@ package com.vboard.core.model
  *
  * The app used to ask "are all required packs present?" in four places, and because both
  * speech packs were marked required, that question also meant "has the user downloaded
- * 610 MB?" — which is why setup dead-ended. Dictation needs exactly one thing: a streaming
- * recognizer. The final-pass model re-scores an utterance the streaming pass has already
- * transcribed, and the refiner only rewrites text that already exists; neither is a
- * dependency, and neither may ever influence the answers below.
+ * 610 MB?" — which is why setup dead-ended. Dictation needs exactly one thing: a recognizer.
+ * The refiner only rewrites text that already exists, so it is never a dependency and may
+ * never influence the answers below.
  */
 object ModelReadiness {
 
     /**
-     * True when [installedPackIds] contains a streaming recognizer, i.e. the user can press
-     * the mic and get words. Unaffected by the accuracy pack and the refiner by construction.
+     * True when [installedPackIds] contains the on-device recognizer, i.e. the user can press
+     * the mic and get words. Unaffected by the refiner by construction.
      */
     fun canDictate(
         installedPackIds: Set<String>,
         packs: List<ModelPack> = ModelCatalog.packs,
-    ): Boolean = packs.any { it.kind == ModelKind.STREAMING_ASR && it.id in installedPackIds }
+    ): Boolean = packs.any { it.kind == ModelKind.FINAL_ASR && it.id in installedPackIds }
 
     /** Required packs still missing — what setup would need before dictation works. */
     fun missingRequired(

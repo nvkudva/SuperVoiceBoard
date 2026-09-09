@@ -171,9 +171,8 @@ class QaRegressionPinTest {
                 if (file.sizeBytes % 1_000_000L == 0L) estimated.add(key) else measured.add(key)
             }
         }
-        // Both ASR packs — the ones that actually failed the download — carry
-        // measured sizes.
-        assertTrue(measured.any { it.startsWith("zipformer-en-streaming/") })
+        // The ASR pack — the one that actually failed the download — carries a
+        // measured size.
         assertTrue(measured.any { it.startsWith("parakeet-tdt-0.6b-v2/") })
         // The refiner pack does not: its size is still a round estimate and its
         // sha256 is still empty. VB-QA-10's fix (gate on the server's

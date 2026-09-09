@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- SPDX-License-Identifier: GPL-3.0-only -->
+<!-- SuperVoiceBoard: dictation before anything is downloaded. Kept in its own
+     file so the upstream strings.xml stays mergeable.
+
+     "your phone's recognizer", never "Google": this path does not leave the
+     device, and to this fork's users "Google" reads as "network". -->
+<resources>
+    <!-- Toast, once per keyboard process, on the first session that falls back. -->
+    <string name="voice_fallback_system_notice">Using your phone\'s built-in recognizer. Download the on-device model for better accuracy.</string>
+    <!-- Strip status when the fallback engine refuses. The strip ellipsizes, so
+         this is short, and its only affordance is the left key — name it. -->
+    <string name="voice_fallback_failed">Recognizer failed — tap the arrow to download.</string>
+    <!-- ASR_ENGINE toolbar key, flipped to the local engine with no model. -->
+    <string name="asr_engine_ondevice_fallback">Using your phone\'s recognizer — the on-device model isn\'t downloaded.</string>
+</resources>

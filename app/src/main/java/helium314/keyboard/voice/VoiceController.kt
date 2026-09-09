@@ -5,12 +5,16 @@
 // down to lifecycle calls (PLAN.md §3.2).
 package helium314.keyboard.voice
 
+import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import android.os.PowerManager
 import android.os.SystemClock
 import android.provider.Settings as AndroidSettings
 import android.text.InputType
+import android.widget.Toast
 import android.view.View
+import android.view.WindowManager
 import android.view.inputmethod.EditorInfo
 import com.vboard.app.settings.SettingsRepository
 import com.vboard.app.voice.VoiceEngines
@@ -21,6 +25,7 @@ import com.vboard.core.session.VoiceMetrics
 import com.vboard.core.text.CommitPlanner
 import com.vboard.core.text.FieldKind
 import helium314.keyboard.latin.LatinIME
+import helium314.keyboard.latin.R
 import helium314.keyboard.latin.utils.Log
 import helium314.keyboard.latin.utils.prefs
 import helium314.keyboard.settings.screens.PrivacyBreakingSettings
@@ -47,6 +52,22 @@ class VoiceController(
 
     /** Which backend owns the running session; decided at start() and kept. */
     private var googleForSession = false
+
+    /**
+     * SuperVoiceBoard: true when this session is on the platform recognizer
+     * because Parakeet is not downloaded yet, rather than because the user
+     * asked for it. Only that case gets the download-shaped error recovery.
+     */
+    private var fallbackForSession = false
+
+    /**
+     * An error the strip is still showing after its session ended. The Google
+     * backend releases itself the moment it errors, and the local path leaves
+     * the bar up in that case (DictationStateMachine.State.Error emits no
+     * HideVoiceBar); without this the message and its action key would be
+     * cleared in the same frame they were set.
+     */
+    private var errorOnStrip = false
 
     private fun googleBackendEnabled() =
         PrivacyBreakingSettings.googleVoiceEnabled(ime.prefs())
@@ -76,6 +97,12 @@ class VoiceController(
 
     /** Session-scoped raw dictation: no cleanup, no refinement (W6.4). */
     private var rawForSession = false
+
+    /** True between the minimize key and the keyboard coming back. */
+    private var minimizedForSession = false
+
+    /** Held only while a running session has no window to keep awake. */
+    private var screenLock: PowerManager.WakeLock? = null
 
     /**
      * W7.3: opt-in, content-free measurement. Held in memory for this IME
@@ -115,7 +142,13 @@ class VoiceController(
     fun onStartInputView(editorInfo: EditorInfo?) {
         // Moving to another field settles whatever was awaiting a verdict.
         settleTelemetry()
+        // The keyboard is back, so the window can keep the screen awake again.
+        minimizedForSession = false
+        releaseScreenLock()
         fieldKind = fieldKindOf(editorInfo)
+        // An error bar belongs to the field that produced it, not to the next
+        // one: its session is already over, so nothing else would clear it.
+        if (!isActive && errorOnStrip) endSessionUi()
         // A field that must never be dictated into ends any session that was
         // running when focus moved into it.
         if (!fieldKind.allowsVoice && isActive) cancel()
@@ -147,10 +180,19 @@ class VoiceController(
 
     /** The editor is going away: finalize rather than discard what was said. */
     fun onFinishInputView() {
+        // The minimize control hides the keyboard on purpose and the session is
+        // meant to outlive it, so the editor going away is not the end of the
+        // utterance here — it is the start of the eyes-free part of it.
+        if (minimizedForSession) {
+            acquireScreenLock()
+            return
+        }
         if (isActive) session.finishSession()
     }
 
     fun onDestroy() {
+        keepScreenOn(false)
+        releaseScreenLock()
         session.destroy()
         strip = null
     }
@@ -186,12 +228,52 @@ class VoiceController(
 
     /** The keyboard is gone: the engines may be reclaimed after the idle delay. */
     fun onKeyboardHidden() {
+        // Not while an utterance is still being heard: a minimized session is
+        // running on those engines.
+        if (isActive) return
         VoiceEngines.scheduleIdleRelease()
     }
 
     fun toggle() {
         if (isActive) stopAndFinalize() else start()
     }
+
+    /**
+     * Flips which recognizer the next session uses: the system one, or Parakeet
+     * on device. It writes the same preference the settings screen does, so the
+     * toolbar key is a shortcut to that switch rather than a second setting.
+     *
+     * A session already running keeps the backend it started with — swapping
+     * engines mid-utterance would lose what has been said so far — so the flip
+     * takes effect on the next press of the mic.
+     */
+    fun toggleAsrEngine() {
+        val prefs = ime.prefs()
+        val toSystem = !PrivacyBreakingSettings.googleVoiceEnabled(prefs)
+        prefs.edit().putBoolean(PrivacyBreakingSettings.PREF_GOOGLE_VOICE, toSystem).apply()
+        val message = ime.getString(
+            when {
+                toSystem -> R.string.asr_engine_system
+                // Saying "switched to the on-device model" with no model
+                // downloaded is a lie the user finds out about at the next
+                // mic press; name what will actually run.
+                fallbackWouldRun() -> R.string.asr_engine_ondevice_fallback
+                else -> R.string.asr_engine_ondevice
+            }
+        )
+        Toast.makeText(ime, message, Toast.LENGTH_SHORT).show()
+    }
+
+    /**
+     * SuperVoiceBoard: true when a mic press with the local engine selected
+     * would land on the platform's on-device recognizer instead of Parakeet.
+     *
+     * Ordered so a device with Parakeet installed never touches the recognizer
+     * lookup, and a device without the platform recognizer — pre-API-31, or a
+     * ROM with no speech service — answers false and keeps the download prompt.
+     */
+    private fun fallbackWouldRun() =
+        !runtime.modelStore.dictationReady(runtime.packInstaller) && googleSession.onDeviceAvailable()
 
     /** End the utterance on whichever backend is running it. */
     private fun stopAndFinalize() {
@@ -234,12 +316,30 @@ class VoiceController(
         settleTelemetry()
         sessionStartedAt = SystemClock.elapsedRealtime()
         commits.clear()
+        keepScreenOn(true)
+        errorOnStrip = false
         strip?.reset()
         onSessionUiStarted?.invoke()
         strip?.announceSessionStarted()
         googleForSession = googleBackendEnabled()
         if (googleForSession) {
             googleSession.start()
+            return
+        }
+        // SuperVoiceBoard: a fresh install has no Parakeet and a 482 MB wait
+        // before the mic key does anything. Where the platform has an offline
+        // recognizer of its own, borrow it until ours is downloaded. Bound to
+        // the on-device one — the fallback is automatic, so it must never be
+        // the thing that starts sending audio off the device.
+        if (fallbackWouldRun()) {
+            fallbackForSession = true
+            // Reuses the Google backend's stop/cancel/end routing wholesale.
+            googleForSession = true
+            if (!fallbackNoticeShown) {
+                fallbackNoticeShown = true
+                Toast.makeText(ime, R.string.voice_fallback_system_notice, Toast.LENGTH_LONG).show()
+            }
+            googleSession.start(onDeviceOnly = true)
             return
         }
         val settings = runtime.settings.snapshot().let {
@@ -249,8 +349,57 @@ class VoiceController(
         session.startSession(fieldKind, settings)
     }
 
+    /**
+     * Holds the display awake for the length of a dictation session, so the
+     * screen timeout — and the lock that follows it — cannot cut a recording
+     * short mid-sentence.
+     *
+     * The flag lives on the IME window only: no system setting is written, so
+     * the user's own timeout applies again the moment the session ends, whether
+     * it ended by send, cancel, error, or the IME being torn down.
+     */
+    private fun keepScreenOn(on: Boolean) {
+        // A hidden window keeps no screen awake, so a minimized session holds a
+        // wake lock instead; the flag is for the ordinary, visible case.
+        val window = ime.window?.window ?: return
+        if (on) window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        else window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+    }
+
+    /**
+     * Keeps the display awake for a session the user minimized the keyboard on.
+     * The window flag cannot do it — the window is gone — and this is the only
+     * window the IME has.
+     *
+     * The lock carries its own timeout so a session that somehow never reports
+     * its end cannot hold the screen on indefinitely; dictation that runs past
+     * it is longer than any utterance this keyboard is built for.
+     */
+    @Suppress("DEPRECATION") // The only way to keep the screen on with no window.
+    private fun acquireScreenLock() {
+        if (screenLock?.isHeld == true) return
+        // getSystemService(Class) is API 23; this keyboard still runs on 21.
+        val power = ime.getSystemService(Context.POWER_SERVICE) as? PowerManager ?: return
+        val lock = screenLock ?: power.newWakeLock(
+            PowerManager.SCREEN_DIM_WAKE_LOCK, SCREEN_LOCK_TAG
+        ).also { it.setReferenceCounted(false); screenLock = it }
+        runCatching { lock.acquire(SCREEN_LOCK_TIMEOUT_MS) }
+            .onFailure { Log.w(TAG, "could not hold the screen awake", it) }
+    }
+
+    private fun releaseScreenLock() {
+        val lock = screenLock ?: return
+        if (lock.isHeld) runCatching { lock.release() }
+    }
+
     fun cancel() {
-        if (!isActive) return
+        if (!isActive) {
+            // The bar an error left behind outlives its session, so dismissing
+            // it is the one thing cancel still has to do once the session is
+            // over — the back arrow is what the user reaches for either way.
+            if (errorOnStrip) endSessionUi()
+            return
+        }
         if (googleForSession) googleSession.cancel() else session.cancelSession()
     }
 
@@ -265,6 +414,9 @@ class VoiceController(
     override fun onVoiceMinimizeKeyboard() {
         // The session keeps running; only the keyboard window goes away. That is
         // the point of the control — dictating into a field you need to see.
+        // The flag has to be set first: hiding the window synchronously calls
+        // back into onFinishInputView, which would otherwise finalize.
+        minimizedForSession = isActive
         ime.requestHideSelf(0)
     }
 
@@ -354,8 +506,20 @@ class VoiceController(
     override fun onSessionEnded() {
         isActive = false
         googleForSession = false
+        fallbackForSession = false
         holdScoped = false
         rawForSession = false
+        minimizedForSession = false
+        keepScreenOn(false)
+        releaseScreenLock()
+        // An error the user has not answered yet keeps the bar: it is carrying
+        // the only control that recovers from it.
+        if (errorOnStrip) return
+        endSessionUi()
+    }
+
+    private fun endSessionUi() {
+        errorOnStrip = false
         strip?.announceSessionEnded()
         strip?.reset()
         onSessionUiEnded?.invoke()
@@ -404,7 +568,33 @@ class VoiceController(
 
     override fun onGoogleFinalizing() = showFinalizing()
 
-    override fun onGoogleError(message: String) = showError(message, VoiceErrorAction.DISMISS)
+    /**
+     * SuperVoiceBoard: the recognizer's own message, routed to the recovery it
+     * actually needs. A missing microphone permission is the likeliest error on
+     * the very first press — this path has no permission gate of its own, it
+     * finds out from the recognizer — and answering that with "download 482 MB"
+     * would be a dead end.
+     */
+    override fun onGoogleError(message: String, kind: GoogleVoiceSession.ErrorKind) {
+        errorOnStrip = true
+        when (kind) {
+            GoogleVoiceSession.ErrorKind.PERMISSION ->
+                showError(message, VoiceErrorAction.OPEN_PERMISSION)
+            GoogleVoiceSession.ErrorKind.ENGINE_UNUSABLE ->
+                // Only the automatic fallback has somewhere better to send the
+                // user: on the opt-in path the model is not what failed.
+                if (fallbackForSession) {
+                    showError(
+                        ime.getString(R.string.voice_fallback_failed),
+                        VoiceErrorAction.OPEN_DOWNLOAD,
+                    )
+                } else {
+                    showError(message, VoiceErrorAction.DISMISS)
+                }
+            GoogleVoiceSession.ErrorKind.TRANSIENT ->
+                showError(message, VoiceErrorAction.DISMISS)
+        }
+    }
 
     override fun onGoogleEnded() = onSessionEnded()
 
@@ -453,5 +643,17 @@ class VoiceController(
         private const val TAG = "SVBVoice"
         /** Enough context for spacing and capitalization decisions, no more. */
         private const val PRECEDING_CHARS = 16
+        private const val SCREEN_LOCK_TAG = "SuperVoiceBoard:dictation"
+        /** Longer than any dictation, short enough to bound a leak. */
+        private const val SCREEN_LOCK_TIMEOUT_MS = 10L * 60L * 1000L
+
+        /**
+         * SuperVoiceBoard: the "we borrowed your phone's recognizer" toast is
+         * shown once per keyboard process, not once per session — it explains a
+         * state, and a state does not need re-explaining every time the mic
+         * opens. Deliberately not a preference: nothing to migrate, and a fresh
+         * process is a fair time to say it again.
+         */
+        private var fallbackNoticeShown = false
     }
 }

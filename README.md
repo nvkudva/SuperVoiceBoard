@@ -1,166 +1,99 @@
 # SuperVoiceBoard
 
-SuperVoiceBoard is a keyboard with on-device voice intelligence: dictation,
-cleanup and AI text refinement built into the suggestion strip rather than
-bolted on beside it.
+An Android keyboard with on-device English dictation, transcript cleanup and text
+rewriting, for people who do not want their speech leaving the phone.
 
-It is a fork of **[HeliBoard](https://github.com/HeliBorg/HeliBoard) 4.1**
-(base commit `9f5bb63`), which is itself a fork of OpenBoard / AOSP LatinIME.
-The entire typing engine — layouts, glide typing, dictionaries, the native
-suggestion decoder, emoji and clipboard panels, themes — is HeliBoard's work,
-unmodified except where the voice layer had to attach to it.
+It is a fork of [HeliBoard](https://github.com/Helium314/HeliBoard) 4.1 (base commit
+`9f5bb63`). Typing — layouts, glide typing, dictionaries, themes, clipboard — is
+HeliBoard's, unchanged. This repo adds the voice layer.
 
-## What this fork changes
+## Requirements
 
-- Adds voice dictation as a mode of the existing suggestion/toolbar strip.
-- Adds on-device transcript cleanup and an out-of-process AI refiner.
-- Requests `RECORD_AUDIO` (the IME process) and `INTERNET` (the `:ui` process
-  only, for model download). **HeliBoard itself requests neither** — this fork
-  is not offline-only, and that is a deliberate departure from its base. See
-  [PLAN.md](PLAN.md) §3.3.
-- Does *not* rename the `helium314.keyboard` package namespace, so upstream
-  fixes stay mergeable. Only the application ID, label and icon differ.
+- Android 5.0 (API 21) or newer to type and dictate. The LLM refiner needs Android 7.0
+  (API 24) or newer and is skipped at runtime below that.
+- A device microphone. Dictation adds `RECORD_AUDIO` to the permissions HeliBoard
+  already requests.
+- Internet on first run, for model download only. `INTERNET` is held by the `:ui`
+  process; the keyboard process has no network component.
+- Roughly 2 GB of free storage. The two required ASR packs download as 128 MB and
+  482 MB archives and expand on install; the optional refiner is about 550 MB.
+- To build: JDK 17 or newer (CI builds on 17 and 21), Android SDK 36. The Gradle 8.14
+  wrapper and a 4 GB build heap are configured in the repo.
+- No account, API key or paid service at any point.
 
-Everything below this line describes the inherited HeliBoard feature set.
+## Run it
 
----
+```bash
+git clone https://github.com/nvkudva/SuperVoiceBoard.git
+cd SuperVoiceBoard
+./gradlew :app:assembleDebug
+# ABI splits produce one APK per architecture; install the one matching your device
+adb install app/build/outputs/apk/debug/<arm64-v8a or x86_64 APK>
+```
 
-## Table of Contents
+"SuperVoiceBoard" then appears in Android's keyboard list. Enable it, switch to it, and
+open its settings to download the voice models — the microphone key does nothing until
+the two required packs are installed.
 
-- [Features](#features)
-- [Contributing](#contributing-)
-   * [Reporting Issues](#reporting-issues)
-   * [Translations](#translations)
-   * [To Community](#to-community)
-   * [Code Contribution](CONTRIBUTING.md)
-- [Links](#links)
-- [License](#license)
-- [Credits](#credits)
-  * [Funding](#funding)
+## Configuration
 
-# Features
-<ul>
-  <li>Add dictionaries for suggestions and spell check</li>
-  <ul>
-    <li>build your own, or get them  <a href="https://codeberg.org/Helium314/aosp-dictionaries#dictionaries">here</a> (quality may vary)</li>
-    <li>additional dictionaries for emojis or scientific symbols can be used to provide suggestions (similar to "emoji search")</li>
-    <li>note that for Korean layouts, suggestions only work using <a href="https://github.com/openboard-team/openboard/commit/83fca9533c03b9fecc009fc632577226bbd6301f">this dictionary</a>, the tools in the dictionary repository are not able to create working dictionaries</li>
-  </ul>
-  <li>Customize keyboard themes (style, colors and background image)</li>
-  <li>Emoji search (inline and separate, requires <a href="https://codeberg.org/Helium314/aosp-dictionaries">emoji dictionary</a>)</li>
-  <ul>
-    <li>can follow the system's day/night setting on Android 10+ (and on some versions of Android 9)</li>
-    <li>can follow dynamic colors for Android 12+</li>
-  </ul>
-  <li>Customize keyboard <a href="https://github.com/HeliBorg/HeliBoard/blob/main/layouts.md">layouts</a> (only available when disabling <i>use system languages</i>)</li>
-  <li>Customize special layouts, like symbols, number,  or functional key layout</li>
-  <li>Multilingual typing</li>
-  <li>Glide typing (<i>only with closed source library</i> ☹️)</li>
-  <ul>
-    <li>library not included in the app, as there is no compatible open source library available</li>
-    <li>can be extracted from GApps packages ("<i>swypelibs</i>"), or downloaded <a href="https://github.com/erkserkserks/openboard/tree/46fdf2b550035ca69299ce312fa158e7ade36967/app/src/main/jniLibs">here</a> (click on the file and then "raw" or the tiny download button)</li>
-  </ul>
-  <li>Clipboard history</li>
-  <li>One-handed mode</li>
-  <li>Split keyboard</li>
-  <li>Number pad</li>
-  <li>Backup and restore your settings and learned word / history data</li>
-</ul>
+There is no runtime configuration. Two environment variables affect release builds only,
+and only when a keystore exists at `~/.supervoiceboard/release.jks`. Without that file
+the release build still succeeds and comes out unsigned.
 
-For [FAQ](https://github.com/HeliBorg/HeliBoard/wiki/FAQ), [hidden features](https://github.com/HeliBorg/HeliBoard/wiki/9.-Hidden-features) and more information about the app and features, please visit the [wiki](https://github.com/HeliBorg/HeliBoard/wiki)
+| Variable | Required | What it is |
+|---|---|---|
+| `SVB_STORE_PASSWORD` | No | Keystore password for release signing |
+| `SVB_KEY_PASSWORD` | No | Key password for the `supervoiceboard` alias |
 
-# Contributing ❤
+## How it works
 
-## Reporting Issues
+- `core/` is pure Kotlin JVM with no Android dependency. It holds the decisions:
+  `DictationStateMachine`, `TranscriptCleaner`, `TextFixer`, `PackInstaller`. Roughly two
+  thirds of the module by line count is tests.
+- `voice/` is the Android half. `VoiceSessionController` executes the state machine's
+  effects against `AudioCapture` and the sherpa-onnx recognizers — a streaming Zipformer
+  for live text, a Parakeet TDT pass for the final transcript. It references no HeliBoard
+  class, so it could be mounted in a different IME.
+- `llm/` runs a Qwen2.5-0.5B model under MediaPipe in a separate `:llm` process behind
+  `ILlmRefiner.aidl`, so a native OOM kills that process and not the keyboard.
+- `app/` binds it to HeliBoard: `VoiceController` is the only class that writes to the
+  `InputConnection`, and `AiFixKey` mounts the "AI fix" toolbar key.
+- The three-process split (IME / `:ui` for anything networked / `:llm`) is asserted at
+  build time by `app/src/test/java/com/supervoiceboard/ManifestProcessSplitTest.kt`,
+  which fails if a network component ever leaves `:ui`.
 
-Whether you encountered a bug, or want to see a new feature in HeliBoard, you can contribute to the project by opening a new issue [here](https://github.com/HeliBorg/HeliBoard/issues). Your help is always welcome!
+Issues about the voice layer belong on this repo's tracker; issues about typing belong
+upstream.
 
-Before opening a new issue, be sure to check the following:
- - **Does the issue already exist?** Make sure a similar issue has not been reported by browsing [existing issues](https://github.com/HeliBorg/HeliBoard/issues?q=). Please search open and closed issues. In case of feature requests you could also check the [FAQ](https://github.com/HeliBorg/HeliBoard/wiki/FAQ) and [hidden features](https://github.com/HeliBorg/HeliBoard/wiki/9.-Hidden-features).
- - **Is the issue still relevant?** Make sure your issue is not already fixed in the latest version of HeliBoard.
- - **Is it a single topic?** If you want to suggest multiple things, open multiple issues.
- - **Did you use the issue template?** It is important to make life of our kind contributors easier by avoiding issues that miss key information to their resolution.
- - **Is it written by a human?** Do not use LLMs or similar to generate issues. Having LLMs help with translation or similar is acceptable, but must be disclosed. See also [AI_USAGE.md](AI_USAGE.md)
-Note that issues that that ignore part of the issue template will likely get treated with very low priority, as often they are needlessly hard to read or understand (e.g. huge screenshots, not providing a proper description, or addressing multiple topics). Blatant violation of the guidelines may result in the issue getting closed.
+## Status
 
-If you're interested, you can read the following useful text about effective bug reporting (a bit longer read): https://www.chiark.greenend.org.uk/~sgtatham/bugs.html
+Working today: dictation into the suggestion strip, on-device cleanup, the AI fix key,
+and model download and install from settings. CI runs `core` and app unit tests, a debug
+assemble, Android lint, and an emulator UI QA suite.
 
-## Translations
-Translations can be added using [Weblate](https://translate.codeberg.org/projects/heliboard/). You will need an account to update translations and add languages. Add the language you want to translate to in Languages -> Manage translated languages in the top menu bar.
-Updating translations in a PR will not be accepted, as it may cause conflicts with Weblate translations.
+Known gaps, from a code review of `voice/`, `llm/` and the voice code in `app/` dated
+2026-09-07 (`REVIEW.md`):
 
-Some notes on translations
-* when translating metadata, translating the changelogs is rather useless. It's available as it was requested by translators.
-* the `hidden_features_message` is horrible to translate with Weblate, and serves little benefit as it's just a copy of what's already in the wiki: https://github.com/HeliBorg/HeliBoard/wiki/9.-Hidden-features. It's been made available in the app on user request/contribution.
+- The refiner model is fetched from a mutable Hugging Face `main` ref with `sha256 = ""`,
+  which the installer treats as "skip verification". TLS is the only integrity control on
+  a file that MediaPipe then executes.
+- Late refinement can delete characters the user typed after a commit —
+  `VoiceController.replaceUtterance` does not check what it is about to remove.
+- `voice/` and `llm/` have no unit tests; neither module declares a test dependency. They
+  are 3.8k lines and hold all of the fork's concurrency.
+- A timed-out `bindService` in `LlmRefinerClient` leaves the binding in place, pinning the
+  `:llm` process and its model.
+- No coroutine exception handler on the IME-process scopes: an uncaught throw in a
+  finalize, refine or fix coroutine reaches the default handler and kills the keyboard.
 
-## To Community
-There is the [discussions on GitHub](https://github.com/HeliBorg/HeliBoard/discussions), or if you prefer a more open network there is [Lemmy](https://lemmy.world/c/Heliboard).
-You can share your themes, layouts and dictionaries with other people:
-* Themes can be saved and loaded using the menu on top-right in the _adjust colors_ screen
-  * you can share custom colors in a separate [discussion section](https://github.com/HeliBorg/HeliBoard/discussions/categories/custom-colors)
-  * there are theme collections available at [Star-Trowa/heliboard-themes](https://github.com/Star-Trowa/heliboard-themes) and [PickleHik3/droid-tings](https://github.com/PickleHik3/droid-tings)
-* Custom keyboard layouts are text files whose content you can edit, copy and share
-  * this applies to main keyboard layouts and to special layouts adjustable in advanced settings
-  * see [layouts.md](layouts.md) for details
-  * you can share custom layouts in a separate [discussion section](https://github.com/HeliBorg/HeliBoard/discussions/categories/custom-layout)
-* Creating dictionaries is a little more work
-  * first you will need a wordlist, as described [here](https://codeberg.org/Helium314/aosp-dictionaries/src/branch/main/wordlists/sample.combined) and in the repository readme
-  * the you need to compile the dictionary using [external tools](https://github.com/remi0s/aosp-dictionary-tools)
-  * the resulting file (and ideally the wordlist too) can be shared with other users
-  * note that there will not be any further dictionaries added to this app, but you can add dictionaries to the [dictionaries repository](https://codeberg.org/Helium314/aosp-dictionaries)
+Nothing about speed, accuracy or battery has been measured. Dictation is English only.
+There is no screenshot of the voice strip in the repo and no published build — debug
+APKs come from CI artifacts.
 
-## Code Contribution
-See [Contribution Guidelines](CONTRIBUTING.md)
+## License
 
-# Links
-* Info
-  * [Wiki](https://github.com/HeliBorg/HeliBoard/wiki), including FAQ, help on customizing layouts, and gesture data gathering
-  * [Layout documentation](layouts.md) (more technical info regarding layout customization)
-  * [For creating custom dictionaries](https://codeberg.org/Helium314/aosp-dictionaries#wordlist-information) (see also top of the linked readme)
-* Community
-  * [Lemmy](https://lemmy.world/c/Heliboard)
-  * [Reddit](https://www.reddit.com/r/HeliBoard)
-  * GitHub [discussions](https://github.com/HeliBorg/HeliBoard/discussions)
-* Other
-  * [Translations](https://translate.codeberg.org/projects/heliboard/)
-  * [Dictionaries](https://codeberg.org/Helium314/aosp-dictionaries)
-  * [k3lp](https://codeberg.org/k3lp/k3lp) is a WIP library for keyboard layout parsing that will be implemented in HeliBoard when ready (created by [FlorisBoard](https://github.com/florisboard/florisboard/) maintainers)
-  * [swipe-o-scope](https://codeberg.org/eclexic/swipe-o-scope) for visualizing gesture data as created when using gesture data gathering
-
-# License
-
-SuperVoiceBoard is licensed under GNU General Public License v3.0, as is HeliBoard
-(and OpenBoard) before it. Everything in this repository ships under GPL-3.0-only,
-including the voice, ASR-session and refiner code written for this fork.
-
- > Permissions of this strong copyleft license are conditioned on making available complete source code of licensed works and modifications, which include larger works using a licensed work, under the same license. Copyright and license notices must be preserved. Contributors provide an express grant of patent rights.
-
-See repo's [LICENSE](/LICENSE) file.
-
-Since the app is based on Apache 2.0 licensed AOSP Keyboard, an [Apache 2.0](LICENSE-Apache-2.0) license file is provided.
-The launcher icon is derived from HeliBoard's icon (same adaptive-icon background,
-new foreground mark) and so remains licensed under [Creative Commons BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/). A [license file](LICENSE-CC-BY-SA-4.0) is also included.
-
-The default ("Material") keyboard icon style uses [Fluent UI System Icons](https://github.com/microsoft/fluentui-system-icons)
-(Regular 24), Copyright (c) Microsoft Corporation, under the MIT license. A [license file](LICENSE-MIT-fluent-icons) is included.
-
-# Credits
-- [HeliBoard](https://github.com/HeliBorg/HeliBoard) — the keyboard this fork is built on;
-  all typing functionality is theirs
-- Original icon by [Fabian OvrWrt](https://github.com/FabianOvrWrt) with contributions from [The Eclectic Dyslexic](https://github.com/the-eclectic-dyslexic)
-- [OpenBoard](https://github.com/openboard-team/openboard)
-- [AOSP Keyboard](https://android.googlesource.com/platform/packages/inputmethods/LatinIME/)
-- [LineageOS](https://review.lineageos.org/admin/repos/LineageOS/android_packages_inputmethods_LatinIME)
-- [Simple Keyboard](https://github.com/rkkr/simple-keyboard)
-- [Indic Keyboard](https://gitlab.com/indicproject/indic-keyboard)
-- [FlorisBoard](https://github.com/florisboard/florisboard/)
-- [Fluent UI System Icons](https://github.com/microsoft/fluentui-system-icons) — the default keyboard icon set
-- Our [contributors](https://github.com/HeliBorg/HeliBoard/graphs/contributors)
-
-## Funding
-
-This project is funded through [NGI Mobifree Fund](https://nlnet.nl/mobifree), a fund established by [NLnet](https://nlnet.nl) with financial support from the European Commission's [Next Generation Internet](https://ngi.eu) program. Learn more at the [NLnet project page](https://nlnet.nl/project/GestureTyping).
-
-[<img src="https://nlnet.nl/logo/banner.png" alt="NLnet foundation logo" width="20%" />](https://nlnet.nl)
-
-Further the project benefits from donations provided by many users (thank you all!).
+GPL-3.0-only — see [LICENSE](LICENSE). The AOSP Keyboard base is Apache-2.0
+([LICENSE-Apache-2.0](LICENSE-Apache-2.0)), the launcher icon is CC-BY-SA-4.0
+([LICENSE-CC-BY-SA-4.0](LICENSE-CC-BY-SA-4.0)), and the default icon set is MIT
+([LICENSE-MIT-fluent-icons](LICENSE-MIT-fluent-icons)).

@@ -7,7 +7,6 @@ import kotlin.test.assertTrue
 
 class ModelReadinessTest {
 
-    private val streaming = ModelCatalog.byId("zipformer-en-streaming")!!
     private val parakeet = ModelCatalog.byId("parakeet-tdt-0.6b-v2")!!
     private val refiner = ModelCatalog.byId("qwen25-05b-refiner")!!
 
@@ -19,20 +18,17 @@ class ModelReadinessTest {
     }
 
     @Test
-    fun `the streaming pack alone is enough to dictate`() {
-        assertTrue(ModelReadiness.canDictate(setOf(streaming.id)))
+    fun `the speech pack alone is enough to dictate`() {
+        assertTrue(ModelReadiness.canDictate(setOf(parakeet.id)))
     }
 
     @Test
     fun `the optional packs neither grant nor withhold the ability to dictate`() {
-        // Present without the streaming pack: still no dictation.
-        assertFalse(ModelReadiness.canDictate(setOf(parakeet.id)))
+        // Present without the speech pack: still no dictation.
         assertFalse(ModelReadiness.canDictate(setOf(refiner.id)))
-        assertFalse(ModelReadiness.canDictate(setOf(parakeet.id, refiner.id)))
 
-        // Added on top of the streaming pack: no change either way.
-        assertTrue(ModelReadiness.canDictate(setOf(streaming.id, parakeet.id)))
-        assertTrue(ModelReadiness.canDictate(setOf(streaming.id, refiner.id)))
+        // Added on top of the speech pack: no change either way.
+        assertTrue(ModelReadiness.canDictate(setOf(parakeet.id, refiner.id)))
         assertTrue(ModelReadiness.canDictate(ModelCatalog.packs.map { it.id }.toSet()))
     }
 
@@ -44,8 +40,8 @@ class ModelReadinessTest {
     // ------------------------------------------------------ required set
 
     @Test
-    fun `both speech packs are required and only the refiner is optional`() {
-        assertEquals(listOf(streaming.id, parakeet.id), ModelCatalog.requiredPacks.map { it.id })
+    fun `the speech pack is required and only the refiner is optional`() {
+        assertEquals(listOf(parakeet.id), ModelCatalog.requiredPacks.map { it.id })
         assertEquals(listOf(refiner.id), ModelCatalog.optionalPacks.map { it.id })
     }
 
@@ -68,33 +64,26 @@ class ModelReadinessTest {
     @Test
     fun `missingRequired names what setup still has to fetch`() {
         assertEquals(
-            listOf(streaming.id, parakeet.id),
-            ModelReadiness.missingRequired(emptySet()).map { it.id },
-        )
-        assertEquals(
             listOf(parakeet.id),
-            ModelReadiness.missingRequired(setOf(streaming.id)).map { it.id },
+            ModelReadiness.missingRequired(emptySet()).map { it.id },
         )
         // The refiner never appears here, installed or not.
         assertEquals(
             emptyList(),
-            ModelReadiness.missingRequired(setOf(streaming.id, parakeet.id)).map { it.id },
+            ModelReadiness.missingRequired(setOf(parakeet.id)).map { it.id },
+        )
+        assertEquals(
+            emptyList(),
+            ModelReadiness.missingRequired(setOf(parakeet.id, refiner.id)).map { it.id },
         )
     }
 
     @Test
-    fun `remaining required bytes covers both speech packs, then zero`() {
-        assertEquals(
-            streaming.totalBytes + parakeet.totalBytes,
-            ModelReadiness.remainingRequiredBytes(emptySet()),
-        )
-        assertEquals(parakeet.totalBytes, ModelReadiness.remainingRequiredBytes(setOf(streaming.id)))
-        assertEquals(0L, ModelReadiness.remainingRequiredBytes(setOf(streaming.id, parakeet.id)))
+    fun `remaining required bytes covers the speech pack, then zero`() {
+        assertEquals(parakeet.totalBytes, ModelReadiness.remainingRequiredBytes(emptySet()))
+        assertEquals(0L, ModelReadiness.remainingRequiredBytes(setOf(parakeet.id)))
         // Installing the optional refiner does not reduce it, because it never counted.
-        assertEquals(
-            streaming.totalBytes + parakeet.totalBytes,
-            ModelReadiness.remainingRequiredBytes(setOf(refiner.id)),
-        )
+        assertEquals(parakeet.totalBytes, ModelReadiness.remainingRequiredBytes(setOf(refiner.id)))
     }
 
     @Test
@@ -102,7 +91,7 @@ class ModelReadinessTest {
         // Only the refiner is an upgrade now; the accuracy pass is part of the product.
         assertEquals(
             listOf(refiner.id),
-            ModelReadiness.availableUpgrades(setOf(streaming.id, parakeet.id)).map { it.id },
+            ModelReadiness.availableUpgrades(setOf(parakeet.id)).map { it.id },
         )
         assertEquals(
             emptyList(),
@@ -114,8 +103,8 @@ class ModelReadinessTest {
 
     @Test
     fun `readiness follows the pack list it is given, not the shipped catalog`() {
-        val other = streaming.copy(id = "some-other-streaming-model")
+        val other = parakeet.copy(id = "some-other-speech-model")
         assertTrue(ModelReadiness.canDictate(setOf(other.id), packs = listOf(other)))
-        assertFalse(ModelReadiness.canDictate(setOf(streaming.id), packs = listOf(other)))
+        assertFalse(ModelReadiness.canDictate(setOf(parakeet.id), packs = listOf(other)))
     }
 }

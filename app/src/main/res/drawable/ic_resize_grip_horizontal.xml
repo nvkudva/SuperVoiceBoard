@@ -1,0 +1,9 @@
+<!--
+    SuperVoiceBoard: left/right grip shown on the resize handles that change side padding.
+    SPDX-License-Identifier: GPL-3.0-only
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android" android:width="24dp" android:height="24dp" android:viewportWidth="24" android:viewportHeight="24">
+    <path
+        android:fillColor="#FFF"
+        android:pathData="M2.22 11.47l3.5-3.5c0.29-0.29 0.77-0.29 1.06 0s0.29 0.77 0 1.06L3.81 12l2.97 2.97c0.29 0.29 0.29 0.77 0 1.06s-0.77 0.29-1.06 0l-3.5-3.5c-0.29-0.29-0.29-0.77 0-1.06zM17.22 7.97c0.29-0.29 0.77-0.29 1.06 0l3.5 3.5c0.29 0.29 0.29 0.77 0 1.06l-3.5 3.5c-0.29 0.29-0.77 0.29-1.06 0s-0.29-0.77 0-1.06L20.19 12l-2.97-2.97c-0.29-0.29-0.29-0.77 0-1.06zM11.25 4h1.5c0.41 0 0.75 0.34 0.75 0.75v14.5c0 0.41-0.34 0.75-0.75 0.75h-1.5c-0.41 0-0.75-0.34-0.75-0.75V4.75c0-0.41 0.34-0.75 0.75-0.75z"/>
+</vector>

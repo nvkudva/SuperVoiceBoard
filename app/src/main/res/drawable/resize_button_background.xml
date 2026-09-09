@@ -1,0 +1,9 @@
+<!--
+    SuperVoiceBoard: background for the Done/Reset buttons of resize mode.
+    SPDX-License-Identifier: GPL-3.0-only
+-->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+    <solid android:color="#CC000000" />
+    <corners android:radius="18dp" />
+    <stroke android:width="1dp" android:color="#66FFFFFF" />
+</shape>

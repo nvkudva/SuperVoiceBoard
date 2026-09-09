@@ -58,6 +58,10 @@ jobs:
         run: ./gradlew testRunTestsUnitTest --no-daemon
       - name: Lint
         run: ./gradlew :app:lintDebug --no-daemon
+
+      - name: Lint report
+        if: failure()
+        run: cat app/build/reports/lint-results-debug.txt || true
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:

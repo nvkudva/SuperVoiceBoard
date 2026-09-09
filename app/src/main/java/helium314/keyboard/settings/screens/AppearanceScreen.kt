@@ -25,6 +25,7 @@ import helium314.keyboard.latin.utils.getActivity
 import helium314.keyboard.latin.utils.getStringResourceOrName
 import helium314.keyboard.latin.utils.prefs
 import helium314.keyboard.settings.preferences.ListPreference
+import helium314.keyboard.settings.SettingsDestination
 import helium314.keyboard.settings.SettingsWithoutKey
 import helium314.keyboard.settings.Setting
 import helium314.keyboard.settings.preferences.KeyboardPreview
@@ -35,7 +36,6 @@ import helium314.keyboard.settings.SettingsActivity
 import helium314.keyboard.settings.preferences.SliderPreference
 import helium314.keyboard.settings.preferences.SwitchPreference
 import helium314.keyboard.latin.utils.Theme
-import helium314.keyboard.settings.dialogs.ColorThemePickerDialog
 import helium314.keyboard.settings.dialogs.CustomizeIconsDialog
 import helium314.keyboard.settings.initPreview
 import helium314.keyboard.settings.preferences.BackgroundImagePref
@@ -161,19 +161,11 @@ fun createAppearanceSettings(context: Context) = listOf(
         val b = (ctx.getActivity() as? SettingsActivity)?.prefChanged?.collectAsState()
         if ((b?.value ?: 0) < 0)
             Log.v("irrelevant", "stupid way to trigger recomposition on preference change")
-        var showDialog by rememberSaveable { mutableStateOf(false) }
         Preference(
             name = setting.title,
             description = prefs.getString(setting.key, Defaults.PREF_THEME_COLORS)!!.getStringResourceOrName("theme_name_", ctx),
-            onClick = { showDialog = true }
+            onClick = { SettingsDestination.navigateTo(SettingsDestination.ThemePicker) }
         )
-        if (showDialog)
-            ColorThemePickerDialog(
-                onDismissRequest = { showDialog = false },
-                setting = setting,
-                isNight = false,
-                default = Defaults.PREF_THEME_COLORS
-            )
     },
     Setting(context, Settings.PREF_THEME_COLORS_NIGHT, R.string.theme_colors_night) { setting ->
         val ctx = LocalContext.current
@@ -181,19 +173,11 @@ fun createAppearanceSettings(context: Context) = listOf(
         val prefs = ctx.prefs()
         if ((b?.value ?: 0) < 0)
             Log.v("irrelevant", "stupid way to trigger recomposition on preference change")
-        var showDialog by rememberSaveable { mutableStateOf(false) }
         Preference(
             name = setting.title,
             description = prefs.getString(setting.key, Defaults.PREF_THEME_COLORS_NIGHT)!!.getStringResourceOrName("theme_name_", ctx),
-            onClick = { showDialog = true }
+            onClick = { SettingsDestination.navigateTo(SettingsDestination.ThemePickerNight) }
         )
-        if (showDialog)
-            ColorThemePickerDialog(
-                onDismissRequest = { showDialog = false },
-                setting = setting,
-                isNight = true,
-                default = Defaults.PREF_THEME_COLORS_NIGHT
-            )
     },
     Setting(context, Settings.PREF_THEME_KEY_BORDERS, R.string.key_borders) {
         SwitchPreference(it, Defaults.PREF_THEME_KEY_BORDERS) { KeyboardSwitcher.getInstance().setThemeNeedsReload() }

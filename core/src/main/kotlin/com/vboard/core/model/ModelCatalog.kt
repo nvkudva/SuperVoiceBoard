@@ -29,6 +29,12 @@ data class ModelFileSpec(
  *   pipeline can use": an optional pack is an upgrade the user opts into later, and setup must
  *   never be gated on one. [ModelReadiness] is the single place that answers "installed enough
  *   to dictate?" — do not re-derive it by counting packs.
+ * @property languages BCP-47 tags this pack can handle, e.g. `setOf("en")`; an empty set means
+ *   language-agnostic. Last and defaulted so existing positional constructions keep compiling,
+ *   but declared explicitly by every shipping pack: which languages a model covers is a fact
+ *   about the model, and inheriting it from a default is how a pack ends up silently claiming
+ *   a language it was never trained on. [ModelPack.covers] is the one place that interprets
+ *   this — do not re-derive coverage by comparing a locale string elsewhere.
  */
 data class ModelPack(
     val id: String,
@@ -38,6 +44,7 @@ data class ModelPack(
     val files: List<ModelFileSpec>,
     val licenseNote: String,
     val required: Boolean,
+    val languages: Set<String> = setOf("en"),
 ) {
     val totalBytes: Long get() = files.sumOf { it.sizeBytes }
 
@@ -48,6 +55,36 @@ data class ModelPack(
      */
     val installFootprintBytes: Long
         get() = files.sumOf { if (it.archive) it.sizeBytes * 5 / 2 else it.sizeBytes }
+
+    /**
+     * True when this pack can handle [language] — a BCP-47 tag ("fr", "en-GB"), or the
+     * underscored form Android hands out when a `Locale` is stringified ("fr_CA").
+     *
+     * Matching is on a subtag boundary, not a bare prefix: a pack declaring "en" covers
+     * "en-GB", and a pack declaring "zh-Hans" does not cover "zh-Hant" — the two are
+     * different scripts and feeding one model the other's audio is exactly the failure this
+     * whole field exists to prevent. A blank tag matches nothing but a language-agnostic
+     * pack: an unknown language must not be assumed to be English.
+     */
+    fun covers(language: String): Boolean {
+        if (languages.isEmpty()) return true
+        val requested = languageTagForms(language)
+        return languages.any { declared ->
+            val tag = declared.replace('_', '-').lowercase()
+            requested.any { it == tag || it.startsWith("$tag-") }
+        }
+    }
+}
+
+/**
+ * The forms of [language] a declared tag is matched against: the whole normalized tag, plus
+ * its primary subtag for callers that pass something a `-`/`_` split cannot fully normalize.
+ */
+private fun languageTagForms(language: String): List<String> {
+    val full = language.trim().replace('_', '-').lowercase()
+    if (full.isEmpty()) return emptyList()
+    val primary = language.trim().substringBefore('-').substringBefore('_').lowercase()
+    return if (primary == full) listOf(full) else listOf(full, primary)
 }
 
 /**
@@ -84,25 +121,11 @@ object ModelCatalog {
 
     val packs: List<ModelPack> = listOf(
         ModelPack(
-            id = "zipformer-en-streaming",
-            displayName = "Live transcription (English)",
-            kind = ModelKind.STREAMING_ASR,
-            version = 1,
-            files = listOf(
-                ModelFileSpec(
-                    relativePath = "sherpa-onnx-streaming-zipformer-en-20M-2023-02-17.tar.bz2",
-                    url = "$SHERPA_RELEASE_BASE/sherpa-onnx-streaming-zipformer-en-20M-2023-02-17.tar.bz2",
-                    sha256 = "9c559283e8498d3fe95913c79ca1cb454bb26281ac2b102b41306c7d752765d9",
-                    sizeBytes = 127_887_156L, // measured from the release asset
-                    archive = true,
-                ),
-            ),
-            licenseNote = "sherpa-onnx streaming Zipformer 20M, Apache-2.0",
-            required = true,
-        ),
-        ModelPack(
             id = "parakeet-tdt-0.6b-v2",
-            displayName = "High-accuracy transcription (English)",
+            // "(English only)", not "(English)": this is the row title on the models screen,
+            // and it is the last thing a user reads before spending 482 MB. The v2 weights are
+            // English-only, so the title has to say so before the download, not after it.
+            displayName = "High-accuracy transcription (English only)",
             kind = ModelKind.FINAL_ASR,
             version = 1,
             files = listOf(
@@ -115,11 +138,15 @@ object ModelCatalog {
                 ),
             ),
             licenseNote = "sherpa-onnx NeMo Parakeet TDT 0.6B v2, CC-BY-4.0",
-            // Optional accuracy upgrade, not a dependency. Dictation runs on the streaming
-            // Zipformer alone (the final pass is a re-scoring step the pipeline already
-            // degrades past — PRODUCT_SPEC VB-124's Zipformer-only mode), so requiring this
-            // pack turned a 128 MB first run into a 610 MB one with no way past it.
+            // The only on-device recognizer now. The streaming Zipformer that used to carry
+            // dictation was removed: its live text was wrong often enough that watching it
+            // was worse than waiting, and the system recognizer covers anyone who wants
+            // live words. Parakeet transcribes the utterance once, on stop.
             required = true,
+            // v2 is English-only. The multilingual v3 archive would be a second entry here
+            // with a wider set, which is the whole reason coverage is data and not an
+            // `if (language == "en")` somewhere in the voice layer.
+            languages = setOf("en"),
         ),
         ModelPack(
             // Qwen is used as the default refiner because litert-community hosts
@@ -145,12 +172,33 @@ object ModelCatalog {
             ),
             licenseNote = "Qwen2.5, Apache-2.0 (LiteRT community build)",
             required = false,
+            // The refiner's instruction prompt is written in English, so refining French
+            // dictation would produce English-flavoured edits to text nobody asked it to
+            // touch. Declaring the coverage makes "should this run?" a lookup rather than a
+            // second hardcoded locale check next to the prompt.
+            languages = setOf("en"),
         ),
     )
 
     fun byId(id: String): ModelPack? = packs.firstOrNull { it.id == id }
 
     fun byKind(kind: ModelKind): List<ModelPack> = packs.filter { it.kind == kind }
+
+    /**
+     * On-device recognizers that cover [language] — empty when there is no on-device model for
+     * it, which today is every language but English.
+     *
+     * This is the single answer to "can we transcribe this language on the device?". Callers
+     * pass it to [ModelReadiness.canDictate] as the `packs` argument (see
+     * `ModelStore.dictationReadyFor`) so readiness stays a pure "do I have these packs?"
+     * question and the locale policy lives here, in one place, as data.
+     *
+     * Takes a [String] rather than a `java.util.Locale` deliberately: `:core` is a plain JVM
+     * module and stays free of platform types. Callers hand over `subtype.locale().language`
+     * or a full tag; both work.
+     */
+    fun asrPacksFor(language: String): List<ModelPack> =
+        byKind(ModelKind.FINAL_ASR).filter { it.covers(language) }
 
     /** Packs setup genuinely cannot finish without. See [ModelReadiness]. */
     val requiredPacks: List<ModelPack> get() = packs.filter { it.required }

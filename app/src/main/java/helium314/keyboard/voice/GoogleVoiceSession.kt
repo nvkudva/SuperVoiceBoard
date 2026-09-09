@@ -11,6 +11,7 @@ package helium314.keyboard.voice
 
 import android.content.Context
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
 import android.speech.RecognitionListener
 import android.speech.RecognizerIntent
@@ -30,9 +31,16 @@ class GoogleVoiceSession(
         fun onGoogleListening()
         fun onGooglePreparing()
         fun onGoogleFinalizing()
-        fun onGoogleError(message: String)
+        fun onGoogleError(message: String, kind: ErrorKind)
         fun onGoogleEnded()
     }
+
+    /**
+     * SuperVoiceBoard: which recovery an error deserves. The recognizer reports
+     * a flat int and the host has no way to tell "grant the mic" from "this
+     * engine will never work here" from "say it again" without it.
+     */
+    enum class ErrorKind { PERMISSION, TRANSIENT, ENGINE_UNUSABLE }
 
     private var recognizer: SpeechRecognizer? = null
 
@@ -43,19 +51,45 @@ class GoogleVoiceSession(
     /** Set while stopping, so a late error callback is not shown to the user. */
     private var stopping = false
 
-    fun isAvailable() = SpeechRecognizer.isRecognitionAvailable(context)
+    fun isAvailable() = onDeviceAvailable() || SpeechRecognizer.isRecognitionAvailable(context)
 
-    fun start() {
+    /**
+     * True when the platform can recognize without sending audio anywhere. Added
+     * in API 31 and backed by the system's own offline packs, which the user
+     * installs from system settings rather than from us.
+     */
+    fun onDeviceAvailable() =
+        Build.VERSION.SDK_INT >= Build.VERSION_CODES.S &&
+            SpeechRecognizer.isOnDeviceRecognitionAvailable(context)
+
+    /**
+     * SuperVoiceBoard: [onDeviceOnly] binds the session to the platform's
+     * offline recognizer — it errors out rather than reaching for the network
+     * one. Asking [onDeviceAvailable] before calling would not do it: the
+     * decision is made here, so the guarantee has to be made here too.
+     */
+    fun start(onDeviceOnly: Boolean = false) {
         if (isRunning) return
-        if (!isAvailable()) {
-            host.onGoogleError(context.getString(R.string.voice_google_unavailable))
+        val onDevice = onDeviceAvailable()
+        val usable = if (onDeviceOnly) onDevice else isAvailable()
+        if (!usable) {
+            host.onGoogleError(
+                context.getString(R.string.voice_google_unavailable), ErrorKind.ENGINE_UNUSABLE
+            )
             host.onGoogleEnded()
             return
         }
         isRunning = true
         stopping = false
         host.onGooglePreparing()
-        val recognizer = SpeechRecognizer.createSpeechRecognizer(context).also { this.recognizer = it }
+        // On-device first: it is the same recognizer without the round trip, so
+        // preferring it is both faster and the difference between audio that
+        // leaves the phone and audio that does not.
+        val recognizer = (
+            if (onDevice) SpeechRecognizer.createOnDeviceSpeechRecognizer(context)
+            else SpeechRecognizer.createSpeechRecognizer(context)
+            ).also { this.recognizer = it }
+        Log.i(TAG, if (onDevice) "system recognizer: on-device" else "system recognizer: network")
         recognizer.setRecognitionListener(listener)
         val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH)
             .putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
@@ -64,7 +98,9 @@ class GoogleVoiceSession(
         runCatching { recognizer.startListening(intent) }
             .onFailure {
                 Log.w(TAG, "Google recognizer refused to start", it)
-                host.onGoogleError(context.getString(R.string.voice_google_unavailable))
+                host.onGoogleError(
+                    context.getString(R.string.voice_google_unavailable), ErrorKind.ENGINE_UNUSABLE
+                )
                 release()
             }
     }
@@ -106,7 +142,7 @@ class GoogleVoiceSession(
 
         override fun onError(error: Int) {
             if (!stopping || error != SpeechRecognizer.ERROR_NO_MATCH) {
-                host.onGoogleError(context.getString(messageFor(error)))
+                host.onGoogleError(context.getString(messageFor(error)), kindFor(error))
             }
             release()
         }
@@ -134,6 +170,27 @@ class GoogleVoiceSession(
         SpeechRecognizer.ERROR_NETWORK, SpeechRecognizer.ERROR_NETWORK_TIMEOUT -> R.string.voice_google_error_network
         SpeechRecognizer.ERROR_NO_MATCH, SpeechRecognizer.ERROR_SPEECH_TIMEOUT -> R.string.voice_google_error_no_match
         else -> R.string.voice_google_error_generic
+    }
+
+    /**
+     * SuperVoiceBoard: classified by exclusion. Only constants that exist on
+     * API 21 are named, so nothing here needs a version guard; everything
+     * newer falls through to ENGINE_UNUSABLE — including
+     * ERROR_LANGUAGE_UNAVAILABLE, which is exactly what a device that has the
+     * on-device recognizer but no language pack installed returns, and the one
+     * kind that offers the user a way out. ERROR_SERVER and ERROR_CLIENT land
+     * there too: neither clears by saying it again.
+     */
+    private fun kindFor(error: Int) = when (error) {
+        SpeechRecognizer.ERROR_INSUFFICIENT_PERMISSIONS -> ErrorKind.PERMISSION
+        SpeechRecognizer.ERROR_AUDIO,
+        SpeechRecognizer.ERROR_NETWORK,
+        SpeechRecognizer.ERROR_NETWORK_TIMEOUT,
+        SpeechRecognizer.ERROR_NO_MATCH,
+        SpeechRecognizer.ERROR_RECOGNIZER_BUSY,
+        SpeechRecognizer.ERROR_SPEECH_TIMEOUT,
+        -> ErrorKind.TRANSIENT
+        else -> ErrorKind.ENGINE_UNUSABLE
     }
 
     companion object {

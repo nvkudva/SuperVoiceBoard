@@ -1,0 +1,12 @@
+<!--
+    SuperVoiceBoard: toolbar icon for interactive keyboard resize.
+    SPDX-License-Identifier: GPL-3.0-only
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android" android:width="24dp" android:height="24dp" android:viewportWidth="24" android:viewportHeight="24">
+    <path
+        android:fillColor="#FFF"
+        android:pathData="M4.25 5h15.5c1.24 0 2.25 1.01 2.25 2.25v9.5c0 1.24-1.01 2.25-2.25 2.25H4.25C3.01 19 2 17.99 2 16.75v-9.5C2 6.01 3.01 5 4.25 5zm0 1.5c-0.41 0-0.75 0.34-0.75 0.75v9.5c0 0.41 0.34 0.75 0.75 0.75h15.5c0.41 0 0.75-0.34 0.75-0.75v-9.5c0-0.41-0.34-0.75-0.75-0.75H4.25z"/>
+    <path
+        android:fillColor="#FFF"
+        android:pathData="M7.53 9.47c0.29 0.29 0.29 0.77 0 1.06L6.56 11.5h3.69c0.41 0 0.75 0.34 0.75 0.75s-0.34 0.75-0.75 0.75H6.56l0.97 0.97c0.29 0.29 0.29 0.77 0 1.06s-0.77 0.29-1.06 0l-2.25-2.25c-0.29-0.29-0.29-0.77 0-1.06l2.25-2.25c0.29-0.29 0.77-0.29 1.06 0zM16.47 9.47c0.29-0.29 0.77-0.29 1.06 0l2.25 2.25c0.29 0.29 0.29 0.77 0 1.06l-2.25 2.25c-0.29 0.29-0.77 0.29-1.06 0s-0.29-0.77 0-1.06l0.97-0.97h-3.69c-0.41 0-0.75-0.34-0.75-0.75s0.34-0.75 0.75-0.75h3.69l-0.97-0.97c-0.29-0.29-0.29-0.77 0-1.06z"/>
+</vector>

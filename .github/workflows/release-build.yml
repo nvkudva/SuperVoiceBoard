@@ -1,7 +1,14 @@
-# SuperVoiceBoard: the build to sideload. Debug-signed and arm64 only, which is
-# what a current phone needs — switch back to release when a production build
-# is actually wanted.
-name: Phone build (debug)
+# SuperVoiceBoard: the build to sideload, and the GitHub Release that publishes it.
+# arm64 only — a 32-bit device cannot usefully run a 482 MB recognizer plus a
+# 550 MB refiner, and a second ABI is another full NDK compile of the native code.
+#
+# Two halves. The debug-signed half runs today. The signed half is dormant until
+# SVB_KEYSTORE_B64 / SVB_STORE_PASSWORD / SVB_KEY_PASSWORD exist as repo secrets;
+# see docs/release-process.md for generating the keystore. The branch is taken at
+# the workflow level, not in gradle: the gradle-side `storeFile?.let {}` guard
+# (app/build.gradle.kts:69) makes assembleRelease produce an *unsigned* APK when
+# the keystore is missing, which is uninstallable — not a usable fallback.
+name: Phone build
 
 on:
   workflow_dispatch:
@@ -13,32 +20,153 @@ concurrency:
   group: release-build-${{ github.ref }}
   cancel-in-progress: true
 
+permissions:
+  contents: write
+
 jobs:
   release:
-    name: Assemble debug APK (arm64-v8a)
+    name: Assemble APK (arm64-v8a)
     runs-on: ubuntu-latest
+    env:
+      # Whether this run produces a signed release build or a debug-signed one.
+      # Every downstream step branches on this rather than re-testing the secret.
+      SIGNED: ${{ secrets.SVB_KEYSTORE_B64 != '' }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          # The release body quotes the tag's own annotation, which a shallow
+          # checkout does not fetch.
+          fetch-depth: 0
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: "21"
       - uses: gradle/actions/setup-gradle@v4
-      - name: Assemble debug
-        run: ./gradlew :app:assembleDebug --no-daemon
-      - name: APK size
+
+      # app/build.gradle.kts:52,54 default both passwords to the literal string
+      # "supervoiceboard" when the env vars are unset. With a real key in place
+      # that is a known-public password, so refuse to reach gradle at all.
+      - name: Check signing secrets
+        if: env.SIGNED == 'true'
+        env:
+          STORE_PASSWORD: ${{ secrets.SVB_STORE_PASSWORD }}
+          KEY_PASSWORD: ${{ secrets.SVB_KEY_PASSWORD }}
         run: |
-          for f in app/build/outputs/apk/debug/*arm64-v8a*.apk; do
-            echo "::notice title=Artifact size::$(basename "$f") $(stat -c%s "$f") bytes"
+          bad=0
+          for pair in "SVB_STORE_PASSWORD:$STORE_PASSWORD" "SVB_KEY_PASSWORD:$KEY_PASSWORD"; do
+            name=${pair%%:*}; value=${pair#*:}
+            if [ -z "$value" ]; then
+              echo "::error title=Signing::SVB_KEYSTORE_B64 is set but $name is empty"
+              bad=1
+            elif [ "$value" = "supervoiceboard" ]; then
+              echo "::error title=Signing::$name is the public default from app/build.gradle.kts; pick a real password"
+              bad=1
+            fi
           done
+          exit $bad
+
+      - name: Decode keystore
+        if: env.SIGNED == 'true'
+        env:
+          KEYSTORE_B64: ${{ secrets.SVB_KEYSTORE_B64 }}
+        run: |
+          # app/build.gradle.kts:50 looks here and nowhere else.
+          mkdir -p "$HOME/.supervoiceboard"
+          printf '%s' "$KEYSTORE_B64" | base64 -d > "$HOME/.supervoiceboard/release.jks"
+          test -s "$HOME/.supervoiceboard/release.jks"
+
+      - name: Assemble release
+        if: env.SIGNED == 'true'
+        env:
+          SVB_STORE_PASSWORD: ${{ secrets.SVB_STORE_PASSWORD }}
+          SVB_KEY_PASSWORD: ${{ secrets.SVB_KEY_PASSWORD }}
+        run: ./gradlew :app:assembleRelease -Pabi=arm64-v8a --no-daemon
+
+      - name: Assemble debug
+        if: env.SIGNED != 'true'
+        run: ./gradlew :app:assembleDebug -Pabi=arm64-v8a --no-daemon
+
+      # Gradle bakes versionName into the filename (app/build.gradle.kts:121), so
+      # assembleDebug emits SuperVoiceBoard_4.1-debug-arm64-v8a.apk whatever the
+      # tag says. Rename here rather than bumping versionName: 4.1 is the
+      # HeliBoard base version and belongs to whoever owns app source.
+      - name: Name the asset after the tag
+        id: asset
+        run: |
+          set -eu
+          if [ "$SIGNED" = "true" ]; then variant=release; else variant=debug; fi
+          built=$(ls "app/build/outputs/apk/$variant/"*arm64-v8a*.apk | head -1)
+          ref="${GITHUB_REF_NAME//\//-}"
+          name="SuperVoiceBoard-${ref}-arm64-v8a-${variant}.apk"
+          mkdir -p dist
+          mv "$built" "dist/$name"
+          echo "path=dist/$name" >> "$GITHUB_OUTPUT"
+          echo "name=$name" >> "$GITHUB_OUTPUT"
+          echo "variant=$variant" >> "$GITHUB_OUTPUT"
+          echo "::notice title=Artifact size::$name $(stat -c%s "dist/$name") bytes"
+
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: supervoiceboard-apk
-          path: app/build/outputs/apk/debug/*arm64-v8a*.apk
+          path: ${{ steps.asset.outputs.path }}
+
       - name: Upload reports
         if: failure()
         uses: actions/upload-artifact@v4
         with:
           name: release-build-reports
           path: app/build/reports/
+
+      # Everything below runs on a tag only. Branch pushes stop at the artifact.
+      #
+      # The four warnings in "Read this before installing" are true of a
+      # debug-signed build and not of a signed one, so they and the footer are
+      # written only on the debug path.
+      - name: Compose release body
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          set -eu
+          : > body.md
+          if [ "$SIGNED" != "true" ]; then
+            cat >> body.md <<'EOF'
+          ## Read this before installing
+
+          - This build is signed with Android's public debug key. Anyone can build an APK that Android will accept as an update to it. Install it to try the keyboard, not to rely on it.
+          - It installs as a separate app id (`com.supervoiceboard.app.debug`). A future signed build **cannot** upgrade over it — you will have to uninstall this one and lose your keyboard settings.
+          - This build ships without `main_ro.dict`, the main English dictionary. Word suggestions while typing will be worse than a real build. Dictation is unaffected.
+          - The APK is debuggable. Anyone with USB debugging access to your phone can read the keyboard's data.
+
+          EOF
+          fi
+          cat >> body.md <<'EOF'
+          ## What you need
+
+          - arm64 phones only. Almost every phone sold since ~2016 is arm64; a 32-bit device cannot install this.
+          - Dictation needs a 482 MB model download on first run, from Settings. Until it finishes, the mic key falls back to your system recognizer where the platform has one.
+          - About 1.0 GB of storage if you also install the optional refiner.
+
+          EOF
+          # The tag's own annotation, verbatim. Empty for a lightweight tag —
+          # docs/release-process.md says to tag with -a.
+          git tag -l --format='%(contents)' "$GITHUB_REF_NAME" >> body.md
+          if [ "$SIGNED" != "true" ]; then
+            printf '\nBuilt from %s. Based on HeliBoard 4.1 (versionCode 4101) — the 4.1 in the manifest is the upstream base, not this release.\n' \
+              "$GITHUB_SHA" >> body.md
+          fi
+
+      # Prerelease either way. A human flips that flag on the release page once a
+      # signed build has been installed on a real phone; see docs/release-process.md.
+      - name: Publish release
+        if: startsWith(github.ref, 'refs/tags/')
+        env:
+          GH_TOKEN: ${{ github.token }}
+          # Written this way round because '' is falsy in a GitHub expression,
+          # so the truthy branch has to be the non-empty one.
+          TITLE_SUFFIX: ${{ env.SIGNED == 'true' && '' || ' (test build)' }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" "${{ steps.asset.outputs.path }}" \
+            --repo "$GITHUB_REPOSITORY" \
+            --title "SuperVoiceBoard $GITHUB_REF_NAME$TITLE_SUFFIX" \
+            --notes-file body.md \
+            --prerelease

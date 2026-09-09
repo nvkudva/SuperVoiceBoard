@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- SPDX-License-Identifier: GPL-3.0-only -->
+<!-- SuperVoiceBoard: the dictation-engine toggle. Kept in its own file so the
+     upstream strings.xml stays mergeable. -->
+<resources>
+    <string name="asr_engine">Dictation engine</string>
+    <string name="asr_engine_system">Switched to the system recognizer</string>
+    <string name="asr_engine_ondevice">Switched to the on-device model</string>
+</resources>

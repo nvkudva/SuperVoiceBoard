@@ -79,6 +79,14 @@ class AiFixKey(
     // ------------------------------------------------------------ FixSurface
 
     override fun updateFixButton(state: FixButtonState, contentDescription: String) {
+        // SuperVoiceBoard: a fix has just landed. Show the swap for a single-word
+        // change; a wholesale reword has nothing a two-word ghost could say, and
+        // the long-press attribution already accounts for those.
+        if (state == FixButtonState.UNDO && buttonState == FixButtonState.RUNNING) {
+            controller.editorialEdits()
+                .firstOrNull { it.beforeText().isOneWord() && it.afterText().isOneWord() }
+                ?.let { ime.showCorrectionGhost(it.beforeText(), it.afterText()) }
+        }
         buttonState = state
         forEachKeyView { button ->
             button.contentDescription = contentDescription
@@ -108,6 +116,9 @@ class AiFixKey(
      * those are exactly what a user is owed an account of.
      */
     fun attributionLines(): List<String> = controller.editorialEdits().map(::describe)
+
+    private fun String.isOneWord(): Boolean =
+        isNotBlank() && none { it.isWhitespace() }
 
     private fun describe(edit: FixEdit): String =
         ime.getString(R_ATTRIBUTION_FORMAT, edit.beforeText(), edit.afterText())

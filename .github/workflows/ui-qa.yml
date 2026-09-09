@@ -6,6 +6,12 @@ on:
   workflow_dispatch:
   push:
     branches: ["claude/**"]
+    # SuperVoiceBoard: also on a tag, so the README screenshots are regenerated
+    # at each release. Deliberately no `needs:` between this and release-build.yml
+    # — this job takes up to 60 minutes and a flaky emulator must not be able to
+    # hold up a publish. The two PNGs are still committed by hand;
+    # see docs/release-process.md.
+    tags: ["v*"]
 
 concurrency:
   group: ui-qa-${{ github.ref }}

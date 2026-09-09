@@ -96,6 +96,14 @@ public final class InputLogic {
     private int mSpaceState;
     // Never null
     public SuggestedWords mSuggestedWords = SuggestedWords.getEmptyInstance();
+
+    /**
+     * SuperVoiceBoard: what the decoder nearly typed, kept for the length of one
+     * sentence so a rescoring pass can choose among words the decoder itself
+     * ranked. Capture only for now — nothing reads the sentences yet.
+     */
+    public final com.vboard.core.correct.SentenceCandidates mSentenceCandidates =
+            new com.vboard.core.correct.SentenceCandidates();
     public Suggest mSuggest; // non-final for active gesture data gathering, revert when data gathering phase is done (end of 2026 latest)
     public DictionaryFacilitator mDictionaryFacilitator; // non-final for active gesture data gathering, revert when data gathering phase is done (end of 2026 latest)
     private SingleDictionaryFacilitator mEmojiDictionaryFacilitator;
@@ -176,6 +184,7 @@ public final class InputLogic {
         mRecapitalizeStatus.disable(); // Do not perform recapitalize until the cursor is moved once
         mCurrentlyPressedHardwareKeys.clear();
         mSuggestedWords = SuggestedWords.getEmptyInstance();
+        mSentenceCandidates.reset(); // SuperVoiceBoard: a new field, a new sentence
         // In some cases (e.g. after rotation of the device, or when scrolling the text before bringing up keyboard)
         // editorInfo.initialSelStart is not the actual cursor position, so we try using some heuristics to find the correct position.
         mConnection.tryFixIncorrectCursorPosition();
@@ -2177,6 +2186,9 @@ public final class InputLogic {
             final boolean clearSuggestionStrip) {
         final boolean shouldFinishComposition = mWordComposer.isComposingWord();
         resetComposingState(true /* alsoResetLastComposedWord */);
+        // SuperVoiceBoard: the cursor moved, so the words before it are no longer
+        // a sentence this object watched being typed.
+        mSentenceCandidates.reset();
         if (clearSuggestionStrip) {
             mSuggestionStripViewAccessor.setNeutralSuggestionStrip();
         }
@@ -2446,6 +2458,29 @@ public final class InputLogic {
      * @param commitType the type of the commit, as one of LastComposedWord.COMMIT_TYPE_*
      * @param separatorString the separator that's causing the commit, or NOT_A_SEPARATOR if none.
      */
+    /**
+     * SuperVoiceBoard: remembers the alternatives the decoder had for the word
+     * being committed, and hands the finished sentence over when the separator
+     * ended one.
+     */
+    private void recordSentenceCandidates(final String chosenWord, final String separatorString) {
+        final java.util.ArrayList<String> alternatives = new java.util.ArrayList<>();
+        final SuggestedWords suggestions = mSuggestedWords;
+        for (int i = 0; i < suggestions.size(); i++) {
+            alternatives.add(suggestions.getWord(i));
+        }
+        final java.util.List<com.vboard.core.correct.WordSlot> sentence =
+                mSentenceCandidates.record(chosenWord, alternatives,
+                        separatorString == null ? "" : separatorString);
+        if (sentence != null) {
+            if (DebugFlags.DEBUG_ENABLED) {
+                // Counts only: never the words themselves (PLAN.md §3.4).
+                Log.d(TAG, "sentence ready to rescore: " + sentence.size() + " words");
+            }
+            mLatinIME.onSentenceComplete(sentence);
+        }
+    }
+
     private void commitChosenWord(final SettingsValues settingsValues, final String chosenWord,
             final int commitType, final String separatorString) {
         long startTimeMillis = 0;
@@ -2479,6 +2514,9 @@ public final class InputLogic {
             Log.d(TAG, "commitChosenWord() : ngram context withheld");
             startTimeMillis = SystemClock.elapsedRealtime();
         }
+        // SuperVoiceBoard: every commit type funnels through here, so this is the
+        // one place that sees both the winner and the candidates it beat.
+        recordSentenceCandidates(chosenWord, separatorString);
         mConnection.commitText(chosenWordWithSuggestions, 1);
         if (DebugFlags.DEBUG_ENABLED) {
             long runTimeMillis = SystemClock.elapsedRealtime() - startTimeMillis;

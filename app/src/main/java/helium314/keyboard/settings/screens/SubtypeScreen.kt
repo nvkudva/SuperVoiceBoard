@@ -164,6 +164,15 @@ fun SubtypeScreen(
                         }
                     }
                 }
+                // WaveKey: these four exist globally too, and nothing here or
+                // there used to say so (docs/settings-ia.md). The button beside
+                // each row already resets it; the caption explains what it does.
+                Text(
+                    stringResource(R.string.wk_overrides_note),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(start = 10.dp, top = 10.dp, end = 10.dp)
+                )
                 WithSmallTitle(stringResource(R.string.popup_order_and_hint_source)) {
                     ActionRow(onClick = { showKeyOrderDialog = true }) {
                         Text(stringResource(R.string.popup_order),

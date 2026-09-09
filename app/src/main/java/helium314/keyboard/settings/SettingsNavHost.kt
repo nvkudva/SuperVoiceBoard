@@ -36,6 +36,7 @@ import helium314.keyboard.settings.screens.SubtypeScreen
 import helium314.keyboard.settings.screens.TextCorrectionScreen
 import helium314.keyboard.settings.screens.ThemePickerScreen
 import helium314.keyboard.settings.screens.PrivacyAdvancedScreen
+import helium314.keyboard.settings.screens.ToolbarKeysScreen
 import helium314.keyboard.settings.screens.ToolbarScreen
 import helium314.keyboard.settings.screens.TypingScreen
 import helium314.keyboard.settings.screens.gesturedata.GestureDataScreen
@@ -113,6 +114,9 @@ fun SettingsNavHost(
         }
         composable(SettingsDestination.Toolbar) {
             ToolbarScreen(onClickBack = ::goBack)
+        }
+        composable(SettingsDestination.ToolbarKeys) {
+            ToolbarKeysScreen(onClickBack = ::goBack)
         }
         composable(SettingsDestination.GestureTyping) {
             GestureTypingScreen(onClickBack = ::goBack)
@@ -194,6 +198,7 @@ object SettingsDestination {
     const val VoiceModels = "voice_models" // SuperVoiceBoard
     const val PrivacyBreaking = "privacy_breaking" // SuperVoiceBoard
     const val Typing = "typing" // WaveKey: the Typing door
+    const val ToolbarKeys = "toolbar_keys" // WaveKey: the toolbar key editor
     const val PrivacyAdvanced = "privacy_advanced" // WaveKey: the Privacy & advanced door
     const val Debug = "debug"
     const val Appearance = "appearance"

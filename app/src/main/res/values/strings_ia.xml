@@ -34,8 +34,22 @@
     </plurals>
 
     <string name="wk_category_key_behaviour">Key behaviour</string>
+    <string name="wk_overrides_note">The settings below override the global ones for this language. The button beside a row puts it back.</string>
     <string name="wk_category_size">Size &amp; spacing</string>
     <string name="wk_category_text">Text &amp; fonts</string>
+
+    <!-- The toolbar key editor -->
+    <string name="wk_toolbar_keys_title">Choose toolbar keys</string>
+    <string name="wk_toolbar_keys_hint">The strip below is what you will see. Tap a key in it to move or remove it; tap one underneath to add it to the end.</string>
+    <string name="wk_toolbar_keys_empty">No keys yet</string>
+    <string name="wk_toolbar_keys_available">Not in the strip</string>
+    <string name="wk_toolbar_keys_which">Which strip</string>
+    <string name="wk_move_left">Move left</string>
+    <string name="wk_move_right">Move right</string>
+    <string name="wk_remove">Remove</string>
+    <string name="wk_target_main">Toolbar</string>
+    <string name="wk_target_pinned">Pinned</string>
+    <string name="wk_target_clipboard">Clipboard</string>
 
     <!-- Renames (docs/settings-ia.md). Overridden at the use site so upstream's
          strings.xml keeps its own wording and stays mergeable. -->

@@ -24,11 +24,14 @@ import helium314.keyboard.latin.utils.getActivity
 import helium314.keyboard.latin.utils.getStringResourceOrName
 import helium314.keyboard.latin.utils.prefs
 import helium314.keyboard.settings.SearchSettingsScreen
+import helium314.keyboard.settings.SettingsWithoutKey
 import helium314.keyboard.settings.Setting
 import helium314.keyboard.settings.SettingsActivity
 import helium314.keyboard.latin.utils.Theme
 import helium314.keyboard.settings.dialogs.ToolbarKeysCustomizer
 import helium314.keyboard.settings.initPreview
+import helium314.keyboard.latin.utils.NextScreenIcon
+import helium314.keyboard.settings.SettingsDestination
 import helium314.keyboard.settings.preferences.ListPreference
 import helium314.keyboard.settings.preferences.Preference
 import helium314.keyboard.settings.preferences.ReorderSwitchPreference
@@ -55,15 +58,9 @@ fun ToolbarScreen(
         if (toolbarMode != ToolbarMode.HIDDEN) Settings.PREF_TOOLBAR_SWIPE_DOWN_TO_HIDE else null,
 
         R.string.settings_category_toolbar_keys,
-        when (toolbarMode) {
-             ToolbarMode.EXPANDABLE, ToolbarMode.TOOLBAR_KEYS -> Settings.PREF_TOOLBAR_KEYS
-             else -> null
-        },
-        when (toolbarMode) {
-            ToolbarMode.EXPANDABLE, ToolbarMode.SUGGESTION_STRIP -> Settings.PREF_PINNED_TOOLBAR_KEYS
-            else -> null
-        },
-        if (clipboardToolbarVisible) Settings.PREF_CLIPBOARD_TOOLBAR_KEYS else null,
+        // WaveKey: one editor for all three strips, in place of three modal
+        // lists of 36 rows (docs/settings-ia.md).
+        SettingsWithoutKey.TOOLBAR_KEYS_EDITOR,
         if (clipboardToolbarVisible) Settings.PREF_TOOLBAR_CUSTOM_KEY_CODES else null,
 
         R.string.settings_category_toolbar_behavior,
@@ -96,6 +93,12 @@ fun ToolbarScreen(
 }
 
 fun createToolbarSettings(context: Context) = listOf(
+    Setting(context, SettingsWithoutKey.TOOLBAR_KEYS_EDITOR, R.string.wk_toolbar_keys_title) {
+        Preference(
+            name = stringResource(R.string.wk_toolbar_keys_title),
+            onClick = { SettingsDestination.navigateTo(SettingsDestination.ToolbarKeys) },
+        ) { NextScreenIcon() }
+    },
     Setting(context, Settings.PREF_TOOLBAR_MODE, R.string.toolbar_mode) { setting ->
         val ctx = LocalContext.current
         val items =

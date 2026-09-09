@@ -9,13 +9,30 @@ package helium314.keyboard.settings.screens
 import android.content.Context
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import com.vboard.app.settings.SettingsRepository.Defaults as VoiceDefaults
 import com.vboard.app.settings.SettingsRepository.Keys as VoiceKeys
 import com.vboard.app.voice.voiceRuntimeOrNull
+import com.vboard.core.model.ByteSize
+import com.vboard.core.model.ModelCatalog
 import com.vboard.core.session.SilenceTimeout
 import helium314.keyboard.latin.R
 import helium314.keyboard.latin.utils.Log
@@ -80,14 +97,39 @@ fun createVoiceSettings(context: Context) = listOf(
         val ctx = LocalContext.current
         val runtime = voiceRuntimeOrNull(ctx)
         val ready = runtime?.modelStore?.dictationReady(runtime.packInstaller) == true
-        Preference(
-            name = stringResource(R.string.settings_screen_voice_models),
-            description = stringResource(
-                if (ready) R.string.settings_door_voice_ready else R.string.settings_door_voice_no_models
-            ),
+        val needed = ByteSize.format(ModelCatalog.packs.filter { it.required }.sumOf { it.totalBytes })
+        Card(
             onClick = { SettingsDestination.navigateTo(SettingsDestination.VoiceModels) },
-            icon = R.drawable.ic_settings_voice,
-        ) { NextScreenIcon() }
+            colors = CardDefaults.cardColors(
+                containerColor = if (ready) MaterialTheme.colorScheme.surfaceContainerHighest
+                    else MaterialTheme.colorScheme.primaryContainer,
+            ),
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 6.dp),
+        ) {
+            Row(
+                Modifier.padding(16.dp),
+                horizontalArrangement = Arrangement.spacedBy(14.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Icon(painterResource(R.drawable.ic_settings_voice), null, Modifier.size(26.dp))
+                Column(Modifier.weight(1f)) {
+                    Text(
+                        stringResource(
+                            if (ready) R.string.settings_door_voice_ready
+                            else R.string.settings_door_voice_no_models
+                        ),
+                        style = MaterialTheme.typography.titleSmall,
+                    )
+                    Text(
+                        if (ready) stringResource(R.string.wk_models_manage)
+                        else stringResource(R.string.wk_models_download, needed),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                NextScreenIcon()
+            }
+        }
     },
     Setting(context, VoiceKeys.SILENCE_TIMEOUT, R.string.voice_silence_timeout, R.string.voice_silence_timeout_summary) { setting ->
         val ctx = LocalContext.current

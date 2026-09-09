@@ -34,6 +34,9 @@
     </plurals>
 
     <string name="wk_tap_the_keyboard">Tap a part of the keyboard above to change its colour.</string>
+    <string name="wk_models_manage">Manage the downloaded models</string>
+    <string name="wk_models_download">About %1$s to download, kept on this device</string>
+    <string name="wk_now">%1$s — what you are in now</string>
     <string name="wk_day">Day</string>
     <string name="wk_night">Night</string>
     <string name="wk_category_key_behaviour">Key behaviour</string>

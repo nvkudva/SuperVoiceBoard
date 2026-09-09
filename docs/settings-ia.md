@@ -93,19 +93,30 @@ each section gets its own collapsed **Advanced** group, so a setting sits next t
 - Do themes ship as light/dark pairs, or stay two independently chosen day and night themes?
 - Is resize mode the primary geometry editor, and can it be launched from settings with no IME running?
 
-## Status, 2026-09-09
+## Status, 2026-09-10
 
-Implemented and verified on an API 35 emulator: the six doors with live summaries, the two hub
-screens, fifteen renames, the dead *Dictate in place* setting removed, key behaviour moved to
-Toolbar & keys, incognito and backup moved to Privacy & advanced, Look & feel's categories,
-the per-language override note, the toolbar key editor, a live keyboard docked under the colour
-editor, and every size row showing its current value.
+Implemented and verified on an API 35 emulator:
 
-Not done, and what each needs:
-- **Colour editing by tapping the keyboard** — needs hit-testing on the preview view, which is an
-  AndroidView of the real KeyboardView; the docked preview is in place to build on.
-- **The colour picker as a half-height sheet** — today it is still a modal dialog.
-- **Size as a drag canvas, and orientation chips** — the sliders now show their values, which was
-  the cheap half; direct manipulation is the expensive half and overlaps the existing resize key.
-- **Day and night themes merged into one picker with a toggle** — still two rows.
-- **Voice models as a status card** — the row reports readiness, but it is still a row.
+- Six doors with live summaries, and the two hub screens behind them
+- Fifteen renames; the dead *Dictate in place* setting removed
+- Key behaviour moved to Toolbar & keys; incognito and backup to Privacy & advanced
+- Look & feel's categories: Theme, Size & spacing, Text & fonts
+- The per-language override note on the Subtype screen
+- One toolbar key editor with the strip drawn, in place of three modal lists
+- One theme picker with a Day | Night switch
+- The colour editor with the keyboard pinned above it, tappable: tap the keys, the space bar,
+  the action key, the strip or the board to open that colour
+- The colour picker as a bottom sheet, so the keyboard stays visible while a hue is dragged
+- Voice models as a status card that says whether dictation can run and what a download costs
+- Every size row showing its value, and the size dialog marking the orientation you are in
+
+Not done, with the reason:
+
+- **Size as a drag canvas.** The keyboard already has this — the resize key drags its own edges —
+  and settings cannot launch it without a running IME. Duplicating it in Compose would mean a
+  second geometry editor to keep in step with the first. The open question for the PM stands:
+  should resize mode become the primary editor, launchable from settings?
+- **Drag-and-drop in the toolbar editor.** Tapping selects a key and moves it one place at a time,
+  which covers reordering without a drag implementation inside a scrolling column.
+- **Global settings saying they can be overridden per language.** The per-language screen now says
+  it overrides; the global screens still do not mention it.

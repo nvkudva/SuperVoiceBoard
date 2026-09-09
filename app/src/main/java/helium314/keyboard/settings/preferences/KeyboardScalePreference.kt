@@ -104,6 +104,16 @@ private fun KeyboardScaleDialog(
     positionString: (Float) -> String,
 ) {
     val (variants, keys) = createVariantsAndKeys(dimensions, baseKey)
+    // WaveKey: which of these sliders is the one the user is looking at right
+    // now. Upstream listed up to eight, none of them marked (docs/settings-ia.md).
+    val currentKey = createPrefKeyForBooleanSettings(
+        baseKey,
+        findIndexOfDefaultSetting(
+            LocalContext.current.resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE,
+            FoldableUtils.isFolded,
+        ),
+        dimensions.size,
+    )
     val foldedString = stringResource(R.string.folded) // we want to hide foldable settings for non-foldable phones
     val ctx = LocalContext.current
     var checked by remember { mutableStateOf(dimensions.map { FoldableUtils.isFoldable || !it.contains(foldedString) }) }
@@ -144,7 +154,10 @@ private fun KeyboardScaleDialog(
                         val visible = variant.split(SPLIT).none { it in forbiddenDimensions }
                         // default animations make the dialog flash (see also DictionaryDialog)
                         AnimatedVisibility(visible, exit = fadeOut(), enter = fadeIn()) {
-                            WithSmallTitle(variant.ifEmpty { stringResource(R.string.button_default) }) {
+                            val label = variant.ifEmpty { stringResource(R.string.button_default) }
+                            WithSmallTitle(
+                                if (key == currentKey) stringResource(R.string.wk_now, label) else label
+                            ) {
                                 Slider(
                                     value = sliderPosition,
                                     onValueChange = { sliderPosition = it },

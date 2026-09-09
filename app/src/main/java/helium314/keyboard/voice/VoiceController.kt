@@ -7,6 +7,7 @@ package helium314.keyboard.voice
 
 import android.content.Intent
 import android.net.Uri
+import android.os.PowerManager
 import android.os.SystemClock
 import android.provider.Settings as AndroidSettings
 import android.text.InputType
@@ -78,6 +79,12 @@ class VoiceController(
     /** Session-scoped raw dictation: no cleanup, no refinement (W6.4). */
     private var rawForSession = false
 
+    /** True between the minimize key and the keyboard coming back. */
+    private var minimizedForSession = false
+
+    /** Held only while a running session has no window to keep awake. */
+    private var screenLock: PowerManager.WakeLock? = null
+
     /**
      * W7.3: opt-in, content-free measurement. Held in memory for this IME
      * instance only — there is no endpoint to send it to and no file to write
@@ -116,6 +123,9 @@ class VoiceController(
     fun onStartInputView(editorInfo: EditorInfo?) {
         // Moving to another field settles whatever was awaiting a verdict.
         settleTelemetry()
+        // The keyboard is back, so the window can keep the screen awake again.
+        minimizedForSession = false
+        releaseScreenLock()
         fieldKind = fieldKindOf(editorInfo)
         // A field that must never be dictated into ends any session that was
         // running when focus moved into it.
@@ -148,11 +158,19 @@ class VoiceController(
 
     /** The editor is going away: finalize rather than discard what was said. */
     fun onFinishInputView() {
+        // The minimize control hides the keyboard on purpose and the session is
+        // meant to outlive it, so the editor going away is not the end of the
+        // utterance here — it is the start of the eyes-free part of it.
+        if (minimizedForSession) {
+            acquireScreenLock()
+            return
+        }
         if (isActive) session.finishSession()
     }
 
     fun onDestroy() {
         keepScreenOn(false)
+        releaseScreenLock()
         session.destroy()
         strip = null
     }
@@ -188,6 +206,9 @@ class VoiceController(
 
     /** The keyboard is gone: the engines may be reclaimed after the idle delay. */
     fun onKeyboardHidden() {
+        // Not while an utterance is still being heard: a minimized session is
+        // running on those engines.
+        if (isActive) return
         VoiceEngines.scheduleIdleRelease()
     }
 
@@ -262,9 +283,36 @@ class VoiceController(
      * it ended by send, cancel, error, or the IME being torn down.
      */
     private fun keepScreenOn(on: Boolean) {
+        // A hidden window keeps no screen awake, so a minimized session holds a
+        // wake lock instead; the flag is for the ordinary, visible case.
         val window = ime.window?.window ?: return
         if (on) window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         else window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+    }
+
+    /**
+     * Keeps the display awake for a session the user minimized the keyboard on.
+     * The window flag cannot do it — the window is gone — and this is the only
+     * window the IME has.
+     *
+     * The lock carries its own timeout so a session that somehow never reports
+     * its end cannot hold the screen on indefinitely; dictation that runs past
+     * it is longer than any utterance this keyboard is built for.
+     */
+    @Suppress("DEPRECATION") // The only way to keep the screen on with no window.
+    private fun acquireScreenLock() {
+        if (screenLock?.isHeld == true) return
+        val power = ime.getSystemService(PowerManager::class.java) ?: return
+        val lock = screenLock ?: power.newWakeLock(
+            PowerManager.SCREEN_DIM_WAKE_LOCK, SCREEN_LOCK_TAG
+        ).also { it.setReferenceCounted(false); screenLock = it }
+        runCatching { lock.acquire(SCREEN_LOCK_TIMEOUT_MS) }
+            .onFailure { Log.w(TAG, "could not hold the screen awake", it) }
+    }
+
+    private fun releaseScreenLock() {
+        val lock = screenLock ?: return
+        if (lock.isHeld) runCatching { lock.release() }
     }
 
     fun cancel() {
@@ -283,6 +331,9 @@ class VoiceController(
     override fun onVoiceMinimizeKeyboard() {
         // The session keeps running; only the keyboard window goes away. That is
         // the point of the control — dictating into a field you need to see.
+        // The flag has to be set first: hiding the window synchronously calls
+        // back into onFinishInputView, which would otherwise finalize.
+        minimizedForSession = isActive
         ime.requestHideSelf(0)
     }
 
@@ -374,7 +425,9 @@ class VoiceController(
         googleForSession = false
         holdScoped = false
         rawForSession = false
+        minimizedForSession = false
         keepScreenOn(false)
+        releaseScreenLock()
         strip?.announceSessionEnded()
         strip?.reset()
         onSessionUiEnded?.invoke()
@@ -472,5 +525,8 @@ class VoiceController(
         private const val TAG = "SVBVoice"
         /** Enough context for spacing and capitalization decisions, no more. */
         private const val PRECEDING_CHARS = 16
+        private const val SCREEN_LOCK_TAG = "SuperVoiceBoard:dictation"
+        /** Longer than any dictation, short enough to bound a leak. */
+        private const val SCREEN_LOCK_TIMEOUT_MS = 10L * 60L * 1000L
     }
 }

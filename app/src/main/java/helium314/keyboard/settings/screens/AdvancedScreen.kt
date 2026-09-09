@@ -59,18 +59,6 @@ fun AdvancedSettingsScreen(
     if ((b?.value ?: 0) < 0)
         Log.v("irrelevant", "stupid way to trigger recomposition on preference change")
     val items = listOf(
-        Settings.PREF_ALWAYS_INCOGNITO_MODE,
-        Settings.PREF_KEY_LONGPRESS_TIMEOUT,
-        Settings.PREF_SPACE_HORIZONTAL_SWIPE,
-        Settings.PREF_SPACE_VERTICAL_SWIPE,
-        if (Settings.readHorizontalSpaceSwipe(prefs) == KeyboardActionListener.SwipeAction.SWITCH_LANGUAGE
-            || Settings.readVerticalSpaceSwipe(prefs) == KeyboardActionListener.SwipeAction.SWITCH_LANGUAGE)
-            Settings.PREF_LANGUAGE_SWIPE_DISTANCE else null,
-        if (Settings.readVerticalSpaceSwipe(prefs) == KeyboardActionListener.SwipeAction.TOUCHPAD_MODE)
-            Settings.PREF_TOUCHPAD_SENSITIVITY else null,
-        if (Settings.readVerticalSpaceSwipe(prefs) == KeyboardActionListener.SwipeAction.TOUCHPAD_MODE)
-            Settings.PREF_TOUCHPAD_EDGE_SCROLL else null,
-        Settings.PREF_DELETE_SWIPE,
         Settings.PREF_SPACE_TO_CHANGE_LANG,
         Settings.PREFS_LONG_PRESS_SYMBOLS_FOR_NUMPAD,
         Settings.PREF_ENABLE_EMOJI_ALT_PHYSICAL_KEY,
@@ -82,7 +70,6 @@ fun AdvancedSettingsScreen(
         Settings.PREF_CUSTOM_CURRENCY_KEY,
         Settings.PREF_MORE_POPUP_KEYS,
         Settings.PREF_TIMESTAMP_FORMAT,
-        SettingsWithoutKey.BACKUP_RESTORE,
         if (BuildConfig.DEBUG || prefs.getBoolean(DebugSettings.PREF_SHOW_DEBUG_SETTINGS, Defaults.PREF_SHOW_DEBUG_SETTINGS))
             SettingsWithoutKey.DEBUG_SETTINGS else null,
         R.string.settings_category_experimental,

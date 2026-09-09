@@ -74,9 +74,17 @@ fun VoiceScreen(
 
 fun createVoiceSettings(context: Context) = listOf(
     Setting(context, SettingsWithoutKey.VOICE_MODELS, R.string.settings_screen_voice_models, R.string.voice_models_summary) {
+        // WaveKey: the models are the gate on the whole feature, so this row
+        // answers "can I dictate right now?" before it offers to take you
+        // somewhere (docs/settings-ia.md).
+        val ctx = LocalContext.current
+        val runtime = voiceRuntimeOrNull(ctx)
+        val ready = runtime?.modelStore?.dictationReady(runtime.packInstaller) == true
         Preference(
             name = stringResource(R.string.settings_screen_voice_models),
-            description = stringResource(R.string.voice_models_summary),
+            description = stringResource(
+                if (ready) R.string.settings_door_voice_ready else R.string.settings_door_voice_no_models
+            ),
             onClick = { SettingsDestination.navigateTo(SettingsDestination.VoiceModels) },
             icon = R.drawable.ic_settings_voice,
         ) { NextScreenIcon() }

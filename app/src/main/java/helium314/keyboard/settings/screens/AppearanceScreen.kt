@@ -71,7 +71,7 @@ fun AppearanceScreen(
         Settings.PREF_NAVBAR_COLOR,
         SettingsWithoutKey.BACKGROUND_IMAGE,
         SettingsWithoutKey.BACKGROUND_IMAGE_LANDSCAPE,
-        R.string.settings_category_miscellaneous,
+        R.string.wk_category_size,
         Settings.PREF_ENABLE_SPLIT_KEYBOARD,
         if (prefs.getBoolean(Settings.PREF_ENABLE_SPLIT_KEYBOARD_LANDSCAPE, Defaults.PREF_ENABLE_SPLIT_KEYBOARD)
             || prefs.getBoolean(Settings.PREF_ENABLE_SPLIT_KEYBOARD, Defaults.PREF_ENABLE_SPLIT_KEYBOARD)
@@ -85,6 +85,7 @@ fun AppearanceScreen(
         Settings.PREF_BOTTOM_ROW_SCALE_PREFIX,
         Settings.PREF_BOTTOM_PADDING_SCALE_PREFIX,
         Settings.PREF_SIDE_PADDING_SCALE_PREFIX,
+        R.string.wk_category_text,
         Settings.PREF_SPACE_BAR_TEXT,
         SettingsWithoutKey.CUSTOM_FONT,
         Settings.PREF_FONT_SCALE,
@@ -98,7 +99,7 @@ fun AppearanceScreen(
     )
     SearchSettingsScreen(
         onClickBack = onClickBack,
-        title = stringResource(R.string.settings_screen_appearance),
+        title = stringResource(R.string.settings_door_look),
         settings = items,
         footer = { KeyboardPreview() }
     )

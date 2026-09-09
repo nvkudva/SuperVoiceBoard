@@ -21,7 +21,10 @@ import helium314.keyboard.latin.R
 import helium314.keyboard.latin.utils.NextScreenIcon
 import helium314.keyboard.latin.utils.Theme
 import helium314.keyboard.latin.utils.previewDark
+import helium314.keyboard.latin.settings.Settings
 import helium314.keyboard.settings.SearchSettingsScreen
+import helium314.keyboard.settings.SettingsActivity
+import helium314.keyboard.settings.SettingsWithoutKey
 import helium314.keyboard.settings.initPreview
 import helium314.keyboard.settings.preferences.Preference
 import helium314.keyboard.settings.preferences.PreferenceGroup
@@ -50,6 +53,13 @@ fun PrivacyAdvancedScreen(
                     .then(Modifier.padding(innerPadding))
                     .padding(bottom = 24.dp)
             ) {
+                // Moved out of Advanced: what the keyboard remembers, and the
+                // file that carries it to a new phone, are privacy questions.
+                PreferenceGroup {
+                    SettingsActivity.settingsContainer[Settings.PREF_ALWAYS_INCOGNITO_MODE]?.Preference()
+                    SettingsActivity.settingsContainer[SettingsWithoutKey.BACKUP_RESTORE]?.Preference()
+                }
+
                 PreferenceGroup {
                     Preference(
                         name = stringResource(R.string.settings_screen_privacy_breaking),

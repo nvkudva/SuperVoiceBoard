@@ -13,6 +13,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import helium314.keyboard.keyboard.KeyboardSwitcher
+import helium314.keyboard.keyboard.KeyboardActionListener
 import helium314.keyboard.latin.R
 import helium314.keyboard.latin.settings.Defaults
 import helium314.keyboard.latin.settings.Settings
@@ -71,10 +72,25 @@ fun ToolbarScreen(
         if (toolbarMode == ToolbarMode.EXPANDABLE) Settings.PREF_AUTO_HIDE_TOOLBAR else null,
         if (toolbarMode != ToolbarMode.HIDDEN) Settings.PREF_SHOW_ONLY_TOOLBAR_WITH_HARDWARE_KEYBOARD else null,
         if (toolbarMode != ToolbarMode.HIDDEN) Settings.PREF_VARIABLE_TOOLBAR_DIRECTION else null,
+
+        // WaveKey: how the keys themselves behave belongs with the keys, not in
+        // an Advanced bucket three doors away (docs/settings-ia.md).
+        R.string.wk_category_key_behaviour,
+        Settings.PREF_KEY_LONGPRESS_TIMEOUT,
+        Settings.PREF_SPACE_HORIZONTAL_SWIPE,
+        Settings.PREF_SPACE_VERTICAL_SWIPE,
+        if (Settings.readHorizontalSpaceSwipe(prefs) == KeyboardActionListener.SwipeAction.SWITCH_LANGUAGE
+            || Settings.readVerticalSpaceSwipe(prefs) == KeyboardActionListener.SwipeAction.SWITCH_LANGUAGE)
+            Settings.PREF_LANGUAGE_SWIPE_DISTANCE else null,
+        if (Settings.readVerticalSpaceSwipe(prefs) == KeyboardActionListener.SwipeAction.TOUCHPAD_MODE)
+            Settings.PREF_TOUCHPAD_SENSITIVITY else null,
+        if (Settings.readVerticalSpaceSwipe(prefs) == KeyboardActionListener.SwipeAction.TOUCHPAD_MODE)
+            Settings.PREF_TOUCHPAD_EDGE_SCROLL else null,
+        Settings.PREF_DELETE_SWIPE,
     )
     SearchSettingsScreen(
         onClickBack = onClickBack,
-        title = stringResource(R.string.settings_screen_toolbar),
+        title = stringResource(R.string.settings_door_toolbar),
         settings = items
     )
 }

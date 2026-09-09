@@ -24,7 +24,7 @@
     <string name="settings_screen_dictionaries_summary">Word lists, per language</string>
 
     <!-- Rows inside the Privacy &amp; advanced door -->
-    <string name="settings_screen_advanced_summary">Swipes, timeouts, backup, debug</string>
+    <string name="settings_screen_advanced_summary">Currencies, timestamps, experimental</string>
 
     <string name="settings_door_voice_ready">Ready · on-device models installed</string>
     <string name="settings_door_voice_no_models">Models not downloaded yet</string>
@@ -32,6 +32,10 @@
         <item quantity="one">%d key above the keyboard</item>
         <item quantity="other">%d keys above the keyboard</item>
     </plurals>
+
+    <string name="wk_category_key_behaviour">Key behaviour</string>
+    <string name="wk_category_size">Size &amp; spacing</string>
+    <string name="wk_category_text">Text &amp; fonts</string>
 
     <!-- Renames (docs/settings-ia.md). Overridden at the use site so upstream's
          strings.xml keeps its own wording and stays mergeable. -->

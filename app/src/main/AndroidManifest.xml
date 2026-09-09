@@ -117,6 +117,13 @@ SPDX-License-Identifier: Apache-2.0 AND GPL-3.0-only
         </service>
 
         <!-- Activities -->
+        <!-- SuperVoiceBoard: the settings UI deliberately stays in the keyboard
+             process. Pinning it to `:ui` would put the two halves of the app on
+             opposite sides of a SharedPreferences instance that is not
+             multi-process safe, and every setting the keyboard reads live would
+             start drifting. The network split does not depend on it: WorkManager
+             runs its workers in `:ui` (App.setDefaultProcessName) and its
+             foreground service is pinned below. -->
         <activity android:name="helium314.keyboard.settings.SettingsActivity"
                 android:theme="@style/platformActivityTheme"
                 android:icon="@mipmap/ic_launcher"

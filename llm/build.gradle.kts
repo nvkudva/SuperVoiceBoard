@@ -9,10 +9,10 @@ plugins {
 
 android {
     namespace = "com.vboard.app.llm"
-    compileSdk = 36
+    compileSdk = libs.versions.compileSdk.get().toInt()
 
     defaultConfig {
-        minSdk = 21
+        minSdk = libs.versions.minSdk.get().toInt()
     }
 
     buildFeatures {
@@ -39,7 +39,7 @@ android {
 
 dependencies {
     implementation(project(":core"))
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.10.2")
+    implementation(libs.coroutines.android)
     // On-device LLM refinement (MediaPipe LLM Inference).
-    implementation("com.google.mediapipe:tasks-genai:0.10.24")
+    implementation(libs.mediapipe.tasks.genai)
 }

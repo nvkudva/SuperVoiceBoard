@@ -13,10 +13,10 @@ android {
     // com.vboard.app so the ported sources' `com.vboard.app.R` resolves here
     // rather than needing an edit in every file (see PLAN.md R6).
     namespace = "com.vboard.app"
-    compileSdk = 36
+    compileSdk = libs.versions.compileSdk.get().toInt()
 
     defaultConfig {
-        minSdk = 21
+        minSdk = libs.versions.minSdk.get().toInt()
     }
 
     compileOptions {
@@ -41,14 +41,14 @@ dependencies {
     implementation(project(":core"))
     implementation(project(":llm"))
 
-    implementation("androidx.core:core-ktx:1.17.0")
-    implementation("androidx.lifecycle:lifecycle-service:2.8.7")
-    implementation("androidx.datastore:datastore-preferences:1.1.1")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.10.2")
+    implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.lifecycle.service)
+    implementation(libs.androidx.datastore.preferences)
+    implementation(libs.coroutines.android)
     // Model downloads: WorkManager owns the retry/constraint/process-death story.
     api("androidx.work:work-runtime-ktx:2.10.0")
     // On-device speech recognition (streaming Zipformer + Parakeet TDT).
-    implementation("com.github.k2-fsa.sherpa-onnx:sherpa-onnx:v1.13.6")
+    implementation(libs.sherpa.onnx)
     // tar.bz2 extraction for downloaded ASR model archives.
-    implementation("org.apache.commons:commons-compress:1.27.1")
+    implementation(libs.commons.compress)
 }

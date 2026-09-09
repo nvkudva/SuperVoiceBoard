@@ -37,6 +37,12 @@ internal class KeyCodeDescriptionMapper private constructor() {
         put(KeyCode.ACTION_PREVIOUS, R.string.spoken_description_action_previous)
         put(KeyCode.EMOJI, R.string.spoken_description_emoji)
         put(KeyCode.EMOJI_SEARCH, R.string.spoken_description_search)
+        // SuperVoiceBoard: the fork's own keys, or TalkBack reads the raw
+        // keycode. These reuse the labels the keys already carry elsewhere.
+        put(KeyCode.AI_FIX, R.string.ai_fix)
+        put(KeyCode.AI_FIX_ATTRIBUTION, R.string.ai_fix_attribution_title)
+        put(KeyCode.TOGGLE_ASR_ENGINE, R.string.asr_engine)
+        put(KeyCode.TOGGLE_RESIZE_MODE, R.string.resize)
         // Because the upper-case and lower-case mappings of the following letters is depending on
         // the locale, the upper case descriptions should be defined here. The lower case
         // descriptions are handled in {@link #getSpokenLetterDescriptionId(Context,int)}.

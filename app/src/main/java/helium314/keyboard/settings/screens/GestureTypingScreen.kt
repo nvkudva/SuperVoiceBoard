@@ -105,12 +105,12 @@ fun createGestureTypingSettings(context: Context) = listOf(
         SwitchPreference(it, Defaults.PREF_GESTURE_PREVIEW_TRAIL)
     },
     Setting(context, Settings.PREF_GESTURE_FLOATING_PREVIEW_TEXT,
-        R.string.gesture_floating_preview_static, R.string.gesture_floating_preview_static_summary)
+        R.string.wk_floating_preview_static, R.string.gesture_floating_preview_static_summary)
     {
         SwitchPreference(it, Defaults.PREF_GESTURE_FLOATING_PREVIEW_TEXT)
     },
     Setting(context, Settings.PREF_GESTURE_FLOATING_PREVIEW_DYNAMIC,
-        R.string.gesture_floating_preview_text, R.string.gesture_floating_preview_dynamic_summary)
+        R.string.wk_floating_preview_dynamic, R.string.gesture_floating_preview_dynamic_summary)
     { def ->
         val ctx = LocalContext.current
         SwitchPreference(def, Defaults.PREF_GESTURE_FLOATING_PREVIEW_DYNAMIC) {
@@ -123,7 +123,7 @@ fun createGestureTypingSettings(context: Context) = listOf(
             KeyboardSwitcher.getInstance().setThemeNeedsReload()
         }
     },
-    Setting(context, Settings.PREF_GESTURE_SPACE_AWARE, R.string.gesture_space_aware, R.string.gesture_space_aware_summary) {
+    Setting(context, Settings.PREF_GESTURE_SPACE_AWARE, R.string.wk_space_aware, R.string.gesture_space_aware_summary) {
         SwitchPreference(it, Defaults.PREF_GESTURE_SPACE_AWARE)
     },
     Setting(context, Settings.PREF_GESTURE_FAST_TYPING_COOLDOWN, R.string.gesture_fast_typing_cooldown) { def ->

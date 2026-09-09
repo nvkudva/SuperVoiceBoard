@@ -122,7 +122,7 @@ fun createCorrectionSettings(context: Context) = listOf(
         SwitchPreference(it, Defaults.PREF_AUTO_CORRECTION)
     },
     Setting(context, Settings.PREF_MORE_AUTO_CORRECTION,
-        R.string.more_autocorrect, R.string.more_autocorrect_summary
+        R.string.wk_more_autocorrect, R.string.more_autocorrect_summary
     ) {
         SwitchPreference(it, Defaults.PREF_MORE_AUTO_CORRECTION)
     },
@@ -220,7 +220,7 @@ fun createCorrectionSettings(context: Context) = listOf(
 
     },
     Setting(context, Settings.PREF_BIGRAM_PREDICTIONS,
-        R.string.bigram_prediction, R.string.bigram_prediction_summary
+        R.string.wk_bigram_prediction, R.string.bigram_prediction_summary
     ) {
         SwitchPreference(it, Defaults.PREF_BIGRAM_PREDICTIONS) { KeyboardSwitcher.getInstance().setThemeNeedsReload() }
     },
@@ -234,7 +234,7 @@ fun createCorrectionSettings(context: Context) = listOf(
         TextInputPreference(setting, defaultSpecs ?: "")
     },
     Setting(context, Settings.PREF_CENTER_SUGGESTION_TEXT_TO_ENTER,
-        R.string.center_suggestion_text_to_enter, R.string.center_suggestion_text_to_enter_summary
+        R.string.wk_center_suggestion, R.string.center_suggestion_text_to_enter_summary
     ) {
         SwitchPreference(it, Defaults.PREF_CENTER_SUGGESTION_TEXT_TO_ENTER)
     },

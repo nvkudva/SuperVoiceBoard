@@ -21,7 +21,6 @@ data class SettingsSnapshot(
      * Dictate without leaving the keyboard: the mic key starts listening in
      * place, the keys stay live, and spoken words land at the cursor.
      */
-    val inlineDictation: Boolean = true,
     val removeFillers: Boolean = true,
     val aggressiveFillers: Boolean = false,
     val resolveSelfCorrections: Boolean = true,
@@ -78,7 +77,6 @@ class SettingsRepository(private val prefs: SharedPreferences) {
 
     object Keys {
         const val AUTO_CAP = "voice_auto_capitalize"
-        const val INLINE_DICTATION = "voice_inline_dictation"
         const val REMOVE_FILLERS = "voice_remove_fillers"
         const val AGGRESSIVE_FILLERS = "voice_aggressive_fillers"
         const val SELF_CORRECTIONS = "voice_self_corrections"
@@ -93,7 +91,6 @@ class SettingsRepository(private val prefs: SharedPreferences) {
 
     object Defaults {
         const val AUTO_CAP = true
-        const val INLINE_DICTATION = true
         const val REMOVE_FILLERS = true
         const val AGGRESSIVE_FILLERS = false
         const val SELF_CORRECTIONS = true
@@ -109,7 +106,6 @@ class SettingsRepository(private val prefs: SharedPreferences) {
     /** Read on the dictation path; cheap, and never blocks on IO after first load. */
     fun snapshot(): SettingsSnapshot = SettingsSnapshot(
         autoCapitalize = prefs.getBoolean(Keys.AUTO_CAP, Defaults.AUTO_CAP),
-        inlineDictation = prefs.getBoolean(Keys.INLINE_DICTATION, Defaults.INLINE_DICTATION),
         removeFillers = prefs.getBoolean(Keys.REMOVE_FILLERS, Defaults.REMOVE_FILLERS),
         aggressiveFillers = prefs.getBoolean(Keys.AGGRESSIVE_FILLERS, Defaults.AGGRESSIVE_FILLERS),
         resolveSelfCorrections = prefs.getBoolean(Keys.SELF_CORRECTIONS, Defaults.SELF_CORRECTIONS),

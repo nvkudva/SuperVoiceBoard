@@ -190,7 +190,7 @@ fun createAboutSettings(context: Context) = listOf(
             icon = R.drawable.ic_settings_about_github
         )
     },
-    Setting(context, SettingsWithoutKey.SAVE_LOG, R.string.save_log) { setting ->
+    Setting(context, SettingsWithoutKey.SAVE_LOG, R.string.wk_save_log) { setting ->
         val ctx = LocalContext.current
         val scope = rememberCoroutineScope()
         val launcher = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->

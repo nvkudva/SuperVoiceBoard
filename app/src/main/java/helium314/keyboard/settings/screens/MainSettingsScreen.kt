@@ -17,7 +17,14 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.pluralStringResource
+import com.vboard.app.voice.voiceRuntimeOrNull
 import helium314.keyboard.latin.R
+import helium314.keyboard.latin.settings.Defaults
+import helium314.keyboard.latin.settings.Settings
+import helium314.keyboard.latin.utils.getEnabledToolbarKeys
+import helium314.keyboard.latin.utils.getStringResourceOrName
+import helium314.keyboard.latin.utils.prefs
 import helium314.keyboard.latin.utils.JniUtils
 import helium314.keyboard.latin.utils.SubtypeLocaleUtils.displayName
 import helium314.keyboard.latin.utils.SubtypeSettings
@@ -57,6 +64,31 @@ fun MainSettingsScreen(
         settings = emptyList(),
     ) {
         val enabledSubtypes = SubtypeSettings.getEnabledSubtypes(true)
+        // WaveKey: every door says what it currently holds, so the right one can
+        // be picked without opening any of them.
+        val ctx = LocalContext.current
+        val prefs = ctx.prefs()
+        val runtime = voiceRuntimeOrNull(ctx)
+        val voiceSummary = when {
+            runtime == null -> stringResource(R.string.settings_door_voice_summary)
+            runtime.modelStore.dictationReady(runtime.packInstaller) ->
+                stringResource(R.string.settings_door_voice_ready)
+            else -> stringResource(R.string.settings_door_voice_no_models)
+        }
+        val isNight = helium314.keyboard.latin.utils.ResourceUtils.isNight(ctx.resources) &&
+                prefs.getBoolean(Settings.PREF_THEME_DAY_NIGHT, Defaults.PREF_THEME_DAY_NIGHT)
+        val colorsName = (if (isNight) prefs.getString(Settings.PREF_THEME_COLORS_NIGHT, Defaults.PREF_THEME_COLORS_NIGHT)
+            else prefs.getString(Settings.PREF_THEME_COLORS, Defaults.PREF_THEME_COLORS))!!
+        val styleName = prefs.getString(Settings.PREF_THEME_STYLE, Defaults.PREF_THEME_STYLE)!!
+        val heightPercent = (Settings.readHeightScale(prefs, false, false) * 100).toInt()
+        val lookSummary = listOf(
+            colorsName.getStringResourceOrName("theme_name_", ctx),
+            styleName.getStringResourceOrName("style_name_", ctx),
+            "$heightPercent%",
+        ).joinToString(" · ")
+        val toolbarSummary = pluralStringResource(
+            R.plurals.settings_door_toolbar_keys, getEnabledToolbarKeys(prefs).size, getEnabledToolbarKeys(prefs).size
+        )
         Scaffold(contentWindowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Bottom)) { innerPadding ->
             Column(
                 Modifier.verticalScroll(rememberScrollState())
@@ -79,19 +111,19 @@ fun MainSettingsScreen(
                     // The differentiator sits in the top group, not under Advanced.
                     Preference(
                         name = stringResource(R.string.settings_screen_voice),
-                        description = stringResource(R.string.settings_door_voice_summary),
+                        description = voiceSummary,
                         onClick = onClickVoice,
                         icon = R.drawable.ic_settings_voice
                     ) { NextScreenIcon() }
                     Preference(
                         name = stringResource(R.string.settings_door_look),
-                        description = stringResource(R.string.settings_door_look_summary),
+                        description = lookSummary,
                         onClick = onClickAppearance,
                         icon = R.drawable.ic_settings_appearance
                     ) { NextScreenIcon() }
                     Preference(
                         name = stringResource(R.string.settings_door_toolbar),
-                        description = stringResource(R.string.settings_door_toolbar_summary),
+                        description = toolbarSummary,
                         onClick = onClickToolbar,
                         icon = R.drawable.ic_settings_toolbar
                     ) { NextScreenIcon() }

@@ -228,7 +228,7 @@ fun createAppearanceSettings(context: Context) = listOf(
             )
         }
     },
-    Setting(context, Settings.PREF_SPLIT_SPACER_SCALE_PREFIX, R.string.split_spacer_scale) { setting ->
+    Setting(context, Settings.PREF_SPLIT_SPACER_SCALE_PREFIX, R.string.wk_split_spacer) { setting ->
         KeyboardScalePreference(
             name = setting.title,
             baseKey = setting.key,

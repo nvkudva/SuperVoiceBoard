@@ -178,19 +178,19 @@ fun createAdvancedSettings(context: Context) = listOf(
         SwitchPreference(it, Defaults.PREF_SHOW_SETUP_WIZARD_ICON) { SystemBroadcastReceiver.toggleAppIcon(ctx) }
     },
     Setting(context, Settings.PREF_ABC_AFTER_SYMBOL_SPACE,
-        R.string.switch_keyboard_after, R.string.after_symbol_and_space)
+        R.string.wk_after_symbols, R.string.after_symbol_and_space)
     {
         SwitchPreference(it, Defaults.PREF_ABC_AFTER_SYMBOL_SPACE)
     },
     Setting(context, Settings.PREF_ABC_AFTER_NUMPAD_SPACE,
-        R.string.switch_keyboard_after, R.string.after_numpad_and_space)
+        R.string.wk_after_numpad, R.string.after_numpad_and_space)
     {
         SwitchPreference(it, Defaults.PREF_ABC_AFTER_NUMPAD_SPACE)
     },
-    Setting(context, Settings.PREF_ABC_AFTER_EMOJI, R.string.switch_keyboard_after, R.string.after_emoji) {
+    Setting(context, Settings.PREF_ABC_AFTER_EMOJI, R.string.wk_after_emoji, R.string.after_emoji) {
         SwitchPreference(it, Defaults.PREF_ABC_AFTER_EMOJI)
     },
-    Setting(context, Settings.PREF_ABC_AFTER_CLIP, R.string.switch_keyboard_after, R.string.after_clip) {
+    Setting(context, Settings.PREF_ABC_AFTER_CLIP, R.string.wk_after_clip, R.string.after_clip) {
         SwitchPreference(it, Defaults.PREF_ABC_AFTER_EMOJI)
     },
     Setting(context, Settings.PREF_CUSTOM_CURRENCY_KEY, R.string.customize_currencies) { setting ->
@@ -236,7 +236,7 @@ fun createAdvancedSettings(context: Context) = listOf(
             onClick = { SettingsDestination.navigateTo(SettingsDestination.Debug) }
         ) { NextScreenIcon() }
     },
-    Setting(context, Settings.PREF_EMOJI_MAX_SDK, R.string.prefs_key_emoji_max_sdk) { setting ->
+    Setting(context, Settings.PREF_EMOJI_MAX_SDK, R.string.wk_emoji_version) { setting ->
         val ctx = LocalContext.current
         SliderPreference(
             name = setting.title,

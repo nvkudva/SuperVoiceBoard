@@ -70,8 +70,6 @@
     <string name="voice_models_import_io">Could not read that file</string>
     <!-- SuperVoiceBoard: voice settings (W2.5) -->
     <string name="settings_screen_voice">Voice typing</string>
-    <string name="voice_inline_dictation">Dictate in place</string>
-    <string name="voice_inline_dictation_summary">Keep the keys live while you speak, instead of taking over the screen</string>
     <string name="voice_silence_timeout">Stop after silence</string>
     <string name="voice_silence_timeout_summary">How long the mic stays open with nothing being said</string>
     <string name="voice_silence_timeout_off">Never</string>
@@ -80,7 +78,7 @@
     <string name="voice_raw_transcript_summary">Type exactly what was heard — no cleanup at all</string>
     <string name="voice_remove_fillers">Remove fillers</string>
     <string name="voice_remove_fillers_summary">Drop “um”, “uh” and the like</string>
-    <string name="voice_aggressive_fillers">Remove discourse fillers</string>
+    <string name="voice_aggressive_fillers">Remove “you know” and “I mean”</string>
     <string name="voice_aggressive_fillers_summary">Also drop “you know”, “I mean”, “sort of”</string>
     <string name="voice_self_corrections">Resolve self-corrections</string>
     <string name="voice_self_corrections_summary">“to John no wait to Mary” becomes “to Mary”</string>

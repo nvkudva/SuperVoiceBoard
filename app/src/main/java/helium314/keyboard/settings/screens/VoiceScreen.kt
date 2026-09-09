@@ -50,7 +50,6 @@ fun VoiceScreen(
         // every switch below is describing something that cannot run.
         SettingsWithoutKey.VOICE_MODELS,
         R.string.voice_category_dictation,
-        VoiceKeys.INLINE_DICTATION,
         VoiceKeys.SILENCE_TIMEOUT,
         VoiceKeys.PROVISIONAL_COMMIT,
         R.string.voice_category_transcript,
@@ -81,9 +80,6 @@ fun createVoiceSettings(context: Context) = listOf(
             onClick = { SettingsDestination.navigateTo(SettingsDestination.VoiceModels) },
             icon = R.drawable.ic_settings_voice,
         ) { NextScreenIcon() }
-    },
-    Setting(context, VoiceKeys.INLINE_DICTATION, R.string.voice_inline_dictation, R.string.voice_inline_dictation_summary) {
-        SwitchPreference(it, VoiceDefaults.INLINE_DICTATION)
     },
     Setting(context, VoiceKeys.SILENCE_TIMEOUT, R.string.voice_silence_timeout, R.string.voice_silence_timeout_summary) { setting ->
         val ctx = LocalContext.current

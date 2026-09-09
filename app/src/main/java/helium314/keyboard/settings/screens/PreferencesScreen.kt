@@ -97,14 +97,14 @@ fun createPreferencesSettings(context: Context) = listOf(
     Setting(context, Settings.PREF_SHOW_HINTS, R.string.show_hints, R.string.show_hints_summary) {
         SwitchPreference(it, Defaults.PREF_SHOW_HINTS) { KeyboardSwitcher.getInstance().reloadKeyboard() }
     },
-    Setting(context, Settings.PREF_POPUP_KEYS_HINT_ORDER, R.string.hint_source) {
+    Setting(context, Settings.PREF_POPUP_KEYS_HINT_ORDER, R.string.wk_hint_source) {
         ReorderSwitchPreference(it, Defaults.PREF_POPUP_KEYS_HINT_ORDER)
     },
     Setting(context, Settings.PREF_POPUP_KEYS_ORDER, R.string.popup_order) {
         ReorderSwitchPreference(it, Defaults.PREF_POPUP_KEYS_ORDER)
     },
     Setting(
-        context, Settings.PREF_SHOW_TLD_POPUP_KEYS, R.string.show_tld_popup_keys,
+        context, Settings.PREF_SHOW_TLD_POPUP_KEYS, R.string.wk_tld_popups,
         R.string.show_tld_popup_keys_summary
     ) {
         SwitchPreference(it, Defaults.PREF_SHOW_TLD_POPUP_KEYS) { KeyboardSwitcher.getInstance().setThemeNeedsReload() }

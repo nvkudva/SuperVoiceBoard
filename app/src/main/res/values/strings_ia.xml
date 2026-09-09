@@ -25,4 +25,29 @@
 
     <!-- Rows inside the Privacy &amp; advanced door -->
     <string name="settings_screen_advanced_summary">Swipes, timeouts, backup, debug</string>
+
+    <string name="settings_door_voice_ready">Ready · on-device models installed</string>
+    <string name="settings_door_voice_no_models">Models not downloaded yet</string>
+    <plurals name="settings_door_toolbar_keys">
+        <item quantity="one">%d key above the keyboard</item>
+        <item quantity="other">%d keys above the keyboard</item>
+    </plurals>
+
+    <!-- Renames (docs/settings-ia.md). Overridden at the use site so upstream's
+         strings.xml keeps its own wording and stays mergeable. -->
+    <string name="wk_after_symbols">Back to letters after symbols</string>
+    <string name="wk_after_numpad">Back to letters after the numpad</string>
+    <string name="wk_after_emoji">Back to letters after an emoji</string>
+    <string name="wk_after_clip">Back to letters after pasting</string>
+    <string name="wk_more_autocorrect">Correct more words</string>
+    <string name="wk_bigram_prediction">Suggest the next word</string>
+    <string name="wk_center_suggestion">Keep the best word in the middle</string>
+    <string name="wk_floating_preview_static">Show the word while you swipe</string>
+    <string name="wk_floating_preview_dynamic">Move it with your finger</string>
+    <string name="wk_space_aware">Swipe through the space bar for two words</string>
+    <string name="wk_split_spacer">Gap between the halves</string>
+    <string name="wk_tld_popups">Show .com on the period key</string>
+    <string name="wk_hint_source">Which popup letter to show</string>
+    <string name="wk_save_log">Save a diagnostic log</string>
+    <string name="wk_emoji_version">Emoji set version</string>
 </resources>

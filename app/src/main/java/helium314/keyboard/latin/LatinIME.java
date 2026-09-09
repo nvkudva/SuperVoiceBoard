@@ -148,6 +148,7 @@ public class LatinIME extends InputMethodService implements
     // SuperVoiceBoard: the correction ghost. Null until the strip is inflated,
     // and null again on every input-view teardown; nothing else depends on it.
     private helium314.keyboard.correct.GhostSwapView mCorrectionGhost;
+    private helium314.keyboard.correct.RescoreController mRescoreController;
     // SuperVoiceBoard: the AI fix toolbar key (W5.1) and its attribution (W5.2).
     private helium314.keyboard.voice.AiFixKey mAiFixKey;
     // SuperVoiceBoard (W7.3): so the settings screen can read the running
@@ -855,6 +856,26 @@ public class LatinIME extends InputMethodService implements
      * nothing breaks if it does nothing, so dropping the feature is deleting
      * those three things.
      */
+    /**
+     * SuperVoiceBoard: a sentence just finished being typed. Hands it to the
+     * rescoring pass, which may swap a word the decoder ranked second.
+     *
+     * Off unless the user turned it on: it spends a model call per sentence.
+     */
+    public void onSentenceComplete(final java.util.List<com.vboard.core.correct.WordSlot> sentence) {
+        if (!helium314.keyboard.latin.utils.DeviceProtectedUtils.getSharedPreferences(this)
+                .getBoolean(helium314.keyboard.correct.RescoreController.PREF_RESCORE_SENTENCES, false)) {
+            return;
+        }
+        if (mRescoreController == null) {
+            final com.vboard.app.voice.VoiceRuntime runtime =
+                    ((com.vboard.app.voice.VoiceRuntimeHost) getApplicationContext()).getVoiceRuntime();
+            mRescoreController = new helium314.keyboard.correct.RescoreController(
+                    this, runtime, runtime.getAppScope());
+        }
+        mRescoreController.onSentenceComplete(sentence);
+    }
+
     public void showCorrectionGhost(final String from, final String to) {
         if (mCorrectionGhost != null) mCorrectionGhost.show(from, to);
     }

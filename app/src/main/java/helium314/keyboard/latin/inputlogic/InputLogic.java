@@ -2472,9 +2472,12 @@ public final class InputLogic {
         final java.util.List<com.vboard.core.correct.WordSlot> sentence =
                 mSentenceCandidates.record(chosenWord, alternatives,
                         separatorString == null ? "" : separatorString);
-        if (sentence != null && DebugFlags.DEBUG_ENABLED) {
-            // Counts only: never the words themselves (PLAN.md §3.4).
-            Log.d(TAG, "sentence ready to rescore: " + sentence.size() + " words");
+        if (sentence != null) {
+            if (DebugFlags.DEBUG_ENABLED) {
+                // Counts only: never the words themselves (PLAN.md §3.4).
+                Log.d(TAG, "sentence ready to rescore: " + sentence.size() + " words");
+            }
+            mLatinIME.onSentenceComplete(sentence);
         }
     }
 

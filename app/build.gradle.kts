@@ -190,7 +190,14 @@ android {
         // nothing about the other sixty-odd errors and the report is only reachable
         // as a CI artifact.
         textReport = true
-        textOutput = file("stdout")
+        // Not file("stdout"): AGP 8 takes that literally and writes a file called
+        // "stdout" in the module root. The CI step prints this path on failure.
+        textOutput = file("build/reports/lint-results-debug.txt")
+        // The fork inherited ~100 locale files from HeliBoard and adds its own
+        // strings untranslated, so every new string is an error in every locale.
+        // That is a known state of the fork, not a defect that should stop a
+        // build; it stays a warning so it is still visible in the report.
+        warning += "MissingTranslation"
     }
 }
 

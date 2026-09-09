@@ -2,6 +2,7 @@
 package helium314.keyboard.settings.preferences
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -16,6 +17,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -34,9 +36,13 @@ private val PREVIEW_ICONS = listOf(
     "settings",
 )
 
-/** Holo keys are square; the other two round their corners. */
-private fun keyShape(style: String): Shape =
-    if (style == KeyboardTheme.STYLE_HOLO) RectangleShape else RoundedCornerShape(8.dp)
+/** Holo keys are square; the rest round their corners, Edge-lit most of all. */
+private fun keyShape(style: String): Shape = when (style) {
+    KeyboardTheme.STYLE_HOLO -> RectangleShape
+    KeyboardTheme.STYLE_EDGE_LIT -> RoundedCornerShape(11.dp)
+    KeyboardTheme.STYLE_OUTLINED -> RoundedCornerShape(7.dp)
+    else -> RoundedCornerShape(8.dp)
+}
 
 /**
  * A strip of that style's own key icons, so the three options can be told apart in the
@@ -52,13 +58,31 @@ fun StylePreview(style: String, modifier: Modifier = Modifier) {
     ) {
         PREVIEW_ICONS.forEach { name ->
             val id = ids[name] ?: return@forEach
-            Box(
-                Modifier
+            val shape = keyShape(style)
+            // Outlined has no fill and Edge-lit is a gradient, so the preview has
+            // to carry the key's treatment as well as its icons — otherwise the
+            // picker shows three identical rows for five different styles.
+            val keyModifier = when (style) {
+                KeyboardTheme.STYLE_OUTLINED -> Modifier
                     .size(30.dp)
-                    .clip(keyShape(style))
-                    .background(MaterialTheme.colorScheme.surfaceContainerHighest),
-                contentAlignment = Alignment.Center
-            ) {
+                    .border(1.dp, MaterialTheme.colorScheme.onSurfaceVariant, shape)
+                KeyboardTheme.STYLE_EDGE_LIT -> Modifier
+                    .size(30.dp)
+                    .clip(shape)
+                    .background(
+                        Brush.verticalGradient(
+                            listOf(
+                                MaterialTheme.colorScheme.surfaceBright,
+                                MaterialTheme.colorScheme.surfaceContainerHighest,
+                            )
+                        )
+                    )
+                else -> Modifier
+                    .size(30.dp)
+                    .clip(shape)
+                    .background(MaterialTheme.colorScheme.surfaceContainerHighest)
+            }
+            Box(keyModifier, contentAlignment = Alignment.Center) {
                 Icon(
                     painterResourceCompat(id, 30),
                     null,

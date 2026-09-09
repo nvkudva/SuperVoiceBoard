@@ -48,6 +48,11 @@ private constructor(val themeId: Int, @JvmField val mStyleId: Int) {
         const val STYLE_HOLO = "Holo"
         const val STYLE_ROUNDED = "Rounded"
 
+        // SuperVoiceBoard: two key treatments of our own. Both draw their own key
+        // shape, so neither offers the borderless variant the older styles have.
+        const val STYLE_OUTLINED = "Outlined"
+        const val STYLE_EDGE_LIT = "Edgelit"
+
         // new themes that are just colors
         const val THEME_LIGHT = "light"
         const val THEME_HOLO_WHITE = "holo_white"
@@ -82,7 +87,14 @@ private constructor(val themeId: Int, @JvmField val mStyleId: Int) {
             if (!isNight) THEME_SAND else null,
             THEME_VIOLETTE
         )
-        val STYLES = arrayOf(STYLE_MATERIAL, STYLE_HOLO, STYLE_ROUNDED)
+        val STYLES = arrayOf(STYLE_MATERIAL, STYLE_HOLO, STYLE_ROUNDED, STYLE_OUTLINED, STYLE_EDGE_LIT)
+
+        /**
+         * Styles that carry an icon set. The two SuperVoiceBoard styles change key
+         * shape, not iconography — they borrow Material's icons — so offering them
+         * in the icon picker would list two entries that render identically.
+         */
+        val ICON_STYLES = arrayOf(STYLE_MATERIAL, STYLE_HOLO, STYLE_ROUNDED)
 
         // These should be aligned with Keyboard.themeId and Keyboard.Case.keyboardTheme
         // attributes' values in attrs.xml.
@@ -91,6 +103,8 @@ private constructor(val themeId: Int, @JvmField val mStyleId: Int) {
         private const val THEME_ID_LXX_BASE_BORDER = 2
         private const val THEME_ID_ROUNDED_BASE = 3
         private const val THEME_ID_ROUNDED_BASE_BORDER = 4
+        private const val THEME_ID_OUTLINED_BASE = 5
+        private const val THEME_ID_EDGE_LIT_BASE = 6
         private const val DEFAULT_THEME_ID = THEME_ID_LXX_BASE
 
         private val KEYBOARD_THEMES = arrayOf(
@@ -98,7 +112,9 @@ private constructor(val themeId: Int, @JvmField val mStyleId: Int) {
             KeyboardTheme(THEME_ID_LXX_BASE, R.style.KeyboardTheme_LXX_Base),
             KeyboardTheme(THEME_ID_LXX_BASE_BORDER, R.style.KeyboardTheme_LXX_Base_Border),
             KeyboardTheme(THEME_ID_ROUNDED_BASE, R.style.KeyboardTheme_Rounded_Base),
-            KeyboardTheme(THEME_ID_ROUNDED_BASE_BORDER, R.style.KeyboardTheme_Rounded_Base_Border)
+            KeyboardTheme(THEME_ID_ROUNDED_BASE_BORDER, R.style.KeyboardTheme_Rounded_Base_Border),
+            KeyboardTheme(THEME_ID_OUTLINED_BASE, R.style.KeyboardTheme_Outlined_Base),
+            KeyboardTheme(THEME_ID_EDGE_LIT_BASE, R.style.KeyboardTheme_EdgeLit_Base)
         )
 
         // named colors, with names from old settings
@@ -121,6 +137,8 @@ private constructor(val themeId: Int, @JvmField val mStyleId: Int) {
             val matchingId = when (style) {
                 STYLE_HOLO -> THEME_ID_HOLO_BASE
                 STYLE_ROUNDED -> if (borders) THEME_ID_ROUNDED_BASE_BORDER else THEME_ID_ROUNDED_BASE
+                STYLE_OUTLINED -> THEME_ID_OUTLINED_BASE
+                STYLE_EDGE_LIT -> THEME_ID_EDGE_LIT_BASE
                 else -> if (borders) THEME_ID_LXX_BASE_BORDER else THEME_ID_LXX_BASE
             }
             return KEYBOARD_THEMES.firstOrNull { it.themeId == matchingId } ?: KEYBOARD_THEMES[DEFAULT_THEME_ID]
@@ -145,7 +163,12 @@ private constructor(val themeId: Int, @JvmField val mStyleId: Int) {
         }
 
         private fun getThemeColors(themeName: String, themeStyle: String, context: Context, prefs: SharedPreferences, isNight: Boolean): Colors {
-            val hasBorders = prefs.getBoolean(Settings.PREF_THEME_KEY_BORDERS, Defaults.PREF_THEME_KEY_BORDERS)
+            // Outlined and Edge-lit draw a key shape of their own, and the
+            // borderless colour path tints the resting key transparent — which
+            // would erase the very thing those styles are. They are always
+            // "bordered", whatever the switch says.
+            val hasBorders = themeStyle == STYLE_OUTLINED || themeStyle == STYLE_EDGE_LIT ||
+                prefs.getBoolean(Settings.PREF_THEME_KEY_BORDERS, Defaults.PREF_THEME_KEY_BORDERS)
             val backgroundImage = Settings.readUserBackgroundImage(context, isNight)
             return when (themeName) {
                 THEME_DYNAMIC -> {

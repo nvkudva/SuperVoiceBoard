@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    SuperVoiceBoard: the Edge-lit style's resting key. A shadow plate underneath,
+    then the key itself carrying a top-to-bottom gradient — lighter at the top
+    edge, so it reads as a physical key catching light.
+
+    Greyscale on purpose: Colors tints with PorterDuff.MULTIPLY, so the gradient
+    becomes a gradient of whatever key colour the theme picked.
+    SPDX-License-Identifier: GPL-3.0-only
+-->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="#66000000" />
+            <corners android:radius="9dp" />
+        </shape>
+    </item>
+    <item android:bottom="1.5dp">
+        <shape android:shape="rectangle">
+            <gradient
+                android:angle="270"
+                android:startColor="#FFFFFFFF"
+                android:endColor="#FFD4D4D4" />
+            <corners android:radius="9dp" />
+        </shape>
+    </item>
+</layer-list>

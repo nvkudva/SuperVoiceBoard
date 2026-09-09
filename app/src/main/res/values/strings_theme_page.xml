@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
     <!-- Title of the theme picker page -->
     <string name="theme_page_title">Theme</string>
     <!-- Title of the theme picker page for the night/dark mode theme -->
@@ -15,4 +15,7 @@
     <!-- Accessibility description of the check mark on the currently applied theme -->
     <string name="theme_page_selected">Selected</string>
     <!-- Label of the text field asking for the name of a new theme -->
+    <!-- SuperVoiceBoard: names for the fork's two key styles -->
+    <string name="style_name_Outlined" tools:keep="@string/style_name_Outlined">Outlined</string>
+    <string name="style_name_Edgelit" tools:keep="@string/style_name_Edgelit">Edge-lit</string>
 </resources>

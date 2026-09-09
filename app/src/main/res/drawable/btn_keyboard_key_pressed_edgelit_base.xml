@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    SuperVoiceBoard: the Edge-lit style's pressed key. The shadow plate goes and
+    the gradient flattens, so the key reads as pushed level with the board.
+    SPDX-License-Identifier: GPL-3.0-only
+-->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+    <solid android:color="@android:color/white" />
+    <corners android:radius="9dp" />
+</shape>

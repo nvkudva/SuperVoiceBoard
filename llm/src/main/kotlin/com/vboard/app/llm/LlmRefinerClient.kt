@@ -43,6 +43,15 @@ class LlmRefinerClient(context: Context) : RemoteRefiner {
     @Volatile
     private var binder: ILlmRefiner? = null
 
+    /**
+     * Whether [connection] is still registered. Separate from [binder] because
+     * the two come apart: after `onServiceDisconnected` the binder is gone while
+     * the connection is not, and a `disconnect()` that keyed off the binder left
+     * it registered — so the framework kept restarting the model process.
+     */
+    @Volatile
+    private var bound = false
+
     private var pending: CompletableDeferred<ILlmRefiner?>? = null
 
     private val connection = object : ServiceConnection {
@@ -84,7 +93,8 @@ class LlmRefinerClient(context: Context) : RemoteRefiner {
      * in it. Called from the same idle path that releases the recognizers.
      */
     fun disconnect() {
-        if (binder == null) return
+        if (!bound) return
+        bound = false
         binder = null
         runCatching { appContext.unbindService(connection) }
     }
@@ -111,15 +121,16 @@ class LlmRefinerClient(context: Context) : RemoteRefiner {
             val deferred = CompletableDeferred<ILlmRefiner?>()
             pending = deferred
             val intent = Intent(appContext, LlmRefinerService::class.java)
-            val bound = runCatching {
+            val didBind = runCatching {
                 appContext.bindService(intent, connection, Context.BIND_AUTO_CREATE)
             }.getOrDefault(false)
-            if (!bound) {
+            if (!didBind) {
                 Log.w(TAG, "could not bind the refiner process")
                 pending = null
                 runCatching { appContext.unbindService(connection) }
                 return@withLock null
             }
+            bound = true
             val result = withTimeoutOrNull(BIND_TIMEOUT_MS) { deferred.await() }
             pending = null
             if (result == null) Log.w(TAG, "refiner process did not start in time")

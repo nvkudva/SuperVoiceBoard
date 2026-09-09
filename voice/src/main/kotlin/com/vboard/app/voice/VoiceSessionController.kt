@@ -110,6 +110,13 @@ class VoiceSessionController(
     private var monitorJob: Job? = null
     private var prepareJob: Job? = null
     private var finalizeJob: Job? = null
+
+    /**
+     * Refinement outlives the utterance that started it, so it needs cancelling
+     * on every teardown path: untracked, it kept an engine claim open and could
+     * rewrite text in an editor the session had already left.
+     */
+    private var refineJob: Job? = null
     private var audioTeardownJob: Job? = null
 
     /**
@@ -172,6 +179,8 @@ class VoiceSessionController(
         prepareJob = null
         finalizeJob?.cancel()
         finalizeJob = null
+        refineJob?.cancel()
+        refineJob = null
         stopAudio()
 
         VoiceEngines.cancelIdleRelease()
@@ -202,6 +211,8 @@ class VoiceSessionController(
     }
 
     fun cancelSession() {
+        refineJob?.cancel()
+        refineJob = null
         stopAudio()
         dispatch(Event.StopRequested)
     }
@@ -226,6 +237,8 @@ class VoiceSessionController(
         prepareJob = null
         finalizeJob?.cancel()
         finalizeJob = null
+        refineJob?.cancel()
+        refineJob = null
         stopAudio()
         machine.reset()
         VoiceEngines.scheduleIdleRelease()
@@ -234,8 +247,17 @@ class VoiceSessionController(
     fun destroy() {
         prepareJob?.cancel()
         finalizeJob?.cancel()
+        refineJob?.cancel()
         stopAudio()
         scope.cancel()
+        // stopAudio() just queued the last microphone release on teardownScope;
+        // let that finish before the scope goes, or the release is the thing we
+        // cancel and the native handle leaks instead.
+        val release = audioTeardownJob
+        teardownScope.launch {
+            release?.join()
+            teardownScope.cancel()
+        }
         VoiceEngines.scheduleIdleRelease()
     }
 
@@ -660,7 +682,8 @@ class VoiceSessionController(
     // ------------------------------------------------------------ refinement
 
     private fun refineAsync(text: String, utteranceIndex: Int) {
-        scope.launch {
+        refineJob?.cancel()
+        refineJob = scope.launch {
             val refiner = withContext(Dispatchers.IO) {
                 runCatching { VoiceEngines.loadRefiner(service, app) }
                     .onFailure { Log.w(TAG, "refiner unavailable", it) }

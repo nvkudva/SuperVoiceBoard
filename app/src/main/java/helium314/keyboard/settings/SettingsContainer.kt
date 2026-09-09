@@ -54,8 +54,14 @@ class Setting(
     @StringRes descriptionId: Int? = null,
     private val content: @Composable (Setting) -> Unit
 ) {
-    val title = context.getString(titleId)
-    val description = descriptionId?.let { context.getString(it) }
+    private val appContext = context.applicationContext
+
+    // Resolved on demand. Building the container eagerly resolved a title and a
+    // description for every setting on every screen before the first frame, and
+    // most of them are never shown; the search path touches them all, but it
+    // runs when the user types, not during onCreate().
+    val title: String by lazy { appContext.getString(titleId) }
+    val description: String? by lazy { descriptionId?.let { appContext.getString(it) } }
 
     @Composable
     fun Preference() {

@@ -34,15 +34,14 @@ class ByteSizeTest {
     // -------------------------------------------------- catalog-derived copy
 
     @Test
-    fun `shipped catalog splits into the two speech packs and an optional refiner`() {
+    fun `shipped catalog splits into one speech pack and an optional refiner`() {
         val sizes = DownloadSizes.of()
-        // Both speech models are required: streaming alone is not the typing experience.
-        assertEquals(127_887_156L + 482_468_385L, sizes.requiredBytes)
+        assertEquals(482_468_385L, sizes.requiredBytes)
         assertEquals(547_000_000L, sizes.optionalBytes)
-        assertEquals(1_157_355_541L, sizes.totalBytes)
+        assertEquals(1_029_468_385L, sizes.totalBytes)
 
-        assertEquals("610 MB", sizes.requiredText)
-        assertEquals("1.2 GB", sizes.totalText)
+        assertEquals("482 MB", sizes.requiredText)
+        assertEquals("1.0 GB", sizes.totalText)
     }
 
     @Test
@@ -56,24 +55,18 @@ class ByteSizeTest {
         }
         val sizes = DownloadSizes.of(packs)
 
-        // Two required packs, each rewritten to 2 GB.
-        assertEquals(4_000_000_000L, sizes.requiredBytes)
-        assertEquals("4.0 GB", sizes.requiredText)
+        // One required pack, rewritten to 2 GB.
+        assertEquals(2_000_000_000L, sizes.requiredBytes)
+        assertEquals("2.0 GB", sizes.requiredText)
         // and the total moves with it rather than staying on a hardcoded number
-        assertEquals("4.5 GB", sizes.totalText)
+        assertEquals("2.5 GB", sizes.totalText)
     }
 
     @Test
     fun `flipping a pack between required and optional moves its bytes across the split`() {
         val allRequired = ModelCatalog.packs.map { it.copy(required = true) }
         val sizes = DownloadSizes.of(allRequired)
-        assertEquals(1_157_355_541L, sizes.requiredBytes)
+        assertEquals(1_029_468_385L, sizes.requiredBytes)
         assertEquals(0L, sizes.optionalBytes)
-        // This is the figure setup used to demand before the accuracy pack became optional:
-        // the two speech packs together.
-        assertEquals(
-            "610 MB",
-            ByteSize.format(127_887_156L + 482_468_385L),
-        )
     }
 }

@@ -8,6 +8,9 @@ package helium314.keyboard.voice
 import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Paint
+import helium314.keyboard.latin.suggestions.SuggestionStripView
+import android.graphics.Shader
+import android.graphics.LinearGradient
 import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.view.View
@@ -56,6 +59,7 @@ class VoiceStripView(context: Context, attrs: AttributeSet?) : LinearLayout(cont
     /** Smoothed 0..1 input level, drawn as a bar behind the status text. */
     private var level = 0f
     private val levelPaint = Paint(Paint.ANTI_ALIAS_FLAG)
+    private var shaderWidth = 0
 
     private var errorAction: VoiceErrorAction? = null
 
@@ -69,12 +73,18 @@ class VoiceStripView(context: Context, attrs: AttributeSet?) : LinearLayout(cont
 
         val colors: Colors = Settings.getValues().mColors
         colors.setBackground(this, ColorType.STRIP_BACKGROUND)
-        for (key in listOf(backKey, minimizeKey, doneKey)) {
+        for (key in listOf(backKey, minimizeKey)) {
             colors.setColor(key, ColorType.TOOL_BAR_KEY)
             colors.setBackground(key, ColorType.STRIP_BACKGROUND)
         }
+        // The stop control sits where the mic was and wears the same spectrum
+        // pill: one target starts dictation and ends it, and it never moves
+        // under the finger that just pressed it.
+        doneKey.setBackgroundResource(R.drawable.spectrum_pill)
+        doneKey.setImageResource(R.drawable.ic_close_rounded)
+        doneKey.setColorFilter(SuggestionStripView.SPECTRUM_GLYPH)
+        doneKey.contentDescription = context.getString(R.string.voice_done)
         statusText.setTextColor(colors.get(ColorType.KEY_TEXT))
-        levelPaint.color = colors.get(ColorType.TOOL_BAR_KEY)
 
         backKey.setOnClickListener {
             // An error with an offered action turns back into "do the thing"
@@ -148,19 +158,24 @@ class VoiceStripView(context: Context, attrs: AttributeSet?) : LinearLayout(cont
 
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
-        if (level <= 0.01f) return
-        // A centred bar under the text: wide enough to read as a level, short
-        // enough not to compete with the words it sits behind.
-        val full = (statusText.right - statusText.left).toFloat()
-        val width = full * level
-        val cx = (statusText.left + statusText.right) / 2f
-        val y = height - BAR_INSET_PX * resources.displayMetrics.density
-        levelPaint.alpha = (60 + 120 * level).toInt().coerceAtMost(255)
-        canvas.drawRoundRect(
-            cx - width / 2f, y - 2f * resources.displayMetrics.density,
-            cx + width / 2f, y,
-            4f, 4f, levelPaint,
-        )
+        if (width == 0) return
+        // The same 2dp spectrum hairline the suggestion strip carries, and the
+        // same place on screen — only its width moves with the voice. A meter
+        // that also changed height would read as a progress bar.
+        if (shaderWidth != width) {
+            levelPaint.shader = LinearGradient(
+                0f, 0f, width.toFloat(), 0f,
+                SuggestionStripView.SPECTRUM, null, Shader.TileMode.CLAMP,
+            )
+            shaderWidth = width
+        }
+        val h = SuggestionStripView.RAIL_DP * resources.displayMetrics.density
+        val half = width / 2f
+        // Never fully collapsed: silence should read as a quiet line, not as a
+        // keyboard that stopped listening.
+        val span = half * (0.34f + 0.66f * level)
+        levelPaint.alpha = 255
+        canvas.drawRect(half - span, height - h, half + span, height.toFloat(), levelPaint)
     }
 
     companion object {

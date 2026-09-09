@@ -10,6 +10,10 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener
 import android.graphics.Color
+import android.graphics.Canvas
+import android.graphics.LinearGradient
+import android.graphics.Paint
+import android.graphics.Shader
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.GradientDrawable
 import android.text.TextUtils
@@ -173,8 +177,12 @@ class SuggestionStripView(context: Context, attrs: AttributeSet?, defStyle: Int)
         // SuperVoiceBoard: mic key styling, matching the toolbar keys around it
         micKey.scaleType = android.widget.ImageView.ScaleType.CENTER
         micKey.setImageDrawable(KeyboardIconsSet.instance.getNewDrawable(ToolbarKey.VOICE.name, context))
-        colors.setColor(micKey, ColorType.TOOL_BAR_KEY)
-        colors.setBackground(micKey, ColorType.STRIP_BACKGROUND)
+        // SuperVoiceBoard: the mic is the one saturated thing on the strip — a
+        // spectrum pill with a dark glyph, so the way in to dictation is legible
+        // at a glance and in the corner of the eye. It keeps the strip's own
+        // colours out of it deliberately: this is the brand mark, not a key.
+        micKey.setBackgroundResource(R.drawable.spectrum_pill)
+        micKey.setColorFilter(SPECTRUM_GLYPH)
         micKey.setOnClickListener { onMicClick?.invoke() }
         setUpMicHold()
 
@@ -285,6 +293,12 @@ class SuggestionStripView(context: Context, attrs: AttributeSet?, defStyle: Int)
         )
         isExternalSuggestionVisible = false
         updateKeys()
+        // SuperVoiceBoard: typing collapses an open toolbar, so the words the
+        // user is about to want are not hidden behind the tools. Only when there
+        // is something to show — an empty strip would close the toolbar the user
+        // just opened, before they had touched a key.
+        if (Settings.getValues().mAutoHideToolbar && suggestions.size() > 0 && toolbarContainer.isVisible)
+            setToolbarVisibility(false)
     }
 
     fun setExternalSuggestionView(view: View?, addCloseButton: Boolean) {
@@ -580,6 +594,28 @@ class SuggestionStripView(context: Context, attrs: AttributeSet?, defStyle: Int)
         }
     }
 
+    /**
+     * SuperVoiceBoard: a spectrum hairline along the bottom of the strip, dim
+     * while idle. It is the same object the dictation meter moves, so the strip
+     * gains a live state without gaining a widget.
+     */
+    private val railPaint = Paint(Paint.ANTI_ALIAS_FLAG)
+    private var railShaderWidth = 0
+
+    override fun dispatchDraw(canvas: Canvas) {
+        super.dispatchDraw(canvas)
+        if (width == 0) return
+        if (railShaderWidth != width) {
+            railPaint.shader = LinearGradient(
+                0f, 0f, width.toFloat(), 0f, SPECTRUM, null, Shader.TileMode.CLAMP
+            )
+            railShaderWidth = width
+        }
+        railPaint.alpha = 87 // idle: present, not shouting
+        val h = RAIL_DP * resources.displayMetrics.density
+        canvas.drawRect(0f, height - h, width.toFloat(), height.toFloat(), railPaint)
+    }
+
     fun updateVoiceKey() {
         // SuperVoiceBoard: the strip's own mic is the only mic — VOICE is not a
         // toolbar key here — and it follows the voice-input-key setting (W3.2).
@@ -638,6 +674,15 @@ class SuggestionStripView(context: Context, attrs: AttributeSet?, defStyle: Int)
         // long-press timeout, which fires while a user is still deciding.
         private const val MIC_HOLD_MS = 350L
         private const val MIC_RAW_HOLD_MS = 1_200L
+
+        /** Dark enough to read on any point of the spectrum behind it. */
+        const val SPECTRUM_GLYPH = 0xFF0A0D22.toInt()
+
+        /** The spectrum, left to right, shared by the mic pill and the rail. */
+        val SPECTRUM = intArrayOf(0xFFFB7185.toInt(), 0xFFA855F7.toInt(), 0xFF22D3EE.toInt())
+
+        /** Rail height. The listening meter is the same 2dp; only its width moves. */
+        const val RAIL_DP = 2f
         private val TAG = SuggestionStripView::class.java.simpleName
     }
 }

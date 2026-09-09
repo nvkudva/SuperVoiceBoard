@@ -47,7 +47,7 @@ jobs:
       # "supervoiceboard" when the env vars are unset. With a real key in place
       # that is a known-public password, so refuse to reach gradle at all.
       - name: Check signing secrets
-        if: ${{ secrets.SVB_KEYSTORE_B64 != '' }}
+        if: env.SIGNED == 'true'
         env:
           STORE_PASSWORD: ${{ secrets.SVB_STORE_PASSWORD }}
           KEY_PASSWORD: ${{ secrets.SVB_KEY_PASSWORD }}
@@ -66,7 +66,7 @@ jobs:
           exit $bad
 
       - name: Decode keystore
-        if: ${{ secrets.SVB_KEYSTORE_B64 != '' }}
+        if: env.SIGNED == 'true'
         env:
           KEYSTORE_B64: ${{ secrets.SVB_KEYSTORE_B64 }}
         run: |
@@ -76,14 +76,14 @@ jobs:
           test -s "$HOME/.supervoiceboard/release.jks"
 
       - name: Assemble release
-        if: ${{ secrets.SVB_KEYSTORE_B64 != '' }}
+        if: env.SIGNED == 'true'
         env:
           SVB_STORE_PASSWORD: ${{ secrets.SVB_STORE_PASSWORD }}
           SVB_KEY_PASSWORD: ${{ secrets.SVB_KEY_PASSWORD }}
         run: ./gradlew :app:assembleRelease -Pabi=arm64-v8a --no-daemon
 
       - name: Assemble debug
-        if: ${{ secrets.SVB_KEYSTORE_B64 == '' }}
+        if: env.SIGNED != 'true'
         run: ./gradlew :app:assembleDebug -Pabi=arm64-v8a --no-daemon
 
       # Gradle bakes versionName into the filename (app/build.gradle.kts:121), so
@@ -163,7 +163,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           # Written this way round because '' is falsy in a GitHub expression,
           # so the truthy branch has to be the non-empty one.
-          TITLE_SUFFIX: ${{ secrets.SVB_KEYSTORE_B64 == '' && ' (test build)' || '' }}
+          TITLE_SUFFIX: ${{ env.SIGNED == 'true' && '' || ' (test build)' }}
         run: |
           gh release create "$GITHUB_REF_NAME" "${{ steps.asset.outputs.path }}" \
             --repo "$GITHUB_REPOSITORY" \

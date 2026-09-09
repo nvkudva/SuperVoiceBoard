@@ -1,11 +1,11 @@
-package com.vboard.app.correct
+package helium314.keyboard.correct
 
 import android.content.Context
 import android.os.SystemClock
 import android.util.Log
 import android.view.inputmethod.ExtractedTextRequest
 import android.view.inputmethod.InputConnection
-import com.vboard.app.R
+import helium314.keyboard.latin.R
 import com.vboard.app.voice.VoiceRuntime
 import com.vboard.app.voice.VoiceEngines
 import com.vboard.core.correct.EditKind

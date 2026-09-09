@@ -1,14 +1,14 @@
 // SPDX-License-Identifier: GPL-3.0-only
 //
-// SuperVoiceBoard. New file: mounts :voice's AiFixController on HeliBoard's
+// SuperVoiceBoard. New file: mounts the AI fix controller on HeliBoard's
 // toolbar-key mechanism (W5.1) and shows what the model changed (W5.2).
 package helium314.keyboard.voice
 
 import android.view.View
 import android.view.inputmethod.InputConnection
 import android.widget.ImageButton
-import com.vboard.app.correct.AiFixController
-import com.vboard.app.correct.FixSurface
+import helium314.keyboard.correct.AiFixController
+import helium314.keyboard.correct.FixSurface
 import com.vboard.app.voice.VoiceRuntime
 import com.vboard.core.correct.FixButtonState
 import com.vboard.core.correct.FixEdit

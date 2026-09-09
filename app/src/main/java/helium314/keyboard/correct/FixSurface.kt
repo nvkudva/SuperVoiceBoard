@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-only
-package com.vboard.app.correct
+package helium314.keyboard.correct
 
 import com.vboard.core.correct.FixButtonState
 

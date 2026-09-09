@@ -1572,6 +1572,9 @@ public class LatinIME extends InputMethodService implements
             aiFixKey().onFixKeyPressed();
         } else if (KeyCode.AI_FIX_ATTRIBUTION == event.getKeyCode()) {
             showFixAttribution();
+        } else if (KeyCode.TOGGLE_ASR_ENGINE == event.getKeyCode()) {
+            // SuperVoiceBoard: swap the dictation engine for the next session.
+            voiceController().toggleAsrEngine();
         }
         if (KeyCode.VOICE_INPUT == event.getKeyCode()) {
             // SuperVoiceBoard (W3.6): upstream hands off to the system voice IME

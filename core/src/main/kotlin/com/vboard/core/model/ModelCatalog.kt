@@ -84,23 +84,6 @@ object ModelCatalog {
 
     val packs: List<ModelPack> = listOf(
         ModelPack(
-            id = "zipformer-en-streaming",
-            displayName = "Live transcription (English)",
-            kind = ModelKind.STREAMING_ASR,
-            version = 1,
-            files = listOf(
-                ModelFileSpec(
-                    relativePath = "sherpa-onnx-streaming-zipformer-en-20M-2023-02-17.tar.bz2",
-                    url = "$SHERPA_RELEASE_BASE/sherpa-onnx-streaming-zipformer-en-20M-2023-02-17.tar.bz2",
-                    sha256 = "9c559283e8498d3fe95913c79ca1cb454bb26281ac2b102b41306c7d752765d9",
-                    sizeBytes = 127_887_156L, // measured from the release asset
-                    archive = true,
-                ),
-            ),
-            licenseNote = "sherpa-onnx streaming Zipformer 20M, Apache-2.0",
-            required = true,
-        ),
-        ModelPack(
             id = "parakeet-tdt-0.6b-v2",
             displayName = "High-accuracy transcription (English)",
             kind = ModelKind.FINAL_ASR,
@@ -115,10 +98,10 @@ object ModelCatalog {
                 ),
             ),
             licenseNote = "sherpa-onnx NeMo Parakeet TDT 0.6B v2, CC-BY-4.0",
-            // Optional accuracy upgrade, not a dependency. Dictation runs on the streaming
-            // Zipformer alone (the final pass is a re-scoring step the pipeline already
-            // degrades past — PRODUCT_SPEC VB-124's Zipformer-only mode), so requiring this
-            // pack turned a 128 MB first run into a 610 MB one with no way past it.
+            // The only on-device recognizer now. The streaming Zipformer that used to carry
+            // dictation was removed: its live text was wrong often enough that watching it
+            // was worse than waiting, and the system recognizer covers anyone who wants
+            // live words. Parakeet transcribes the utterance once, on stop.
             required = true,
         ),
         ModelPack(

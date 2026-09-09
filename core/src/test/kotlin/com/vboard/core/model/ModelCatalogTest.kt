@@ -10,43 +10,39 @@ import kotlin.test.assertTrue
 class ModelCatalogTest {
 
     @Test
-    fun `catalog contains exactly the three expected packs`() {
+    fun `catalog contains exactly the two expected packs`() {
         assertEquals(
-            listOf("zipformer-en-streaming", "parakeet-tdt-0.6b-v2", "qwen25-05b-refiner"),
+            listOf("parakeet-tdt-0.6b-v2", "qwen25-05b-refiner"),
             ModelCatalog.packs.map { it.id },
         )
     }
 
     @Test
     fun `byId returns matching pack and null for unknown id`() {
-        val zipformer = ModelCatalog.byId("zipformer-en-streaming")
-        assertSame(ModelCatalog.packs[0], zipformer)
-        assertEquals("Live transcription (English)", zipformer?.displayName)
+        val parakeet = ModelCatalog.byId("parakeet-tdt-0.6b-v2")
+        assertSame(ModelCatalog.packs[0], parakeet)
+        assertEquals("High-accuracy transcription (English)", parakeet?.displayName)
         assertNull(ModelCatalog.byId("does-not-exist"))
     }
 
     @Test
     fun `byKind maps each kind to its pack`() {
-        assertEquals(listOf("zipformer-en-streaming"), ModelCatalog.byKind(ModelKind.STREAMING_ASR).map { it.id })
+        assertTrue(ModelCatalog.byKind(ModelKind.STREAMING_ASR).isEmpty())
         assertEquals(listOf("parakeet-tdt-0.6b-v2"), ModelCatalog.byKind(ModelKind.FINAL_ASR).map { it.id })
         assertEquals(listOf("qwen25-05b-refiner"), ModelCatalog.byKind(ModelKind.REFINER_LLM).map { it.id })
     }
 
     @Test
     fun `required and archive flags match spec`() {
-        val zipformer = ModelCatalog.byId("zipformer-en-streaming")!!
         val parakeet = ModelCatalog.byId("parakeet-tdt-0.6b-v2")!!
         val refiner = ModelCatalog.byId("qwen25-05b-refiner")!!
 
-        // Both speech models are required. The streaming pack is what makes the mic
-        // produce words at all; the accuracy pass is required because streaming-only
-        // output is not good enough to be the product's typing experience. Only the
-        // refiner - which rewrites already-committed text - is an opt-in upgrade.
-        assertTrue(zipformer.required)
+        // Parakeet is the only on-device recognizer, so it is what the mic needs.
+        // Only the refiner - which rewrites already-committed text - is opt-in.
+        assertNull(ModelCatalog.byId("zipformer-en-streaming"))
         assertTrue(parakeet.required)
         assertFalse(refiner.required)
 
-        assertTrue(zipformer.files.single().archive)
         assertTrue(parakeet.files.single().archive)
         assertFalse(refiner.files.single().archive)
 
@@ -74,18 +70,15 @@ class ModelCatalogTest {
             }
             assertEquals(pack.files.sumOf { it.sizeBytes }, pack.totalBytes)
         }
-        // Both speech packs are pinned to digests measured from the upstream assets, so a
+        // The speech pack is pinned to a digest measured from the upstream asset, so a
         // corrupted-but-complete download can no longer install. The refiner stays
         // unpinned until its host can be hashed from the release pipeline.
-        for (id in listOf("zipformer-en-streaming", "parakeet-tdt-0.6b-v2")) {
-            assertTrue(
-                ModelCatalog.byId(id)!!.files.all { it.sha256.isNotEmpty() },
-                "$id must ship a pinned digest",
-            )
-        }
+        assertTrue(
+            ModelCatalog.byId("parakeet-tdt-0.6b-v2")!!.files.all { it.sha256.isNotEmpty() },
+            "the speech pack must ship a pinned digest",
+        )
         // Sizes measured from the upstream release assets; the installer re-checks with
         // the server, so drift here only affects progress and the storage pre-check.
-        assertEquals(127_887_156L, ModelCatalog.byId("zipformer-en-streaming")!!.totalBytes)
         assertEquals(482_468_385L, ModelCatalog.byId("parakeet-tdt-0.6b-v2")!!.totalBytes)
         assertEquals(547_000_000L, ModelCatalog.byId("qwen25-05b-refiner")!!.totalBytes)
     }

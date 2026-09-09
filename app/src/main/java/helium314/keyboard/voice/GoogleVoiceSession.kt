@@ -11,6 +11,7 @@ package helium314.keyboard.voice
 
 import android.content.Context
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
 import android.speech.RecognitionListener
 import android.speech.RecognizerIntent
@@ -43,7 +44,16 @@ class GoogleVoiceSession(
     /** Set while stopping, so a late error callback is not shown to the user. */
     private var stopping = false
 
-    fun isAvailable() = SpeechRecognizer.isRecognitionAvailable(context)
+    fun isAvailable() = onDeviceAvailable() || SpeechRecognizer.isRecognitionAvailable(context)
+
+    /**
+     * True when the platform can recognize without sending audio anywhere. Added
+     * in API 31 and backed by the system's own offline packs, which the user
+     * installs from system settings rather than from us.
+     */
+    private fun onDeviceAvailable() =
+        Build.VERSION.SDK_INT >= Build.VERSION_CODES.S &&
+            SpeechRecognizer.isOnDeviceRecognitionAvailable(context)
 
     fun start() {
         if (isRunning) return
@@ -55,7 +65,15 @@ class GoogleVoiceSession(
         isRunning = true
         stopping = false
         host.onGooglePreparing()
-        val recognizer = SpeechRecognizer.createSpeechRecognizer(context).also { this.recognizer = it }
+        // On-device first: it is the same recognizer without the round trip, so
+        // preferring it is both faster and the difference between audio that
+        // leaves the phone and audio that does not.
+        val onDevice = onDeviceAvailable()
+        val recognizer = (
+            if (onDevice) SpeechRecognizer.createOnDeviceSpeechRecognizer(context)
+            else SpeechRecognizer.createSpeechRecognizer(context)
+            ).also { this.recognizer = it }
+        Log.i(TAG, if (onDevice) "system recognizer: on-device" else "system recognizer: network")
         recognizer.setRecognitionListener(listener)
         val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH)
             .putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)

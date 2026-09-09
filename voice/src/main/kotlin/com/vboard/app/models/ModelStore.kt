@@ -97,7 +97,7 @@ class ModelStore(context: Context) {
      * upgrades ([com.vboard.core.model.ModelReadiness]); treating them as prerequisites is
      * what made a first run cost 610 MB with no way past it.
      */
-    fun dictationReady(installer: PackInstaller): Boolean = streamingPaths(installer) != null
+    fun dictationReady(installer: PackInstaller): Boolean = parakeetPaths(installer) != null
 
     /** True when the optional high-accuracy final pass is installed and extracted. */
     fun accuracyModelReady(installer: PackInstaller): Boolean = parakeetPaths(installer) != null
@@ -123,12 +123,6 @@ class ModelStore(context: Context) {
         val dir = installer.installedDir(pack)?.toFile() ?: return null
         val file = File(dir, pack.files.single().relativePath)
         return file.takeIf { it.exists() }?.absolutePath
-    }
-
-    fun streamingPaths(installer: PackInstaller): SpeechModelPaths? {
-        val pack = ModelCatalog.byKind(ModelKind.STREAMING_ASR).firstOrNull() ?: return null
-        val dir = extractedDir(installer, pack) ?: return null
-        return findTransducer(dir)
     }
 
     fun parakeetPaths(installer: PackInstaller): SpeechModelPaths? {

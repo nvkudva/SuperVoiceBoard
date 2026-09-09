@@ -11,6 +11,7 @@ import android.os.PowerManager
 import android.os.SystemClock
 import android.provider.Settings as AndroidSettings
 import android.text.InputType
+import android.widget.Toast
 import android.view.View
 import android.view.WindowManager
 import android.view.inputmethod.EditorInfo
@@ -23,6 +24,7 @@ import com.vboard.core.session.VoiceMetrics
 import com.vboard.core.text.CommitPlanner
 import com.vboard.core.text.FieldKind
 import helium314.keyboard.latin.LatinIME
+import helium314.keyboard.latin.R
 import helium314.keyboard.latin.utils.Log
 import helium314.keyboard.latin.utils.prefs
 import helium314.keyboard.settings.screens.PrivacyBreakingSettings
@@ -214,6 +216,25 @@ class VoiceController(
 
     fun toggle() {
         if (isActive) stopAndFinalize() else start()
+    }
+
+    /**
+     * Flips which recognizer the next session uses: the system one, or Parakeet
+     * on device. It writes the same preference the settings screen does, so the
+     * toolbar key is a shortcut to that switch rather than a second setting.
+     *
+     * A session already running keeps the backend it started with — swapping
+     * engines mid-utterance would lose what has been said so far — so the flip
+     * takes effect on the next press of the mic.
+     */
+    fun toggleAsrEngine() {
+        val prefs = ime.prefs()
+        val toSystem = !PrivacyBreakingSettings.googleVoiceEnabled(prefs)
+        prefs.edit().putBoolean(PrivacyBreakingSettings.PREF_GOOGLE_VOICE, toSystem).apply()
+        val message = ime.getString(
+            if (toSystem) R.string.asr_engine_system else R.string.asr_engine_ondevice
+        )
+        Toast.makeText(ime, message, Toast.LENGTH_SHORT).show()
     }
 
     /** End the utterance on whichever backend is running it. */

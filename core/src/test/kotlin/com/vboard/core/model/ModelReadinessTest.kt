@@ -7,7 +7,6 @@ import kotlin.test.assertTrue
 
 class ModelReadinessTest {
 
-    private val streaming = ModelCatalog.byId("zipformer-en-streaming")!!
     private val parakeet = ModelCatalog.byId("parakeet-tdt-0.6b-v2")!!
     private val refiner = ModelCatalog.byId("qwen25-05b-refiner")!!
 
@@ -19,20 +18,17 @@ class ModelReadinessTest {
     }
 
     @Test
-    fun `the streaming pack alone is enough to dictate`() {
-        assertTrue(ModelReadiness.canDictate(setOf(streaming.id)))
+    fun `the speech pack alone is enough to dictate`() {
+        assertTrue(ModelReadiness.canDictate(setOf(parakeet.id)))
     }
 
     @Test
     fun `the optional packs neither grant nor withhold the ability to dictate`() {
-        // Present without the streaming pack: still no dictation.
-        assertFalse(ModelReadiness.canDictate(setOf(parakeet.id)))
+        // Present without the speech pack: still no dictation.
         assertFalse(ModelReadiness.canDictate(setOf(refiner.id)))
-        assertFalse(ModelReadiness.canDictate(setOf(parakeet.id, refiner.id)))
 
-        // Added on top of the streaming pack: no change either way.
-        assertTrue(ModelReadiness.canDictate(setOf(streaming.id, parakeet.id)))
-        assertTrue(ModelReadiness.canDictate(setOf(streaming.id, refiner.id)))
+        // Added on top of the speech pack: no change either way.
+        assertTrue(ModelReadiness.canDictate(setOf(parakeet.id, refiner.id)))
         assertTrue(ModelReadiness.canDictate(ModelCatalog.packs.map { it.id }.toSet()))
     }
 
@@ -44,8 +40,8 @@ class ModelReadinessTest {
     // ------------------------------------------------------ required set
 
     @Test
-    fun `both speech packs are required and only the refiner is optional`() {
-        assertEquals(listOf(streaming.id, parakeet.id), ModelCatalog.requiredPacks.map { it.id })
+    fun `the speech pack is required and only the refiner is optional`() {
+        assertEquals(listOf(parakeet.id), ModelCatalog.requiredPacks.map { it.id })
         assertEquals(listOf(refiner.id), ModelCatalog.optionalPacks.map { it.id })
     }
 

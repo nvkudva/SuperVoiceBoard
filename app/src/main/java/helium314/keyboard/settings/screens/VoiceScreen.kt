@@ -13,6 +13,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -21,6 +22,11 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.collectAsState
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.selection.selectable
+import androidx.core.content.edit
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -33,6 +39,7 @@ import com.vboard.app.settings.SettingsRepository.Keys as VoiceKeys
 import com.vboard.app.voice.voiceRuntimeOrNull
 import com.vboard.core.model.ByteSize
 import com.vboard.core.model.ModelCatalog
+import com.vboard.core.model.ModelKind
 import com.vboard.core.session.SilenceTimeout
 import helium314.keyboard.latin.R
 import helium314.keyboard.voice.VoiceStripView
@@ -43,6 +50,9 @@ import helium314.keyboard.latin.utils.getActivity
 import helium314.keyboard.latin.utils.previewDark
 import helium314.keyboard.latin.utils.prefs
 import helium314.keyboard.settings.SearchSettingsScreen
+import helium314.keyboard.settings.SettingsSections
+import helium314.keyboard.settings.preferences.PreferenceCategory
+import helium314.keyboard.settings.preferences.PreferenceGroup
 import helium314.keyboard.settings.Setting
 import helium314.keyboard.settings.SettingsActivity
 import helium314.keyboard.settings.SettingsDestination
@@ -63,32 +73,98 @@ fun VoiceScreen(
     // Raw mode is the verbatim escape hatch: with it on, none of the cleanup
     // switches below do anything, so they are hidden rather than left lying.
     val raw = prefs.getBoolean(VoiceKeys.RAW_TRANSCRIPT, VoiceDefaults.RAW_TRANSCRIPT)
-    val items = listOfNotNull(
-        // The models are the first thing this screen is about: without them
-        // every switch below is describing something that cannot run.
-        SettingsWithoutKey.VOICE_MODELS,
-        R.string.voice_category_dictation,
-        VoiceStripView.SHOW_MINIMIZE_KEY,
+    // Grouped by what each setting acts on: the speech-to-text half, then the
+    // clean-up half, then the two rows that belong to neither.
+    val speech = listOfNotNull(
         VoiceKeys.SILENCE_TIMEOUT,
         VoiceKeys.PROVISIONAL_COMMIT,
-        R.string.voice_category_transcript,
-        VoiceKeys.RAW_TRANSCRIPT,
+        VoiceStripView.SHOW_MINIMIZE_KEY,
+    )
+    val correction = listOfNotNull(
+        VoiceKeys.LLM_REFINE,
+        if (raw) null else VoiceKeys.AUTO_CAP,
+        if (raw) null else VoiceKeys.SELF_CORRECTIONS,
         if (raw) null else VoiceKeys.REMOVE_FILLERS,
         if (raw) null else VoiceKeys.AGGRESSIVE_FILLERS,
-        if (raw) null else VoiceKeys.SELF_CORRECTIONS,
         if (raw) null else VoiceKeys.AUTO_PUNCTUATE,
-        if (raw) null else VoiceKeys.AUTO_CAP,
         if (raw) null else VoiceKeys.SPOKEN_COMMANDS,
-        R.string.voice_category_refinement,
-        VoiceKeys.LLM_REFINE,
-        R.string.voice_category_privacy,
+    )
+    val other = listOf(
         VoiceKeys.TELEMETRY,
+        VoiceKeys.RAW_TRANSCRIPT,
     )
     SearchSettingsScreen(
         onClickBack = onClickBack,
         title = stringResource(R.string.settings_screen_voice),
-        settings = items,
+        settings = emptyList(),
+        content = {
+            Column(
+                Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(bottom = 24.dp)
+            ) {
+                // What turns speech into text: the model that does it, the engine
+                // choice between it and Google's, and how dictation behaves.
+                PreferenceCategory(stringResource(R.string.wk_cat_voice_to_text))
+                VoiceModelsSection(only = ModelKind.FINAL_ASR)
+                EngineChoice()
+                SettingsSections(speech)
+
+                // What happens to the text afterwards, under the model that does it.
+                PreferenceCategory(stringResource(R.string.wk_engine_title))
+                VoiceModelsSection(only = ModelKind.REFINER_LLM)
+                SettingsSections(correction)
+
+                PreferenceCategory(stringResource(R.string.wk_cat_other))
+                SettingsSections(other)
+            }
+        },
     )
+}
+
+/**
+ * WaveKey: which recognizer runs, as one choice rather than as a switch.
+ *
+ * The two engines are one boolean apart, so exclusivity is structural: turning
+ * one on cannot leave the other on, and there is no state where neither runs.
+ */
+@Composable
+private fun EngineChoice() {
+    val ctx = LocalContext.current
+    val prefs = ctx.prefs()
+    val google = PrivacyBreakingSettings.googleVoiceEnabled(prefs)
+    val runtime = voiceRuntimeOrNull(ctx)
+    val ready = runtime?.modelStore?.dictationReady(runtime.packInstaller) == true
+    PreferenceGroup {
+        EngineOption(
+            name = stringResource(R.string.privacy_breaking_google_voice),
+            description = stringResource(R.string.privacy_breaking_google_voice_summary),
+            selected = google,
+        ) { prefs.edit { putBoolean(PrivacyBreakingSettings.PREF_GOOGLE_VOICE, true) } }
+        EngineOption(
+            name = stringResource(R.string.wk_engine_ondevice),
+            description = stringResource(
+                if (ready) R.string.wk_engine_ondevice_ready else R.string.wk_engine_ondevice_missing
+            ),
+            selected = !google,
+        ) { prefs.edit { putBoolean(PrivacyBreakingSettings.PREF_GOOGLE_VOICE, false) } }
+    }
+}
+
+@Composable
+private fun EngineOption(name: String, description: String, selected: Boolean, onClick: () -> Unit) {
+    Row(
+        Modifier.fillMaxWidth().selectable(selected, onClick = onClick).padding(horizontal = 12.dp, vertical = 10.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        RadioButton(selected = selected, onClick = onClick)
+        Column(Modifier.weight(1f).padding(start = 4.dp)) {
+            Text(name, style = MaterialTheme.typography.bodyLarge)
+            Text(
+                description,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+    }
 }
 
 fun createVoiceSettings(context: Context) = listOf(

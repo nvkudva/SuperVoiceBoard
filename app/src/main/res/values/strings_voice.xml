@@ -95,4 +95,16 @@
     <!-- The minimize control on the listening strip -->
     <string name="voice_minimize_key">Show the minimize key while dictating</string>
     <string name="voice_minimize_key_summary">Hides the keyboard but keeps listening. Off by default: it sits next to the stop button and is easy to hit by mistake</string>
+    <!-- WaveKey: one choice of what runs dictation, in place of a switch that
+         could disagree with the models above it -->
+    <string name="wk_engine_title">AI Correction</string>
+    <string name="wk_engine_ondevice">On this phone</string>
+    <string name="wk_engine_ondevice_ready">Uses the model above. No audio leaves the device.</string>
+    <string name="wk_engine_ondevice_missing">Download the transcription model above to use this.</string>
+    <string name="wk_engine_in_use">In use for dictation</string>
+    <string name="wk_engine_not_in_use">Not in use — Google voice typing is on</string>
+    <string name="wk_refiner_in_use">In use for AI refinement</string>
+    <string name="wk_refiner_not_in_use">Not in use — AI refinement is off</string>
+    <string name="wk_cat_voice_to_text">Voice to Text</string>
+    <string name="wk_cat_other">Other</string>
 </resources>

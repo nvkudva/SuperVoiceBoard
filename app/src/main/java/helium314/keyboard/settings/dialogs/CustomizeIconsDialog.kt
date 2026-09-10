@@ -3,6 +3,13 @@ package helium314.keyboard.settings.dialogs
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
@@ -15,7 +22,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalContentColor
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -84,8 +90,8 @@ fun CustomizeIconsDialog(
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier.clickable { showIconDialog = iconName to displayName }
                     ) {
-                        KeyboardIconsSet.instance.GetIconOrEmpty(iconName)
-                        Text(displayName, Modifier.weight(1f))
+                        IconTile { KeyboardIconsSet.instance.GetIconOrEmpty(iconName) }
+                        Text(displayName, Modifier.weight(1f).padding(start = 12.dp))
                     }
                 }
             }
@@ -142,11 +148,11 @@ fun CustomizeIconsDialog(
                         CompositionLocalProvider(
                             LocalContentColor provides color
                         ) {
-                            Box(
-                                Modifier.size(40.dp).clickable { selectedIcon = resId },
-                                contentAlignment = Alignment.Center
+                            IconTile(
+                                selected = resId == selectedIcon,
+                                modifier = Modifier.clickable { selectedIcon = resId },
                             ) {
-                                Icon(painterResourceCompat(resId), null, Modifier.fillMaxSize(0.8f))
+                                Icon(painterResourceCompat(resId), null, Modifier.size(22.dp))
                             }
                         }
                     }
@@ -177,5 +183,34 @@ private fun Preview() {
             prefKey = "",
             onDismissRequest = { },
         )
+    }
+}
+
+/**
+ * WaveKey: a toolbar key, drawn the way the keyboard draws it — a rounded square
+ * container around the glyph. Picking an icon out of a list of bare glyphs meant
+ * judging it against a background it would never appear on.
+ */
+@Composable
+private fun IconTile(
+    selected: Boolean = false,
+    modifier: Modifier = Modifier,
+    content: @Composable () -> Unit,
+) {
+    Box(
+        modifier
+            .size(44.dp)
+            .clip(RoundedCornerShape(10.dp))
+            .background(
+                if (selected) MaterialTheme.colorScheme.primaryContainer
+                else MaterialTheme.colorScheme.surfaceContainerHigh
+            ),
+        contentAlignment = Alignment.Center,
+    ) {
+        CompositionLocalProvider(
+            LocalContentColor provides
+                if (selected) MaterialTheme.colorScheme.onPrimaryContainer
+                else MaterialTheme.colorScheme.onSurfaceVariant
+        ) { content() }
     }
 }

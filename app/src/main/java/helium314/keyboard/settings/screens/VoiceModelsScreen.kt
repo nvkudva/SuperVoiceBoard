@@ -52,6 +52,10 @@ import com.vboard.core.model.ModelPack
 import com.vboard.core.model.PackInstaller
 import com.vboard.core.model.PackState
 import helium314.keyboard.latin.R
+import com.vboard.app.settings.SettingsRepository.Defaults as VoiceDefaults
+import com.vboard.app.settings.SettingsRepository.Keys as VoiceKeys
+import com.vboard.core.model.ModelKind
+import helium314.keyboard.latin.utils.prefs
 import helium314.keyboard.latin.utils.Theme
 import helium314.keyboard.latin.utils.previewDark
 import helium314.keyboard.settings.SearchSettingsScreen
@@ -74,45 +78,54 @@ import kotlinx.coroutines.withContext
 fun VoiceModelsScreen(
     onClickBack: () -> Unit,
 ) {
-    val context = LocalContext.current
-    val runtime = remember { voiceRuntimeOrNull(context) }
     SearchSettingsScreen(
         onClickBack = onClickBack,
         title = stringResource(R.string.settings_screen_voice_models),
         settings = emptyList(),
     ) {
-        Column(
-            Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(top = 8.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            if (runtime == null) {
-                Text(
-                    text = stringResource(R.string.voice_models_unavailable),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(16.dp),
-                )
-                return@Column
-            }
-            val scheduled by ModelDownloadService.observeScheduledWork(context)
-                .collectAsState(initial = emptyList())
-            val liveStates by ModelDownloadService.states.collectAsState()
-            for (pack in ModelCatalog.packs) {
-                PackRow(
-                    pack = pack,
-                    runtime = runtime,
-                    liveState = liveStates[pack.id],
-                    queued = scheduled.any { it.packId == pack.id && it.waitingForNetwork },
-                    running = scheduled.any { it.packId == pack.id },
-                )
-            }
+        Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(top = 8.dp)) {
+            VoiceModelsSection()
+        }
+    }
+}
+
+/**
+ * The model list itself. Its own screen still exists for the setup wizard, but
+ * the voice screen shows this inline: the models are what that screen is about,
+ * and a switch list under a locked feature reads as settings for nothing.
+ */
+@Composable
+fun VoiceModelsSection(only: ModelKind? = null) {
+    val context = LocalContext.current
+    val runtime = remember { voiceRuntimeOrNull(context) }
+    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        if (runtime == null) {
             Text(
-                text = stringResource(R.string.voice_models_footer),
-                style = MaterialTheme.typography.bodySmall,
+                text = stringResource(R.string.voice_models_unavailable),
+                style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(horizontal = 24.dp).padding(top = 4.dp, bottom = 24.dp),
+                modifier = Modifier.padding(16.dp),
+            )
+            return@Column
+        }
+        val scheduled by ModelDownloadService.observeScheduledWork(context)
+            .collectAsState(initial = emptyList())
+        val liveStates by ModelDownloadService.states.collectAsState()
+        for (pack in ModelCatalog.packs.filter { only == null || it.kind == only }) {
+            PackRow(
+                pack = pack,
+                runtime = runtime,
+                liveState = liveStates[pack.id],
+                queued = scheduled.any { it.packId == pack.id && it.waitingForNetwork },
+                running = scheduled.any { it.packId == pack.id },
             )
         }
+        if (only == null) Text(
+            text = stringResource(R.string.voice_models_footer),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(horizontal = 24.dp).padding(top = 4.dp, bottom = 8.dp),
+        )
     }
 }
 
@@ -229,6 +242,16 @@ private fun PackRow(
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
+            // WaveKey: an installed pack still has to be the one that runs.
+            // Which engine and whether refinement is on both live elsewhere on
+            // this screen, so say here whether this pack is actually in play.
+            if (state is PackState.Installed) inUseLine(context, pack)?.let {
+                Text(
+                    it,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.primary,
+                )
+            }
             if (state is PackState.Downloading) {
                 LinearProgressIndicator(
                     progress = { state.fraction.toFloat() },
@@ -327,5 +350,18 @@ private fun PreviewScreen() {
         Surface {
             VoiceModelsScreen { }
         }
+    }
+}
+
+/** Whether an installed pack is the one currently doing the work. */
+private fun inUseLine(context: android.content.Context, pack: ModelPack): String? {
+    val prefs = context.prefs()
+    return when (pack.kind) {
+        ModelKind.FINAL_ASR, ModelKind.STREAMING_ASR ->
+            if (PrivacyBreakingSettings.googleVoiceEnabled(prefs)) context.getString(R.string.wk_engine_not_in_use)
+            else context.getString(R.string.wk_engine_in_use)
+        ModelKind.REFINER_LLM ->
+            if (prefs.getBoolean(VoiceKeys.LLM_REFINE, VoiceDefaults.LLM_REFINE)) context.getString(R.string.wk_refiner_in_use)
+            else context.getString(R.string.wk_refiner_not_in_use)
     }
 }

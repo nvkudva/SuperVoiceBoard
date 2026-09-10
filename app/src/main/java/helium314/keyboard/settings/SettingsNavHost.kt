@@ -16,11 +16,14 @@ import androidx.navigation.compose.rememberNavController
 import helium314.keyboard.latin.common.LocaleUtils.constructLocale
 import helium314.keyboard.latin.settings.SettingsSubtype.Companion.toSettingsSubtype
 import helium314.keyboard.latin.settings.getTransitionAnimationScale
-import helium314.keyboard.settings.screens.PrivacyBreakingScreen // WaveKey
 import helium314.keyboard.settings.screens.VoiceModelsScreen // WaveKey
 import helium314.keyboard.settings.screens.VoiceScreen // WaveKey
 import helium314.keyboard.settings.screens.AboutScreen
 import helium314.keyboard.settings.screens.AppearanceScreen
+import helium314.keyboard.settings.screens.ClipboardScreen
+import helium314.keyboard.settings.screens.EmojiAppearanceScreen
+import helium314.keyboard.settings.screens.GesturesScreen
+import helium314.keyboard.settings.screens.KeyStyleScreen
 import helium314.keyboard.settings.screens.ColorsScreen
 import helium314.keyboard.settings.screens.DebugScreen
 import helium314.keyboard.settings.screens.DictionaryScreen
@@ -79,10 +82,9 @@ fun SettingsNavHost(
                 onClickVoice = { navController.navigate(SettingsDestination.Voice) },
                 onClickKeysAndFeedback = { navController.navigate(SettingsDestination.Preferences) },
                 onClickCorrections = { navController.navigate(SettingsDestination.TextCorrection) },
-                onClickDictionaries = { navController.navigate(SettingsDestination.Dictionaries) },
-                onClickSwipe = { navController.navigate(SettingsDestination.GestureTyping) },
-                onClickLayouts = { navController.navigate(SettingsDestination.Layouts) },
-                onClickPrivacyBreaking = { navController.navigate(SettingsDestination.PrivacyBreaking) },
+                onClickGestures = { navController.navigate(SettingsDestination.Gestures) },
+                onClickClipboard = { navController.navigate(SettingsDestination.Clipboard) },
+                onClickEmoji = { navController.navigate(SettingsDestination.Emoji) },
                 onClickBack = ::goBack,
             )
         }
@@ -113,9 +115,6 @@ fun SettingsNavHost(
         composable(SettingsDestination.Voice) { // WaveKey
             VoiceScreen(onClickBack = ::goBack)
         }
-        composable(SettingsDestination.PrivacyBreaking) { // WaveKey
-            PrivacyBreakingScreen(onClickBack = ::goBack)
-        }
         composable(SettingsDestination.VoiceModels) { // WaveKey
             VoiceModelsScreen(onClickBack = ::goBack)
         }
@@ -143,6 +142,18 @@ fun SettingsNavHost(
         }
         composable(SettingsDestination.Layouts) {
             SecondaryLayoutScreen(onClickBack = ::goBack)
+        }
+        composable(SettingsDestination.Gestures) { // WaveKey
+            GesturesScreen(onClickBack = ::goBack)
+        }
+        composable(SettingsDestination.Clipboard) { // WaveKey
+            ClipboardScreen(onClickBack = ::goBack)
+        }
+        composable(SettingsDestination.KeyStyle) { // WaveKey
+            KeyStyleScreen(onClickBack = ::goBack)
+        }
+        composable(SettingsDestination.Emoji) { // WaveKey
+            EmojiAppearanceScreen(onClickBack = ::goBack)
         }
         composable(SettingsDestination.ThemePicker) {
             ThemePickerScreen(initialNight = false, onClickBack = ::goBack)
@@ -175,10 +186,13 @@ object SettingsDestination {
     const val DataReview = "data_review" // remove when data gathering phase is done (end of 2026 latest)
     const val Voice = "voice" // WaveKey
     const val VoiceModels = "voice_models" // WaveKey
-    const val PrivacyBreaking = "privacy_breaking" // WaveKey
     const val ToolbarKeys = "toolbar_keys" // WaveKey: the toolbar key editor
     const val Debug = "debug"
     const val Appearance = "appearance"
+    const val Gestures = "gestures" // WaveKey
+    const val Clipboard = "clipboard_settings" // WaveKey
+    const val KeyStyle = "key_style" // WaveKey
+    const val Emoji = "emoji_appearance" // WaveKey
     const val ThemePicker = "theme_picker"
     const val ThemePickerNight = "theme_picker_night"
     const val Colors = "colors/"

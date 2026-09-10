@@ -59,7 +59,6 @@ fun AboutScreen(
         SettingsWithoutKey.GITHUB_WIKI,
         SettingsWithoutKey.COMMUNITY_LINKS,
         SettingsWithoutKey.GITHUB,
-        SettingsWithoutKey.SAVE_LOG,
     )
     SearchSettingsScreen(
         onClickBack = onClickBack,

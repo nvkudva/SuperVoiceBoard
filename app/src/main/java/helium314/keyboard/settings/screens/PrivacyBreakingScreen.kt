@@ -41,25 +41,6 @@ object PrivacyBreakingSettings {
         prefs.getBoolean(PREF_GOOGLE_PASSWORD_MANAGER, DEFAULT_GOOGLE_PASSWORD_MANAGER)
 }
 
-@Composable
-fun PrivacyBreakingScreen(
-    onClickBack: () -> Unit,
-) {
-    val b = (LocalContext.current.getActivity() as? SettingsActivity)?.prefChanged?.collectAsState()
-    if ((b?.value ?: 0) < 0)
-        Log.v("irrelevant", "stupid way to trigger recomposition on preference change")
-    SearchSettingsScreen(
-        onClickBack = onClickBack,
-        title = stringResource(R.string.settings_screen_privacy_breaking),
-        settings = listOf(
-            R.string.privacy_breaking_category_voice,
-            PrivacyBreakingSettings.PREF_GOOGLE_VOICE,
-            R.string.privacy_breaking_category_fill,
-            PrivacyBreakingSettings.PREF_GOOGLE_PASSWORD_MANAGER,
-        ),
-    )
-}
-
 fun createPrivacyBreakingSettings(context: Context) = listOf(
     Setting(
         context, PrivacyBreakingSettings.PREF_GOOGLE_VOICE,
@@ -74,14 +55,3 @@ fun createPrivacyBreakingSettings(context: Context) = listOf(
         SwitchPreference(it, PrivacyBreakingSettings.DEFAULT_GOOGLE_PASSWORD_MANAGER)
     },
 )
-
-@Preview
-@Composable
-private fun PreviewScreen() {
-    initPreview(LocalContext.current)
-    Theme(previewDark) {
-        Surface {
-            PrivacyBreakingScreen(onClickBack = { })
-        }
-    }
-}

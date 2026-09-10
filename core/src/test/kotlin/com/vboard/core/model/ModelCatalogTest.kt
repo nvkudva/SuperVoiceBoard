@@ -21,7 +21,7 @@ class ModelCatalogTest {
     fun `byId returns matching pack and null for unknown id`() {
         val parakeet = ModelCatalog.byId("parakeet-tdt-0.6b-v2")
         assertSame(ModelCatalog.packs[0], parakeet)
-        assertEquals("High-accuracy transcription (English only)", parakeet?.displayName)
+        assertEquals("Parakeet (on-device AI)", parakeet?.displayName)
         assertNull(ModelCatalog.byId("does-not-exist"))
     }
 
@@ -47,7 +47,7 @@ class ModelCatalogTest {
         assertFalse(refiner.files.single().archive)
 
         assertEquals(ModelKind.FINAL_ASR, parakeet.kind)
-        assertEquals("High-accuracy transcription (English only)", parakeet.displayName)
+        assertEquals("Parakeet (on-device AI)", parakeet.displayName)
         assertEquals("Qwen2.5, Apache-2.0 (LiteRT community build)", refiner.licenseNote)
     }
 

@@ -122,10 +122,10 @@ object ModelCatalog {
     val packs: List<ModelPack> = listOf(
         ModelPack(
             id = "parakeet-tdt-0.6b-v2",
-            // "(English only)", not "(English)": this is the row title on the models screen,
-            // and it is the last thing a user reads before spending 482 MB. The v2 weights are
-            // English-only, so the title has to say so before the download, not after it.
-            displayName = "High-accuracy transcription (English only)",
+            // The row title on the models screen. It no longer carries "(English only)":
+            // the row's own state line and the download size sit directly under it, and
+            // coverage is declared in `languages` below rather than in the name.
+            displayName = "Parakeet (on-device AI)",
             kind = ModelKind.FINAL_ASR,
             version = 1,
             files = listOf(
@@ -153,7 +153,7 @@ object ModelCatalog {
             // it ungated (a Gemma .task requires a Hugging Face license
             // acceptance + auth token, which a keyboard can't ask for mid-setup).
             id = "qwen25-05b-refiner",
-            displayName = "Smart cleanup (on-device LLM)",
+            displayName = "Qwen 2.5 0.5B (on-device LLM)",
             kind = ModelKind.REFINER_LLM,
             version = 1,
             files = listOf(

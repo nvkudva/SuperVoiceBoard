@@ -45,6 +45,11 @@ import helium314.keyboard.latin.utils.locale
 import helium314.keyboard.latin.utils.prefs
 import helium314.keyboard.settings.SearchScreen
 import helium314.keyboard.settings.SettingsActivity
+import helium314.keyboard.settings.preferences.Preference
+import helium314.keyboard.settings.preferences.PreferenceGroup
+import helium314.keyboard.latin.utils.NextScreenIcon
+import androidx.compose.foundation.layout.padding
+import androidx.compose.ui.unit.dp
 import helium314.keyboard.settings.SettingsDestination
 import helium314.keyboard.latin.utils.Theme
 import helium314.keyboard.settings.initPreview
@@ -79,7 +84,19 @@ fun LanguageScreen(
                     .splitOnWhitespace().any { it.startsWith(term, true) }
             }
         },
-        itemContent = { SubtypeRow(it, it in enabledSubtypes) }
+        itemContent = { SubtypeRow(it, it in enabledSubtypes) },
+        // WaveKey: dictionaries are per language, so they belong on the screen
+        // that lists the languages rather than one door away.
+        header = {
+            PreferenceGroup(Modifier.padding(bottom = 8.dp)) {
+                Preference(
+                    name = stringResource(R.string.dictionary_settings_category),
+                    description = stringResource(R.string.settings_screen_dictionaries_summary),
+                    onClick = { SettingsDestination.navigateTo(SettingsDestination.Dictionaries) },
+                    icon = R.drawable.ic_dictionary,
+                ) { NextScreenIcon() }
+            }
+        },
     )
 }
 

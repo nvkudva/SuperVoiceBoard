@@ -1,21 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-    WaveKey: the mic key's ground. The one saturated object on the strip,
-    inset so the pill is shorter than the row it sits in.
+    WaveKey: the mic key's ground, and the stop key's. A circle, not a pill:
+    the key's box is square — the strip's own height — and the inset is equal on
+    every side, so the shape stays round whatever that height is set to.
     SPDX-License-Identifier: GPL-3.0-only
 -->
 <inset xmlns:android="http://schemas.android.com/apk/res/android"
-    android:insetTop="6dp"
-    android:insetBottom="6dp"
-    android:insetLeft="2dp"
-    android:insetRight="2dp">
-    <shape android:shape="rectangle">
+    android:inset="8dp">
+    <shape android:shape="oval">
         <gradient
             android:type="linear"
             android:angle="0"
             android:startColor="#FB7185"
             android:centerColor="#A855F7"
             android:endColor="#22D3EE" />
-        <corners android:radius="999dp" />
     </shape>
 </inset>

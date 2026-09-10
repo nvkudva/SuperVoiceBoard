@@ -71,7 +71,7 @@
              hidden whenever the toolbar is expanded. -->
         <ImageButton
             android:id="@+id/supervoiceboard_mic_key"
-            android:layout_width="@dimen/config_suggestions_strip_edge_key_width"
+            android:layout_width="@dimen/config_suggestions_strip_height"
             android:layout_height="match_parent"
             android:layout_gravity="center_vertical"
             android:layout_weight="0"

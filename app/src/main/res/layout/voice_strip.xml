@@ -35,7 +35,7 @@
         android:contentDescription="@string/voice_minimize_keyboard" />
     <ImageButton
         android:id="@+id/voice_strip_done"
-        android:layout_width="@dimen/config_suggestions_strip_edge_key_width"
+        android:layout_width="@dimen/config_suggestions_strip_height"
         android:layout_height="match_parent"
         android:layout_gravity="center_vertical"
         android:scaleType="center"

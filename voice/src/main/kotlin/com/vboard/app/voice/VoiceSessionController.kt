@@ -554,7 +554,15 @@ class VoiceSessionController(
         val samples = takeUtteranceAudio()
         // Counts only, never text (PLAN.md §3.4). This is the line that says
         // whether a session that heard something had anything to transcribe.
-        Log.i(TAG, "finalize: samples=${samples.size} engine=${VoiceEngines.finalPass != null}")
+        // Counts only, never audio and never text (PLAN.md §3.4): how much was
+        // captured, how loud it was, and whether there was an engine to decode
+        // it. "It listened and nothing was typed" is otherwise indistinguishable
+        // from a quiet room, which cost a whole debugging session to learn.
+        // Off unless asked for: adb shell setprop log.tag.VBoardVoice DEBUG
+        if (Log.isLoggable(TAG, Log.DEBUG)) {
+            val peak = samples.maxOfOrNull { kotlin.math.abs(it) } ?: 0f
+            Log.d(TAG, "finalize: samples=${samples.size} peak=$peak engine=${VoiceEngines.finalPass != null}")
+        }
         host.showFinalizing()
 
         finalizeJob = scope.launch {
@@ -594,7 +602,8 @@ class VoiceSessionController(
             val finalText = FinalTranscriptPolicy.choose(decoded, partial)
 
             val cleaned = cleanTranscript(finalText)
-            Log.i(TAG, "finalize: decoded=${decoded?.length ?: -1} committed=${cleaned.text.length}")
+            if (Log.isLoggable(TAG, Log.DEBUG))
+                Log.d(TAG, "finalize: decoded=${decoded?.length ?: -1} committed=${cleaned.text.length}")
             // With a provisional commit already in the field, the machine must
             // not commit a second copy: it is told the utterance is finished
             // (blank), and the text in the field is corrected in place instead.

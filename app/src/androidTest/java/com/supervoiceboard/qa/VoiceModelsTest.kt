@@ -62,6 +62,6 @@ class VoiceModelsTest {
     fun backReturnsToVoiceSettings() {
         Qa.device.pressBack()
         compose.waitForIdle()
-        compose.onNodeWithText(string(R.string.voice_inline_dictation)).scrollToIfPossible().assertIsDisplayed()
+        compose.onNodeWithText(string(R.string.voice_silence_timeout)).scrollToIfPossible().assertIsDisplayed()
     }
 }

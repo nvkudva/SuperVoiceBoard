@@ -45,7 +45,6 @@ class VoiceSettingsTest {
     fun everyVoiceSettingIsOnScreen() {
         listOf(
             R.string.settings_screen_voice_models,
-            R.string.voice_inline_dictation,
             R.string.voice_silence_timeout,
             R.string.voice_raw_transcript,
             R.string.voice_remove_fillers,

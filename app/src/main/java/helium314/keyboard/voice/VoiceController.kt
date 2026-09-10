@@ -601,11 +601,13 @@ class VoiceController(
     // ------------------------------------------------------------------ misc
 
     private fun openAppSettings() {
-        val intent = Intent(AndroidSettings.ACTION_APPLICATION_DETAILS_SETTINGS)
-            .setData(Uri.fromParts("package", ime.packageName, null))
+        // WaveKey: the system permission dialog, not the App info screen. The
+        // activity is invisible and finishes with the answer; App info is its
+        // own fallback for a permission that has been denied for good.
+        val intent = Intent(ime, MicPermissionActivity::class.java)
             .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         runCatching { ime.startActivity(intent) }
-            .onFailure { Log.w(TAG, "could not open app settings", it) }
+            .onFailure { Log.w(TAG, "could not ask for the microphone", it) }
         cancel()
     }
 

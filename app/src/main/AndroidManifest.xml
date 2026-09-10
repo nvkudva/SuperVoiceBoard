@@ -117,6 +117,16 @@ SPDX-License-Identifier: Apache-2.0 AND GPL-3.0-only
         </service>
 
         <!-- Activities -->
+        <!-- WaveKey: the one activity that can show the microphone dialog; an
+             IME cannot ask for a runtime permission itself. Invisible, kept out
+             of recents, and gone as soon as the dialog is answered. -->
+        <activity
+            android:name="helium314.keyboard.voice.MicPermissionActivity"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar"
+            android:excludeFromRecents="true"
+            android:noHistory="true"
+            android:exported="false" />
+
         <!-- WaveKey: the settings UI deliberately stays in the keyboard
              process. Pinning it to `:ui` would put the two halves of the app on
              opposite sides of a SharedPreferences instance that is not

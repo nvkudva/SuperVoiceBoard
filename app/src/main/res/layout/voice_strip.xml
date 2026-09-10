@@ -15,6 +15,12 @@
         android:src="@drawable/ic_arrow_left"
         style="?attr/suggestionWordStyle"
         android:contentDescription="@string/voice_cancel" />
+    <!-- WaveKey: the right side carries two keys and the left one, so the status
+         text's box was 48dp off centre while the level rail is drawn centred on
+         the strip. This spacer balances the two sides. -->
+    <Space
+        android:layout_width="@dimen/config_suggestions_strip_height"
+        android:layout_height="match_parent" />
     <TextView
         android:id="@+id/voice_strip_status"
         android:layout_width="0dp"

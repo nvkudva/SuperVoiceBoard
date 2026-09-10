@@ -1,3 +1,9 @@
+// WaveKey: lets Gradle fetch a JDK matching gradle/gradle-daemon-jvm.properties
+// on a machine that does not have one, instead of failing at startup.
+plugins {
+    id 'org.gradle.toolchains.foojay-resolver-convention' version '0.8.0'
+}
+
 include ':app'
 include ':tools:make-emoji-keys'
 include ':core'

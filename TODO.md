@@ -37,3 +37,5 @@
 - [x] W7.3 Opt-in, content-free telemetry: send-ready rate, time-to-send-ready.
 - [x] Model management UI: a Voice models screen (download, cancel, remove, import) and an optional voice step in the setup wizard. Import verifies against the catalog digest before staging.
 - [x] Latency: provisional commit replaced in place by the accurate model, engine warm-up on mic touch-down, engines held while the keyboard is visible.
+- [ ] Rename `applicationId` from `com.supervoiceboard.app` to a WaveKey one. Every existing install becomes a separate app: needs a release note, and the debug id (`.debug`) has to move with it. The signing config, its keystore path (`~/.supervoiceboard/release.jks`) and the `SVB_*` env vars in CI are named after the old id too. Do not touch the `helium314.keyboard` namespace — PLAN W0.2 keeps it for upstream merges.
+- [ ] Rename the git repo and its remote from SuperVoiceBoard to WaveKey, and the local checkout directory with it. Update the clone URL in README, CONTRIBUTING, the fastlane metadata and any CI badge.

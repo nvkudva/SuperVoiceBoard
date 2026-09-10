@@ -54,6 +54,8 @@ private constructor(val themeId: Int, @JvmField val mStyleId: Int) {
         const val STYLE_EDGE_LIT = "Edgelit"
 
         // new themes that are just colors
+        // WaveKey's own board, the one the mocks are drawn in.
+        const val THEME_WAVEKEY = "wavekey"
         const val THEME_LIGHT = "light"
         const val THEME_HOLO_WHITE = "holo_white"
         const val THEME_DARK = "dark"
@@ -71,6 +73,7 @@ private constructor(val themeId: Int, @JvmField val mStyleId: Int) {
         const val THEME_SAND = "sand"
         const val THEME_VIOLETTE = "violette"
         fun getAvailableDefaultColors(prefs: SharedPreferences, isNight: Boolean) = listOfNotNull(
+            THEME_WAVEKEY,
             if (!isNight) THEME_LIGHT else null, THEME_DARK,
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) THEME_DYNAMIC else null,
             if (prefs.getString(Settings.PREF_THEME_STYLE, Defaults.PREF_THEME_STYLE) == STYLE_HOLO) THEME_HOLO_WHITE else null,
@@ -175,6 +178,21 @@ private constructor(val themeId: Int, @JvmField val mStyleId: Int) {
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) DynamicColors(context, themeStyle, hasBorders, backgroundImage)
                     else getThemeColors(THEME_LIGHT, themeStyle, context, prefs, isNight)
                 }
+                // WaveKey: the mock's board — the #0A0D22 ground under keys
+                // lifted along the same indigo axis, with the spectrum's
+                // violet as the accent.
+                THEME_WAVEKEY -> DefaultColors(
+                    themeStyle,
+                    hasBorders,
+                    ContextCompat.getColor(context, R.color.accent_wavekey_dark),
+                    ContextCompat.getColor(context, R.color.wavekey_board),
+                    ContextCompat.getColor(context, R.color.wavekey_key),
+                    ContextCompat.getColor(context, R.color.wavekey_key_functional),
+                    ContextCompat.getColor(context, R.color.wavekey_key),
+                    ContextCompat.getColor(context, R.color.wavekey_text),
+                    ContextCompat.getColor(context, R.color.wavekey_hint_text),
+                    keyboardBackground = backgroundImage
+                )
                 THEME_LIGHT -> DefaultColors(
                     themeStyle,
                     hasBorders,

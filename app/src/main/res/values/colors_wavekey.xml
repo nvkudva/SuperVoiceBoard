@@ -8,4 +8,13 @@
     <color name="accent_wavekey_dark">#A855F7</color>
     <!-- On a light board, where #A855F7 is too pale against white. -->
     <color name="accent_wavekey_light">#7C3AED</color>
+
+    <!-- The WaveKey board itself, as drawn in the mock: the #0A0D22 ground,
+         with the keys lifted off it along the same indigo axis rather than
+         towards grey, so the violet accent has somewhere to sit. -->
+    <color name="wavekey_board">#0A0D22</color>
+    <color name="wavekey_key">#1E2347</color>
+    <color name="wavekey_key_functional">#141834</color>
+    <color name="wavekey_text">#F2F0FF</color>
+    <color name="wavekey_hint_text">#8B90C4</color>
 </resources>

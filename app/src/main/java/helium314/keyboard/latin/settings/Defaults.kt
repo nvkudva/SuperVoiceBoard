@@ -51,8 +51,8 @@ object Defaults {
         val style = prefs.getString(Settings.PREF_THEME_STYLE, PREF_THEME_STYLE)!!
         return if (style in KeyboardTheme.ICON_STYLES) style else KeyboardTheme.STYLE_MATERIAL
     }
-    const val PREF_THEME_COLORS = KeyboardTheme.THEME_LIGHT
-    const val PREF_THEME_COLORS_NIGHT = KeyboardTheme.THEME_DARK
+    const val PREF_THEME_COLORS = KeyboardTheme.THEME_WAVEKEY
+    const val PREF_THEME_COLORS_NIGHT = KeyboardTheme.THEME_WAVEKEY
     const val PREF_THEME_KEY_BORDERS = true
     @JvmField
     val PREF_THEME_DAY_NIGHT = Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q

@@ -30,6 +30,9 @@ import helium314.keyboard.latin.utils.SubtypeLocaleUtils.displayName
 import helium314.keyboard.latin.utils.SubtypeSettings
 import helium314.keyboard.latin.utils.NextScreenIcon
 import helium314.keyboard.settings.SearchSettingsScreen
+import helium314.keyboard.settings.SettingsSections
+import helium314.keyboard.settings.SettingsActivity
+import helium314.keyboard.settings.SettingsWithoutKey
 import helium314.keyboard.latin.utils.Theme
 import helium314.keyboard.settings.initPreview
 import helium314.keyboard.settings.preferences.Preference
@@ -50,13 +53,17 @@ import helium314.keyboard.settings.screens.gesturedata.TWO_WEEKS_IN_MILLIS
  */
 fun MainSettingsScreen(
     onClickAbout: () -> Unit,
-    onClickTyping: () -> Unit,
     onClickToolbar: () -> Unit,
     onClickDataGathering: () -> Unit,
     onClickAppearance: () -> Unit,
     onClickLanguage: () -> Unit,
     onClickVoice: () -> Unit,
-    onClickPrivacyAdvanced: () -> Unit,
+    onClickKeysAndFeedback: () -> Unit,
+    onClickCorrections: () -> Unit,
+    onClickDictionaries: () -> Unit,
+    onClickSwipe: () -> Unit,
+    onClickLayouts: () -> Unit,
+    onClickPrivacyBreaking: () -> Unit,
     onClickBack: () -> Unit,
 ) {
     SearchSettingsScreen(
@@ -104,18 +111,47 @@ fun MainSettingsScreen(
                         onClick = onClickLanguage,
                         icon = R.drawable.ic_settings_languages
                     ) { NextScreenIcon() }
-                    Preference(
-                        name = stringResource(R.string.settings_door_typing),
-                        description = stringResource(R.string.settings_door_typing_summary),
-                        onClick = onClickTyping,
-                        icon = R.drawable.ic_settings_preferences
-                    ) { NextScreenIcon() }
                     // The differentiator sits in the top group, not under Advanced.
                     Preference(
                         name = stringResource(R.string.settings_screen_voice),
                         description = voiceSummary,
                         onClick = onClickVoice,
                         icon = R.drawable.ic_settings_voice
+                    ) { NextScreenIcon() }
+                }
+
+                PreferenceCategory(stringResource(R.string.settings_door_typing))
+                PreferenceGroup {
+                    Preference(
+                        name = stringResource(R.string.settings_screen_keys_feedback),
+                        description = stringResource(R.string.settings_screen_keys_feedback_summary),
+                        onClick = onClickKeysAndFeedback,
+                        icon = R.drawable.ic_settings_preferences
+                    ) { NextScreenIcon() }
+                    Preference(
+                        name = stringResource(R.string.settings_screen_correction),
+                        description = stringResource(R.string.settings_screen_correction_summary),
+                        onClick = onClickCorrections,
+                        icon = R.drawable.ic_settings_correction
+                    ) { NextScreenIcon() }
+                    Preference(
+                        name = stringResource(R.string.dictionary_settings_category),
+                        description = stringResource(R.string.settings_screen_dictionaries_summary),
+                        onClick = onClickDictionaries,
+                        icon = R.drawable.ic_dictionary
+                    ) { NextScreenIcon() }
+                    // Swipe typing needs the proprietary library or the built-in
+                    // decoder; without either there is nothing to configure.
+                    if (JniUtils.sHaveGestureLib)
+                        Preference(
+                            name = stringResource(R.string.settings_screen_swipe),
+                            onClick = onClickSwipe,
+                            icon = R.drawable.ic_settings_gesture
+                        ) { NextScreenIcon() }
+                    Preference(
+                        name = stringResource(R.string.settings_screen_symbol_layouts),
+                        onClick = onClickLayouts,
+                        icon = R.drawable.ic_settings_layout
                     ) { NextScreenIcon() }
                 }
 
@@ -135,15 +171,23 @@ fun MainSettingsScreen(
                     ) { NextScreenIcon() }
                 }
 
-                PreferenceCategory(stringResource(R.string.wk_category_data))
+                PreferenceCategory(stringResource(R.string.wk_category_privacy))
                 PreferenceGroup {
+                    SettingsActivity.settingsContainer[Settings.PREF_ALWAYS_INCOGNITO_MODE]?.Preference()
+                    SettingsActivity.settingsContainer[SettingsWithoutKey.BACKUP_RESTORE]?.Preference()
                     Preference(
-                        name = stringResource(R.string.settings_door_privacy),
-                        description = stringResource(R.string.settings_door_privacy_summary),
-                        onClick = onClickPrivacyAdvanced,
+                        name = stringResource(R.string.settings_screen_privacy_breaking),
+                        description = stringResource(R.string.privacy_breaking_summary),
+                        onClick = onClickPrivacyBreaking,
                         icon = R.drawable.ic_settings_advanced
                     ) { NextScreenIcon() }
+                }
 
+                PreferenceCategory(stringResource(R.string.settings_screen_advanced))
+                SettingsSections(advancedSettingsItems())
+
+                PreferenceCategory(stringResource(R.string.wk_category_data))
+                PreferenceGroup {
                     // Upstream's research collection, which deletes itself two
                     // weeks after the gathering phase ends.
                     if (JniUtils.sHaveGestureLib && System.currentTimeMillis() < END_DATE_EPOCH_MILLIS + TWO_WEEKS_IN_MILLIS)
@@ -169,7 +213,7 @@ private fun PreviewScreen() {
     initPreview(LocalContext.current)
     Theme(previewDark) {
         Surface {
-            MainSettingsScreen({}, {}, {}, {}, {}, {}, {}, {}, {})
+            MainSettingsScreen({}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {})
         }
     }
 }

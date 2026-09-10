@@ -20,7 +20,6 @@ import helium314.keyboard.settings.screens.PrivacyBreakingScreen // WaveKey
 import helium314.keyboard.settings.screens.VoiceModelsScreen // WaveKey
 import helium314.keyboard.settings.screens.VoiceScreen // WaveKey
 import helium314.keyboard.settings.screens.AboutScreen
-import helium314.keyboard.settings.screens.AdvancedSettingsScreen
 import helium314.keyboard.settings.screens.AppearanceScreen
 import helium314.keyboard.settings.screens.ColorsScreen
 import helium314.keyboard.settings.screens.DebugScreen
@@ -35,10 +34,8 @@ import helium314.keyboard.settings.screens.SecondaryLayoutScreen
 import helium314.keyboard.settings.screens.SubtypeScreen
 import helium314.keyboard.settings.screens.TextCorrectionScreen
 import helium314.keyboard.settings.screens.ThemePickerScreen
-import helium314.keyboard.settings.screens.PrivacyAdvancedScreen
 import helium314.keyboard.settings.screens.ToolbarKeysScreen
 import helium314.keyboard.settings.screens.ToolbarScreen
-import helium314.keyboard.settings.screens.TypingScreen
 import helium314.keyboard.settings.screens.gesturedata.GestureDataScreen
 import helium314.keyboard.settings.screens.gesturedata.ReviewScreen
 import kotlinx.coroutines.CoroutineScope
@@ -75,36 +72,22 @@ fun SettingsNavHost(
         composable(SettingsDestination.Settings) {
             MainSettingsScreen(
                 onClickAbout = { navController.navigate(SettingsDestination.About) },
-                onClickTyping = { navController.navigate(SettingsDestination.Typing) },
                 onClickToolbar = { navController.navigate(SettingsDestination.Toolbar) },
                 onClickDataGathering = { navController.navigate(SettingsDestination.DataGathering) },
                 onClickAppearance = { navController.navigate(SettingsDestination.Appearance) },
                 onClickLanguage = { navController.navigate(SettingsDestination.Languages) },
                 onClickVoice = { navController.navigate(SettingsDestination.Voice) },
-                onClickPrivacyAdvanced = { navController.navigate(SettingsDestination.PrivacyAdvanced) },
-                onClickBack = ::goBack,
-            )
-        }
-        composable(SettingsDestination.About) {
-            AboutScreen(onClickBack = ::goBack)
-        }
-        // WaveKey: the two hub screens behind the six doors.
-        composable(SettingsDestination.Typing) {
-            TypingScreen(
                 onClickKeysAndFeedback = { navController.navigate(SettingsDestination.Preferences) },
                 onClickCorrections = { navController.navigate(SettingsDestination.TextCorrection) },
                 onClickDictionaries = { navController.navigate(SettingsDestination.Dictionaries) },
                 onClickSwipe = { navController.navigate(SettingsDestination.GestureTyping) },
                 onClickLayouts = { navController.navigate(SettingsDestination.Layouts) },
+                onClickPrivacyBreaking = { navController.navigate(SettingsDestination.PrivacyBreaking) },
                 onClickBack = ::goBack,
             )
         }
-        composable(SettingsDestination.PrivacyAdvanced) {
-            PrivacyAdvancedScreen(
-                onClickPrivacyBreaking = { navController.navigate(SettingsDestination.PrivacyBreaking) },
-                onClickAdvanced = { navController.navigate(SettingsDestination.Advanced) },
-                onClickBack = ::goBack,
-            )
+        composable(SettingsDestination.About) {
+            AboutScreen(onClickBack = ::goBack)
         }
         composable(SettingsDestination.TextCorrection) {
             TextCorrectionScreen(onClickBack = ::goBack)
@@ -126,9 +109,6 @@ fun SettingsNavHost(
         }
         composable(SettingsDestination.DataReview) {
             ReviewScreen(onClickBack = ::goBack)
-        }
-        composable(SettingsDestination.Advanced) {
-            AdvancedSettingsScreen(onClickBack = ::goBack)
         }
         composable(SettingsDestination.Voice) { // WaveKey
             VoiceScreen(onClickBack = ::goBack)
@@ -193,13 +173,10 @@ object SettingsDestination {
     const val GestureTyping = "gesture_typing"
     const val DataGathering = "data_gathering" // remove when data gathering phase is done (end of 2026 latest)
     const val DataReview = "data_review" // remove when data gathering phase is done (end of 2026 latest)
-    const val Advanced = "advanced"
     const val Voice = "voice" // WaveKey
     const val VoiceModels = "voice_models" // WaveKey
     const val PrivacyBreaking = "privacy_breaking" // WaveKey
-    const val Typing = "typing" // WaveKey: the Typing door
     const val ToolbarKeys = "toolbar_keys" // WaveKey: the toolbar key editor
-    const val PrivacyAdvanced = "privacy_advanced" // WaveKey: the Privacy & advanced door
     const val Debug = "debug"
     const val Appearance = "appearance"
     const val ThemePicker = "theme_picker"

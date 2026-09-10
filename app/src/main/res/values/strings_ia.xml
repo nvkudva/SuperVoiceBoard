@@ -38,6 +38,8 @@
     <string name="wk_models_download">About %1$s to download, kept on this device</string>
     <string name="wk_now">%1$s — what you are in now</string>
     <string name="wk_category_data">Data</string>
+    <!-- Heading over the privacy settings, now shown on the main screen -->
+    <string name="wk_category_privacy">Privacy</string>
     <string name="wk_day">Day</string>
     <string name="wk_night">Night</string>
     <string name="wk_category_key_behaviour">Key behaviour</string>

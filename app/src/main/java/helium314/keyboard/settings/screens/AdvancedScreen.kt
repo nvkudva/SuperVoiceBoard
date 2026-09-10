@@ -4,7 +4,6 @@ package helium314.keyboard.settings.screens
 import android.annotation.SuppressLint
 import android.content.Context
 import android.os.Build
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -14,7 +13,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.tooling.preview.Preview
 import helium314.keyboard.keyboard.KeyboardActionListener
 import helium314.keyboard.keyboard.KeyboardLayoutSet
 import helium314.keyboard.keyboard.KeyboardSwitcher
@@ -29,36 +27,35 @@ import helium314.keyboard.latin.settings.Settings
 import helium314.keyboard.latin.utils.checkTimestampFormat
 import helium314.keyboard.latin.utils.prefs
 import helium314.keyboard.latin.utils.NextScreenIcon
-import helium314.keyboard.settings.SettingsContainer
 import helium314.keyboard.settings.preferences.ListPreference
 import helium314.keyboard.settings.SettingsWithoutKey
 import helium314.keyboard.settings.Setting
 import helium314.keyboard.settings.preferences.Preference
-import helium314.keyboard.settings.SearchSettingsScreen
 import helium314.keyboard.settings.SettingsActivity
 import helium314.keyboard.settings.SettingsDestination
 import helium314.keyboard.settings.preferences.SliderPreference
 import helium314.keyboard.settings.preferences.SwitchPreference
-import helium314.keyboard.latin.utils.Theme
 import helium314.keyboard.settings.dialogs.TextInputDialog
 import helium314.keyboard.settings.preferences.BackupRestorePreference
 import helium314.keyboard.settings.preferences.LoadGestureLibPreference
 import helium314.keyboard.settings.preferences.TextInputPreference
-import helium314.keyboard.latin.utils.previewDark
 import androidx.core.content.edit
 import helium314.keyboard.keyboard.internal.keyboard_parser.LocaleKeyboardInfos
 import helium314.keyboard.latin.utils.Log
 import helium314.keyboard.latin.utils.getActivity
 
+/**
+ * The advanced settings, in the order they are shown. They are no longer behind
+ * a door of their own: the main screen renders this list inline under its own
+ * heading, so nothing here needs opening to be found.
+ */
 @Composable
-fun AdvancedSettingsScreen(
-    onClickBack: () -> Unit,
-) {
+fun advancedSettingsItems(): List<Any?> {
     val prefs = LocalContext.current.prefs()
     val b = (LocalContext.current.getActivity() as? SettingsActivity)?.prefChanged?.collectAsState()
     if ((b?.value ?: 0) < 0)
         Log.v("irrelevant", "stupid way to trigger recomposition on preference change")
-    val items = listOf(
+    return listOf(
         Settings.PREF_SPACE_TO_CHANGE_LANG,
         Settings.PREFS_LONG_PRESS_SYMBOLS_FOR_NUMPAD,
         Settings.PREF_ENABLE_EMOJI_ALT_PHYSICAL_KEY,
@@ -76,11 +73,6 @@ fun AdvancedSettingsScreen(
         Settings.PREF_EMOJI_MAX_SDK,
         Settings.PREF_URL_DETECTION,
         if (BuildConfig.BUILD_TYPE != "nouserlib") SettingsWithoutKey.LOAD_GESTURE_LIB else null
-    )
-    SearchSettingsScreen(
-        onClickBack = onClickBack,
-        title = stringResource(R.string.settings_screen_advanced),
-        settings = items
     )
 }
 
@@ -264,14 +256,3 @@ fun createAdvancedSettings(context: Context) = listOf(
         LoadGestureLibPreference(it)
     },
 )
-
-@Preview
-@Composable
-private fun Preview() {
-    SettingsActivity.settingsContainer = SettingsContainer(LocalContext.current)
-    Theme(previewDark) {
-        Surface {
-            AdvancedSettingsScreen { }
-        }
-    }
-}

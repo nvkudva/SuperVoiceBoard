@@ -15,6 +15,9 @@ import com.vboard.core.correct.FixEdit
 import com.vboard.core.text.FieldKind
 import helium314.keyboard.keyboard.KeyboardSwitcher
 import helium314.keyboard.latin.LatinIME
+import helium314.keyboard.latin.common.ColorType
+import helium314.keyboard.latin.settings.Settings
+import helium314.keyboard.latin.R
 import helium314.keyboard.latin.utils.ToolbarKey
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -88,10 +91,31 @@ class AiFixKey(
                 ?.let { ime.showCorrectionGhost(it.beforeText(), it.afterText()) }
         }
         buttonState = state
+        val colors = Settings.getValues().mColors
+        // Running and "you can still undo this" are the two states worth seeing
+        // from across the room, so the key fills with the accent instead of
+        // brightening its glyph by a few percent.
+        val lit = state == FixButtonState.RUNNING || state == FixButtonState.UNDO
         forEachKeyView { button ->
             button.contentDescription = contentDescription
             button.isEnabled = state != FixButtonState.DISABLED
             button.alpha = if (state == FixButtonState.DISABLED) DISABLED_ALPHA else 1f
+            button.isActivated = lit
+            // Once a fix has landed the key is the way back out of it, so it
+            // says undo rather than offering to fix the same text again.
+            button.setImageResource(
+                if (state == FixButtonState.UNDO) R.drawable.ic_ai_fix_undo
+                else R.drawable.ic_ai_fix
+            )
+            if (lit) {
+                button.setBackgroundResource(R.drawable.toolbar_key_background_lit)
+                colors.setBackground(button, ColorType.ACTION_KEY_BACKGROUND)
+                colors.setColor(button, ColorType.ACTION_KEY_ICON)
+            } else {
+                button.setBackgroundResource(R.drawable.toolbar_key_background)
+                colors.setBackground(button, ColorType.FUNCTIONAL_KEY_BACKGROUND)
+                colors.setColor(button, ColorType.TOOL_BAR_KEY)
+            }
         }
     }
 

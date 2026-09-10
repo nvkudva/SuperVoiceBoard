@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    WaveKey: a toolbar key that is doing something, or holding something the user
+    can still take back. Same rounded square as every other key, filled solid so
+    the state reads across the room instead of as a slightly brighter glyph.
+    White on purpose — Colors tints it.
+    SPDX-License-Identifier: GPL-3.0-only
+-->
+<inset xmlns:android="http://schemas.android.com/apk/res/android"
+    android:inset="@dimen/config_toolbar_key_inset">
+    <shape android:shape="rectangle">
+        <solid android:color="@android:color/white" />
+        <corners android:radius="10dp" />
+    </shape>
+</inset>

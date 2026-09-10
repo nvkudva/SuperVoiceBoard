@@ -82,6 +82,21 @@ class AiFixController(
     /** When this class last wrote to the field; see [onUserEdit]. */
     private var lastWriteAt = 0L
 
+    /**
+     * WaveKey: once a fix has landed, the key keeps fixing.
+     *
+     * Pressing it once is the user saying "keep this readable", not "fix these
+     * particular words" — so after the first fix every further pause in typing
+     * runs another one, until the field is empty or the user moves to another.
+     * It is deliberately not a toggle: the key still fixes on the first press
+     * and still undoes on the second, and this rides along behind that.
+     */
+    private var autoFix = false
+    private var autoJob: Job? = null
+
+    /** What the field held after the last fix, so an unchanged field is left alone. */
+    private var lastFixedText: String? = null
+
     /** What the last fix changed, attributed by tier. See [editorialEdits]. */
     private var lastEdits: List<FixEdit> = emptyList()
 
@@ -106,6 +121,9 @@ class AiFixController(
     /** A new editor session: abandon any run and drop the undo. */
     fun onStartInput() {
         fieldToken++
+        autoFix = false
+        lastFixedText = null
+        autoJob?.cancel()
         cancelRun()
         undo.clear()
         undoTimer?.cancel()
@@ -123,10 +141,47 @@ class AiFixController(
      * field independently, so correctness never rests on this being called.
      */
     fun onUserEdit() {
+        scheduleAutoFix()
         if (!undo.isArmed) return
         if (now() - lastWriteAt < SELF_WRITE_GUARD_MS) return
         undo.clear()
         refresh()
+    }
+
+    /**
+     * Queue the next automatic pass, at the end of a word.
+     *
+     * The trigger is the word boundary, not a stopwatch: a rewrite that landed
+     * mid-word would move the cursor out from under the thumb, and a fixed delay
+     * either fires inside a word anyway or waits long after one ended. The short
+     * delay below only coalesces the burst of edits a single keypress can raise.
+     * An empty field ends the run — there is nothing left to keep readable.
+     */
+    private fun scheduleAutoFix() {
+        if (!autoFix) return
+        if (now() - lastWriteAt < SELF_WRITE_GUARD_MS) return // our own rewrite
+        autoJob?.cancel()
+        val token = fieldToken
+        autoJob = scope.launch {
+            delay(AUTO_FIX_COALESCE_MS)
+            if (token != fieldToken || !autoFix || running) return@launch
+            val text = host.inputConnection()?.let { readField(it) }?.text
+            if (text.isNullOrBlank()) {
+                // The field was cleared: the run is over until the key is pressed again.
+                autoFix = false
+                lastFixedText = null
+                return@launch
+            }
+            if (text == lastFixedText) return@launch
+            if (!endsAWord(text)) return@launch
+            performFix()
+        }
+    }
+
+    /** True once the last thing typed closed a word, rather than extended one. */
+    private fun endsAWord(text: String): Boolean {
+        val last = text.last()
+        return last.isWhitespace() || last in WORD_ENDERS
     }
 
     /** The input view is going away. */
@@ -136,6 +191,7 @@ class AiFixController(
     }
 
     fun destroy() {
+        autoFix = false
         cancelRun()
         undoTimer?.cancel()
         detach()
@@ -150,6 +206,7 @@ class AiFixController(
         job?.cancel()
         job = null
         running = false
+        autoJob?.cancel()
     }
 
     // ------------------------------------------------------------------ actions
@@ -261,6 +318,8 @@ class AiFixController(
             say(R.string.ai_fix_unavailable)
             return
         }
+        autoFix = true
+        lastFixedText = corrected
         undo.record(
             original = snapshot.text,
             selectionStart = snapshot.selectionStart,
@@ -492,24 +551,18 @@ class AiFixController(
      * send.
      */
     private fun announceApplied(result: FixResult) {
-        val editorial = result.editorialCount
-        val message = when {
-            result.smart == SmartTier.NOT_INSTALLED || result.smart == SmartTier.OFF ->
-                context.getString(R.string.ai_fix_rules_only_missing)
-            result.smart == SmartTier.UNAVAILABLE || result.smart == SmartTier.REJECTED ->
-                context.getString(R.string.ai_fix_rules_only_failed)
-            result.smart == SmartTier.TIMED_OUT ->
-                context.getString(R.string.ai_fix_rules_only_slow)
-            result.smart == SmartTier.TOO_LONG ->
-                context.getString(R.string.ai_fix_rules_only_long)
-            editorial > 0 -> context.resources.getQuantityString(
-                R.plurals.ai_fix_done_editorial,
-                editorial,
-                editorial,
-            )
-            else -> context.getString(R.string.ai_fix_done_mechanical)
+        // WaveKey: a fix that worked says so by changing the text — the toast
+        // was a second announcement of something already on screen. Only the
+        // cases where the smart tier did *not* run still speak, because there
+        // the visible result is a weaker fix than the key promised.
+        val message = when (result.smart) {
+            SmartTier.NOT_INSTALLED, SmartTier.OFF -> R.string.ai_fix_rules_only_missing
+            SmartTier.UNAVAILABLE, SmartTier.REJECTED -> R.string.ai_fix_rules_only_failed
+            SmartTier.TIMED_OUT -> R.string.ai_fix_rules_only_slow
+            SmartTier.TOO_LONG -> R.string.ai_fix_rules_only_long
+            else -> return
         }
-        surface?.showFixMessage(message)
+        surface?.showFixMessage(context.getString(message))
     }
 
     private fun unchangedMessage(tier: SmartTier): Int = when (tier) {
@@ -535,5 +588,15 @@ class AiFixController(
 
         /** Edits reported this soon after our own write are our own write. */
         private const val SELF_WRITE_GUARD_MS = 250L
+
+        /**
+         * Just long enough to coalesce the edits one keypress can raise. The
+         * trigger is the word boundary; this is not a think-time delay.
+         */
+        private const val AUTO_FIX_COALESCE_MS = 200L
+
+        /** Punctuation that closes a word as surely as a space does. */
+        private const val WORD_ENDERS = ".,!?;:)]}\"'\u2019\u201d"
+
     }
 }

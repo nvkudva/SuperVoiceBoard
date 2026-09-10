@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-only
 //
-// SuperVoiceBoard. Part of the removable correction package: this class, the
+// WaveKey. Part of the removable correction package: this class, the
 // ghost view beside it, and the two calls into them are the whole feature.
 package helium314.keyboard.correct
 

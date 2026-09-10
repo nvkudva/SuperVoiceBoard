@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- SPDX-License-Identifier: GPL-3.0-only -->
-<!-- SuperVoiceBoard: the dictation-engine toggle. Kept in its own file so the
+<!-- WaveKey: the dictation-engine toggle. Kept in its own file so the
      upstream strings.xml stays mergeable. -->
 <resources>
     <string name="asr_engine">Dictation engine</string>

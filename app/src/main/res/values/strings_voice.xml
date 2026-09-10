@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- SPDX-License-Identifier: GPL-3.0-only -->
-<!-- SuperVoiceBoard: every string the dictation feature owns — the voice strip,
+<!-- WaveKey: every string the dictation feature owns — the voice strip,
      the voice and models settings screens, and the setup wizard's microphone
      step. Kept out of the upstream strings.xml so that file stays mergeable. -->
 <resources xmlns:tools="http://schemas.android.com/tools">
     <string name="voice_telemetry">Measure how well dictation works</string>
     <string name="voice_telemetry_summary">Counts how often dictated text is sent without editing, and how long that takes. No text, ever, and nothing leaves this device</string>
     <string name="voice_telemetry_measured">%1$d%% of %2$d dictations sent unedited, %3$.1fs on average</string>
-    <!-- SuperVoiceBoard: the voice strip (W3.4) -->
+    <!-- WaveKey: the voice strip (W3.4) -->
     <string name="voice_listening">Listening…</string>
     <string name="voice_preparing">Getting ready…</string>
     <string name="voice_finalizing">Finishing…</string>
@@ -15,7 +15,7 @@
     <string name="voice_cancel">Stop dictating</string>
     <string name="voice_done">Done dictating</string>
     <string name="voice_minimize_keyboard">Hide keyboard, keep listening</string>
-    <!-- SuperVoiceBoard: Google dictation backend -->
+    <!-- WaveKey: Google dictation backend -->
     <string name="voice_google_unavailable">Google voice typing is not available on this device</string>
     <string name="voice_google_error_audio">Could not record audio</string>
     <string name="voice_google_error_permission">Google voice typing needs the microphone permission</string>
@@ -24,19 +24,19 @@
     <string name="voice_google_error_generic">Google voice typing failed</string>
     <string name="voice_started">Voice typing started</string>
     <string name="voice_stopped">Voice typing stopped</string>
-    <!-- SuperVoiceBoard: the microphone step in the setup wizard. %s is the application name. -->
+    <!-- WaveKey: the microphone step in the setup wizard. %s is the application name. -->
     <string name="setup_mic_title">Turn on voice typing</string>
     <string name="setup_mic_instruction">"%s types what you say, and the speech never leaves your device. Allow the microphone so the voice key is ready when you are."</string>
     <string name="setup_mic_action">Allow microphone</string>
     <string name="setup_mic_skip_action">Not now</string>
-    <!-- SuperVoiceBoard: subtitle on the setup wizard welcome screen -->
+    <!-- WaveKey: subtitle on the setup wizard welcome screen -->
     <string name="setup_welcome_voice_description">with on-device Voice Typing</string>
-    <!-- SuperVoiceBoard: the optional voice step in the setup wizard -->
+    <!-- WaveKey: the optional voice step in the setup wizard -->
     <string name="setup_voice_action">Set up voice typing</string>
     <string name="setup_voice_instruction">Optional. Downloads about %1$s of speech models, used entirely on this device.</string>
-    <!-- SuperVoiceBoard: the voice models screen -->
+    <!-- WaveKey: the voice models screen -->
     <string name="settings_screen_voice_models">Voice models</string>
-    <!-- SuperVoiceBoard: section headers on the Voice typing screen -->
+    <!-- WaveKey: section headers on the Voice typing screen -->
     <string name="voice_category_dictation">Dictation</string>
     <string name="voice_category_transcript">Transcript</string>
     <string name="voice_category_refinement">Refinement</string>
@@ -68,7 +68,7 @@
     <string name="voice_models_import_unknown_file">This model does not use a file with that name</string>
     <string name="voice_models_import_installed">Already installed</string>
     <string name="voice_models_import_io">Could not read that file</string>
-    <!-- SuperVoiceBoard: voice settings (W2.5) -->
+    <!-- WaveKey: voice settings (W2.5) -->
     <string name="settings_screen_voice">Voice typing</string>
     <string name="voice_silence_timeout">Stop after silence</string>
     <string name="voice_silence_timeout_summary">How long the mic stays open with nothing being said</string>

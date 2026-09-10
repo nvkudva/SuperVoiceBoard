@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- SuperVoiceBoard: Edge-lit key states. SPDX-License-Identifier: GPL-3.0-only -->
+<!-- WaveKey: Edge-lit key states. SPDX-License-Identifier: GPL-3.0-only -->
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
     <!-- The action key keeps the style's own shape rather than LXX's circle:
          that circle is drawn with keepBackgroundAspectRatio, which these styles

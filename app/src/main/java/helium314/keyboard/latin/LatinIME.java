@@ -141,19 +141,19 @@ public class LatinIME extends InputMethodService implements
     private View mInputView;
     private InsetsOutlineProvider mInsetsUpdater;
     private SuggestionStripView mSuggestionStripView;
-    // SuperVoiceBoard: the dictation session for this IME instance. Built lazily
+    // WaveKey: the dictation session for this IME instance. Built lazily
     // because the voice runtime is only reachable once the Application exists.
     private helium314.keyboard.voice.VoiceController mVoiceController;
     private helium314.keyboard.voice.VoiceStripView mVoiceStripView;
-    // SuperVoiceBoard: the correction ghost. Null until the strip is inflated,
+    // WaveKey: the correction ghost. Null until the strip is inflated,
     // and null again on every input-view teardown; nothing else depends on it.
     private helium314.keyboard.correct.GhostSwapView mCorrectionGhost;
     private helium314.keyboard.correct.RescoreController mRescoreController;
-    /** SuperVoiceBoard: sentence rescoring is off unless asked for; refreshed in loadSettings(). */
+    /** WaveKey: sentence rescoring is off unless asked for; refreshed in loadSettings(). */
     private volatile boolean mRescoreSentences;
-    // SuperVoiceBoard: the AI fix toolbar key (W5.1) and its attribution (W5.2).
+    // WaveKey: the AI fix toolbar key (W5.1) and its attribution (W5.2).
     private helium314.keyboard.voice.AiFixKey mAiFixKey;
-    // SuperVoiceBoard (W7.3): so the settings screen can read the running
+    // WaveKey (W7.3): so the settings screen can read the running
     // keyboard's measurement aggregates. Weak, and cleared on destroy: an IME
     // instance outliving its process would be a leak, not a feature.
 
@@ -616,7 +616,7 @@ public class LatinIME extends InputMethodService implements
         refreshPersonalizationDictionarySession(currentSettingsValues);
         mInputLogic.mSuggest.clearNextWordSuggestionsCache();
         mInputLogic.updateEmojiDictionary(locale);
-        // SuperVoiceBoard: cached here because the alternative was a
+        // WaveKey: cached here because the alternative was a
         // SharedPreferences read on the main thread for every sentence typed.
         mRescoreSentences = helium314.keyboard.latin.utils.DeviceProtectedUtils
                 .getSharedPreferences(this)
@@ -713,7 +713,7 @@ public class LatinIME extends InputMethodService implements
 
     @Override
     public void onDestroy() {
-        // SuperVoiceBoard: releases the microphone and the ASR engines.
+        // WaveKey: releases the microphone and the ASR engines.
         if (mVoiceController != null) mVoiceController.onDestroy();
         if (mAiFixKey != null) mAiFixKey.destroy();
         mClipboardHistoryManager.onDestroy();
@@ -793,19 +793,19 @@ public class LatinIME extends InputMethodService implements
         if (hasSuggestionStripView()) {
             mSuggestionStripView.setRtl(mRichImm.getCurrentSubtype().isRtlSubtype());
             mSuggestionStripView.setListener(this, view);
-            // SuperVoiceBoard: the mic in the strip and the VOICE toolbar key
+            // WaveKey: the mic in the strip and the VOICE toolbar key
             // both drive our own session (W3.2, W3.6).
             mSuggestionStripView.setOnMicClick(() -> {
                 toggleVoiceInput();
                 return kotlin.Unit.INSTANCE;
             });
-            // SuperVoiceBoard: start loading the models on touch-down, so the
+            // WaveKey: start loading the models on touch-down, so the
             // tap gesture pays for the model load instead of the user waiting.
             mSuggestionStripView.setOnMicTouchDown(() -> {
                 voiceController().warmUp();
                 return kotlin.Unit.INSTANCE;
             });
-            // SuperVoiceBoard: hold-to-talk and its raw variant (W6.3/W6.4).
+            // WaveKey: hold-to-talk and its raw variant (W6.3/W6.4).
             mSuggestionStripView.setOnMicHoldStart((raw) -> {
                 voiceController().startHold(raw);
                 return kotlin.Unit.INSTANCE;
@@ -815,20 +815,20 @@ public class LatinIME extends InputMethodService implements
                 return kotlin.Unit.INSTANCE;
             });
         }
-        // SuperVoiceBoard: the fix key can live in the toolbar, pinned to the
+        // WaveKey: the fix key can live in the toolbar, pinned to the
         // strip, or both; the controller finds every copy under this root.
         aiFixKey().setStripRoot(view);
-        // SuperVoiceBoard: voice is the fourth mode of the strip row (PLAN.md §2).
+        // WaveKey: voice is the fourth mode of the strip row (PLAN.md §2).
         mVoiceStripView = view.findViewById(R.id.voice_strip);
         if (mVoiceStripView != null) {
             voiceController().setStrip(mVoiceStripView);
         }
-        // SuperVoiceBoard: correction ghost (see helium314.keyboard.correct).
+        // WaveKey: correction ghost (see helium314.keyboard.correct).
         mCorrectionGhost = view.findViewById(R.id.correction_ghost);
     }
 
     /**
-     * SuperVoiceBoard: the dictation session, created on first use.
+     * WaveKey: the dictation session, created on first use.
      *
      * Everything that knows about views, input connections or HeliBoard lives in
      * VoiceController; this method is the whole surface the IME exposes to it.
@@ -851,18 +851,18 @@ public class LatinIME extends InputMethodService implements
     }
 
     /**
-     * SuperVoiceBoard: a sentence just finished being typed. Hands it to the
+     * WaveKey: a sentence just finished being typed. Hands it to the
      * rescoring pass, which may swap a word the decoder ranked second.
      *
      * Off unless the user turned it on: it spends a model call per sentence.
      */
-    /** SuperVoiceBoard: see mRescoreSentences; read per committed word by InputLogic. */
+    /** WaveKey: see mRescoreSentences; read per committed word by InputLogic. */
     public boolean isSentenceRescoringEnabled() {
         return mRescoreSentences;
     }
 
     /**
-     * SuperVoiceBoard: what the decoder nearly typed, kept for the length of one
+     * WaveKey: what the decoder nearly typed, kept for the length of one
      * sentence so the rescoring pass can choose among words the decoder itself
      * ranked. The buffer lives here rather than in InputLogic so upstream's
      * hottest class holds no state of ours.
@@ -902,7 +902,7 @@ public class LatinIME extends InputMethodService implements
     }
 
     /**
-     * SuperVoiceBoard: shows that a word was replaced, by lifting the old one
+     * WaveKey: shows that a word was replaced, by lifting the old one
      * away and settling the new one in its place.
      *
      * The whole feature is this method, the view it talks to, and the
@@ -914,7 +914,7 @@ public class LatinIME extends InputMethodService implements
         if (mCorrectionGhost != null) mCorrectionGhost.show(from, to);
     }
 
-    /** SuperVoiceBoard: swap the strip row between suggestions and voice. */
+    /** WaveKey: swap the strip row between suggestions and voice. */
     private void showVoiceStrip(final boolean voiceVisible) {
         if (mVoiceStripView == null) return;
         mVoiceStripView.setVisibility(voiceVisible ? View.VISIBLE : View.GONE);
@@ -923,17 +923,17 @@ public class LatinIME extends InputMethodService implements
         }
     }
 
-    /** SuperVoiceBoard: entry point for the mic key and the VOICE toolbar key. */
+    /** WaveKey: entry point for the mic key and the VOICE toolbar key. */
     public void toggleVoiceInput() {
         voiceController().toggle();
     }
 
     /**
-     * SuperVoiceBoard (W7.3): the running keyboard's measurement aggregates, for
+     * WaveKey (W7.3): the running keyboard's measurement aggregates, for
      * the settings screen. Null when no keyboard is running or nothing has been
      * dictated; the numbers live in the IME process and die with it.
 
-    /** SuperVoiceBoard: the AI fix key's controller, created on first use. */
+    /** WaveKey: the AI fix key's controller, created on first use. */
     private helium314.keyboard.voice.AiFixKey aiFixKey() {
         if (mAiFixKey == null) {
             final com.vboard.app.voice.VoiceRuntime runtime =
@@ -945,7 +945,7 @@ public class LatinIME extends InputMethodService implements
     }
 
     /**
-     * SuperVoiceBoard (W5.2): the user is owed an account of what the model
+     * WaveKey (W5.2): the user is owed an account of what the model
      * rewrote, so a long-press on the fix key lists the wording changes. Casing
      * and spacing are not listed — those are visible at a glance.
      */
@@ -971,10 +971,10 @@ public class LatinIME extends InputMethodService implements
     public void onStartInputView(final EditorInfo editorInfo, final boolean restarting) {
         mHandler.onStartInputView(editorInfo, restarting);
         mStatsUtilsManager.onStartInputView();
-        // SuperVoiceBoard: the field decides whether dictation is allowed at all
+        // WaveKey: the field decides whether dictation is allowed at all
         // (a password field is not), so the session hears about every focus change.
         voiceController().onStartInputView(editorInfo);
-        // SuperVoiceBoard: while the keyboard is up, engines already loaded stay
+        // WaveKey: while the keyboard is up, engines already loaded stay
         // loaded — releasing them between two dictations is the slowest path
         // there is.
         voiceController().onKeyboardShown();
@@ -983,7 +983,7 @@ public class LatinIME extends InputMethodService implements
 
     @Override
     public void onFinishInputView(final boolean finishingInput) {
-        // SuperVoiceBoard: the editor is going away, but what was already said
+        // WaveKey: the editor is going away, but what was already said
         // must still land in it — finalize rather than discard.
         if (mVoiceController != null) {
             mVoiceController.onFinishInputView();
@@ -1289,7 +1289,7 @@ public class LatinIME extends InputMethodService implements
      * cause the suggestions strip to disappear and re-appear.
      */
     /**
-     * SuperVoiceBoard (W4.4): the user touched the editor rather than the
+     * WaveKey (W4.4): the user touched the editor rather than the
      * keyboard, so the utterance is force-endpointed — what was already said
      * lands, and the mic does not stay open while they do something else.
      */
@@ -1509,7 +1509,7 @@ public class LatinIME extends InputMethodService implements
     @RequiresApi(api = Build.VERSION_CODES.R)
     public InlineSuggestionsRequest onCreateInlineSuggestionsRequest(@NonNull Bundle uiExtras) {
         Log.d(TAG,"onCreateInlineSuggestionsRequest called");
-        // SuperVoiceBoard: inline autofill is how Google Password Manager reaches
+        // WaveKey: inline autofill is how Google Password Manager reaches
         // the keyboard, so it is opt-in like the other privacy-breaking features.
         if (!isPasswordManagerFillEnabled()) {
             return null;
@@ -1547,7 +1547,7 @@ public class LatinIME extends InputMethodService implements
         return true;
     }
 
-    /** SuperVoiceBoard: the Google Password Manager fill switch, off by default. */
+    /** WaveKey: the Google Password Manager fill switch, off by default. */
     private boolean isPasswordManagerFillEnabled() {
         return PrivacyBreakingSettings.INSTANCE.passwordManagerEnabled(KtxKt.prefs(this));
     }
@@ -1634,7 +1634,7 @@ public class LatinIME extends InputMethodService implements
     // This method is public for testability of LatinIME, but also in the future it should
     // completely replace #onCodeInput.
     public void onEvent(@NonNull final Event event) {
-        // SuperVoiceBoard (W5.1/W5.2): the AI fix key and its long-press, and the
+        // WaveKey (W5.1/W5.2): the AI fix key and its long-press, and the
         // dictation-engine toggle. Each returns: these keycodes mean nothing to
         // InputLogic, and falling through to it threw "Unknown event" — every
         // press of one of these keys crashed the keyboard.
@@ -1645,21 +1645,21 @@ public class LatinIME extends InputMethodService implements
             showFixAttribution();
             return;
         } else if (KeyCode.TOGGLE_ASR_ENGINE == event.getKeyCode()) {
-            // SuperVoiceBoard: swap the dictation engine for the next session.
+            // WaveKey: swap the dictation engine for the next session.
             voiceController().toggleAsrEngine();
             return;
         }
         if (KeyCode.VOICE_INPUT == event.getKeyCode()) {
-            // SuperVoiceBoard (W3.6): upstream hands off to the system voice IME
+            // WaveKey (W3.6): upstream hands off to the system voice IME
             // here. This fork has its own on-device dictation, so the key drives
             // that instead; the system IME is no longer involved.
             toggleVoiceInput();
         }
-        // SuperVoiceBoard (W5.1): typing or deleting makes the fix undo stale.
+        // WaveKey (W5.1): typing or deleting makes the fix undo stale.
         // Deliberately here and not in onUpdateSelection — the fix's own rewrite
         // moves the cursor, and an undo that dies on its own write is an undo
         // nobody ever sees.
-        // SuperVoiceBoard (W7.3): typing after a dictated commit means that
+        // WaveKey (W7.3): typing after a dictated commit means that
         // utterance was not send-ready. Only the verdict is recorded.
         if (mVoiceController != null) mVoiceController.onUserEditedDictation();
         if (mAiFixKey != null && KeyCode.AI_FIX != event.getKeyCode()

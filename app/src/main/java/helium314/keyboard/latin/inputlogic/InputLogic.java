@@ -177,7 +177,7 @@ public final class InputLogic {
         mRecapitalizeStatus.disable(); // Do not perform recapitalize until the cursor is moved once
         mCurrentlyPressedHardwareKeys.clear();
         mSuggestedWords = SuggestedWords.getEmptyInstance();
-        mLatinIME.resetSentenceCandidates(); // SuperVoiceBoard: a new field, a new sentence
+        mLatinIME.resetSentenceCandidates(); // WaveKey: a new field, a new sentence
         // In some cases (e.g. after rotation of the device, or when scrolling the text before bringing up keyboard)
         // editorInfo.initialSelStart is not the actual cursor position, so we try using some heuristics to find the correct position.
         mConnection.tryFixIncorrectCursorPosition();
@@ -891,7 +891,7 @@ public final class InputLogic {
                 // We need to switch to the shortcut IME. This is handled by LatinIME since the
                 // input logic has no business with IME switching.
             case KeyCode.AI_FIX, KeyCode.AI_FIX_ATTRIBUTION:
-                // SuperVoiceBoard (W5.1/W5.2): both are handled in LatinIME#onEvent,
+                // WaveKey (W5.1/W5.2): both are handled in LatinIME#onEvent,
                 // and neither has anything for the input logic to do.
             case KeyCode.EMOJI, KeyCode.TOGGLE_ONE_HANDED_MODE, KeyCode.SWITCH_ONE_HANDED_MODE, KeyCode.TOGGLE_FLOATING_WINDOW,
                  KeyCode.KEY_REPEAT: // can be configured on main layout using !code/-11000, and we shouldn't crash on this in debug mode
@@ -2179,7 +2179,7 @@ public final class InputLogic {
             final boolean clearSuggestionStrip) {
         final boolean shouldFinishComposition = mWordComposer.isComposingWord();
         resetComposingState(true /* alsoResetLastComposedWord */);
-        // SuperVoiceBoard: the cursor moved, so the words before it are no longer
+        // WaveKey: the cursor moved, so the words before it are no longer
         // a sentence anything watched being typed.
         mLatinIME.resetSentenceCandidates();
         if (clearSuggestionStrip) {
@@ -2452,12 +2452,12 @@ public final class InputLogic {
      * @param separatorString the separator that's causing the commit, or NOT_A_SEPARATOR if none.
      */
     /**
-     * SuperVoiceBoard: remembers the alternatives the decoder had for the word
+     * WaveKey: remembers the alternatives the decoder had for the word
      * being committed, and hands the finished sentence over when the separator
      * ended one.
      */
     /**
-     * SuperVoiceBoard: hands the alternatives the decoder had to the fork, which
+     * WaveKey: hands the alternatives the decoder had to the fork, which
      * owns the sentence buffer. Everything but the copy lives on that side, so
      * this file carries no type of ours and no state of ours.
      */
@@ -2479,7 +2479,7 @@ public final class InputLogic {
         long startTimeMillis = 0;
         if (DebugFlags.DEBUG_ENABLED) {
             startTimeMillis = SystemClock.elapsedRealtime();
-            // SuperVoiceBoard: never log user content (PLAN.md §3.4). HeliBoard's
+            // WaveKey: never log user content (PLAN.md §3.4). HeliBoard's
             // own log buffer is exportable from the about screen, so a
             // debug-gated word is still a word that leaves the device.
             Log.d(TAG, "commitChosenWord() : word of length " + chosenWord.length());
@@ -2503,11 +2503,11 @@ public final class InputLogic {
             long runTimeMillis = SystemClock.elapsedRealtime() - startTimeMillis;
             Log.d(TAG, "commitChosenWord() : " + runTimeMillis + " ms to run "
                     + "Connection.getNgramContextFromNthPreviousWord()");
-            // SuperVoiceBoard: never log user content (PLAN.md §3.4).
+            // WaveKey: never log user content (PLAN.md §3.4).
             Log.d(TAG, "commitChosenWord() : ngram context withheld");
             startTimeMillis = SystemClock.elapsedRealtime();
         }
-        // SuperVoiceBoard: every commit type funnels through here, so this is the
+        // WaveKey: every commit type funnels through here, so this is the
         // one place that sees both the winner and the candidates it beat.
         recordSentenceCandidates(chosenWord, separatorString);
         mConnection.commitText(chosenWordWithSuggestions, 1);

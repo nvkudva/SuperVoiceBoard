@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-only
 //
-// SuperVoiceBoard. New file: the opt-in Google dictation backend.
+// WaveKey. New file: the opt-in Google dictation backend.
 //
 // This is the one path in the fork where speech leaves the device, so it is
 // kept separate from the on-device session rather than hidden behind a flag
@@ -36,7 +36,7 @@ class GoogleVoiceSession(
     }
 
     /**
-     * SuperVoiceBoard: which recovery an error deserves. The recognizer reports
+     * WaveKey: which recovery an error deserves. The recognizer reports
      * a flat int and the host has no way to tell "grant the mic" from "this
      * engine will never work here" from "say it again" without it.
      */
@@ -63,7 +63,7 @@ class GoogleVoiceSession(
             SpeechRecognizer.isOnDeviceRecognitionAvailable(context)
 
     /**
-     * SuperVoiceBoard: [onDeviceOnly] binds the session to the platform's
+     * WaveKey: [onDeviceOnly] binds the session to the platform's
      * offline recognizer — it errors out rather than reaching for the network
      * one. Asking [onDeviceAvailable] before calling would not do it: the
      * decision is made here, so the guarantee has to be made here too.
@@ -173,7 +173,7 @@ class GoogleVoiceSession(
     }
 
     /**
-     * SuperVoiceBoard: classified by exclusion. Only constants that exist on
+     * WaveKey: classified by exclusion. Only constants that exist on
      * API 21 are named, so nothing here needs a version guard; everything
      * newer falls through to ENGINE_UNUSABLE — including
      * ERROR_LANGUAGE_UNAVAILABLE, which is exactly what a device that has the

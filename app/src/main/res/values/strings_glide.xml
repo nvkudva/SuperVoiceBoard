@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- SPDX-License-Identifier: GPL-3.0-only -->
-<!-- SuperVoiceBoard: copy for the built-in glide decoder. Kept in its own file so the
+<!-- WaveKey: copy for the built-in glide decoder. Kept in its own file so the
      upstream strings.xml stays mergeable. -->
 <resources>
     <string name="glide_decoder_note">Built-in decoder. Less accurate than a commercial keyboard — wrong words can be fixed from the suggestion strip.</string>

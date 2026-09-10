@@ -482,7 +482,7 @@ final class SuggestionStripLayoutHelper {
             wordView.setTag(indexInSuggestedWords);
             wordView.setText(getStyledSuggestedWord(suggestedWords, indexInSuggestedWords));
             wordView.setTextColor(getSuggestionTextColor(suggestedWords, indexInSuggestedWords));
-            // SuperVoiceBoard: the strip reads as part of the OS, not of the
+            // WaveKey: the strip reads as part of the OS, not of the
             // keyboard, so it keeps the system face whatever font the user chose
             // for the keys.
             wordView.setTypeface(Typeface.DEFAULT);
@@ -513,7 +513,7 @@ final class SuggestionStripLayoutHelper {
             wordView.setTextScaleX(1.0f);
             wordView.setCompoundDrawables(null, null, null, null);
             wordView.setTextColor(mColorAutoCorrect);
-            // SuperVoiceBoard: the strip reads as part of the OS, not of the
+            // WaveKey: the strip reads as part of the OS, not of the
             // keyboard, so it keeps the system face whatever font the user chose
             // for the keys.
             wordView.setTypeface(Typeface.DEFAULT);

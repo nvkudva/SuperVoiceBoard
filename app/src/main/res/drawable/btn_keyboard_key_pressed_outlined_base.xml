@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-    SuperVoiceBoard: the Outlined style's pressed key. The outline stays and the
+    WaveKey: the Outlined style's pressed key. The outline stays and the
     interior fills, so the press reads as the key lighting up rather than moving.
     SPDX-License-Identifier: GPL-3.0-only
 -->

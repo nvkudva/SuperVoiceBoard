@@ -68,7 +68,7 @@ public final class KeyboardSwitcher implements KeyboardState.SwitchActions {
     private InputView mCurrentInputView;
     private KeyboardWrapperView mKeyboardViewWrapper;
     private View mMainKeyboardFrame;
-    private KeyboardResizeOverlayView mResizeOverlay; // SuperVoiceBoard
+    private KeyboardResizeOverlayView mResizeOverlay; // WaveKey
     private MainKeyboardView mKeyboardView;
     private EmojiPalettesView mEmojiPalettesView;
     private View mEmojiTabStripView;
@@ -198,7 +198,7 @@ public final class KeyboardSwitcher implements KeyboardState.SwitchActions {
     }
 
     public void onHideWindow() {
-        if (mResizeOverlay != null) mResizeOverlay.hide(); // SuperVoiceBoard
+        if (mResizeOverlay != null) mResizeOverlay.hide(); // WaveKey
         if (mKeyboardView != null) {
             mKeyboardView.onHideWindow();
         }
@@ -320,7 +320,7 @@ public final class KeyboardSwitcher implements KeyboardState.SwitchActions {
         if (DEBUG_ACTION) {
             Log.d(TAG, "setEmojiKeyboard");
         }
-        // SuperVoiceBoard: the resize overlay belongs to the main keyboard; it must
+        // WaveKey: the resize overlay belongs to the main keyboard; it must
         // not stay drawn over the view that replaces it.
         if (mResizeOverlay != null) mResizeOverlay.hide();
         mMainKeyboardFrame.setVisibility(View.VISIBLE);
@@ -344,7 +344,7 @@ public final class KeyboardSwitcher implements KeyboardState.SwitchActions {
         if (DEBUG_ACTION) {
             Log.d(TAG, "setClipboardKeyboard");
         }
-        // SuperVoiceBoard: the resize overlay belongs to the main keyboard; it must
+        // WaveKey: the resize overlay belongs to the main keyboard; it must
         // not stay drawn over the view that replaces it.
         if (mResizeOverlay != null) mResizeOverlay.hide();
         mMainKeyboardFrame.setVisibility(View.VISIBLE);
@@ -527,7 +527,7 @@ public final class KeyboardSwitcher implements KeyboardState.SwitchActions {
         setBackgroundGatheringIndicatorPosition();
     }
 
-    // SuperVoiceBoard: entry point of the interactive resize mode, reached via the RESIZE toolbar key
+    // WaveKey: entry point of the interactive resize mode, reached via the RESIZE toolbar key
     public void toggleResizeMode() {
         if (mCurrentInputView == null) return;
         if (mResizeOverlay == null) {
@@ -756,7 +756,7 @@ public final class KeyboardSwitcher implements KeyboardState.SwitchActions {
         updateKeyboardThemeAndContextThemeWrapper(displayContext, KeyboardTheme.getKeyboardTheme(displayContext));
         mCurrentInputView = (InputView)LayoutInflater.from(mThemeContext).inflate(R.layout.input_view, null);
         mMainKeyboardFrame = mCurrentInputView.findViewById(R.id.main_keyboard_frame);
-        mResizeOverlay = null; // SuperVoiceBoard: belongs to the input view that was just replaced
+        mResizeOverlay = null; // WaveKey: belongs to the input view that was just replaced
         mEmojiPalettesView = mCurrentInputView.findViewById(R.id.emoji_palettes_view);
         mClipboardHistoryView = mCurrentInputView.findViewById(R.id.clipboard_history_view);
         mFakeToastView = mCurrentInputView.findViewById(R.id.fakeToast);

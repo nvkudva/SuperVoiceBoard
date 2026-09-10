@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-only
 //
-// SuperVoiceBoard. New file: the voice models screen — download, cancel, remove,
+// WaveKey. New file: the voice models screen — download, cancel, remove,
 // and import a file the user already has.
 package helium314.keyboard.settings.screens
 

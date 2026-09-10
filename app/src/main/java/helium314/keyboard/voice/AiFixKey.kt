@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-only
 //
-// SuperVoiceBoard. New file: mounts the AI fix controller on HeliBoard's
+// WaveKey. New file: mounts the AI fix controller on HeliBoard's
 // toolbar-key mechanism (W5.1) and shows what the model changed (W5.2).
 package helium314.keyboard.voice
 
@@ -79,7 +79,7 @@ class AiFixKey(
     // ------------------------------------------------------------ FixSurface
 
     override fun updateFixButton(state: FixButtonState, contentDescription: String) {
-        // SuperVoiceBoard: a fix has just landed. Show the swap for a single-word
+        // WaveKey: a fix has just landed. Show the swap for a single-word
         // change; a wholesale reword has nothing a two-word ghost could say, and
         // the long-press attribution already accounts for those.
         if (state == FixButtonState.UNDO && buttonState == FixButtonState.RUNNING) {

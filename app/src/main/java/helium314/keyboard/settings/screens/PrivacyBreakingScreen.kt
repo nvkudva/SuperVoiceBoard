@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-only
 //
-// SuperVoiceBoard. New file: the two features that break the fork's
+// WaveKey. New file: the two features that break the fork's
 // on-device-only promise live here, behind their own switches and nowhere else.
 // Both default to off; nothing leaves the device until one is turned on.
 package helium314.keyboard.settings.screens

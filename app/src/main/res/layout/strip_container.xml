@@ -24,7 +24,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         style="?attr/suggestionStripViewStyle" />
-    <!-- SuperVoiceBoard: voice is the fourth mode of this row, not a new bar
+    <!-- WaveKey: voice is the fourth mode of this row, not a new bar
          (PLAN.md §2). Same FrameLayout, same height, same swap. -->
     <helium314.keyboard.voice.VoiceStripView
         android:id="@+id/voice_strip"
@@ -51,7 +51,7 @@
                 android:layout_weight="1" />
         </LinearLayout>
     </HorizontalScrollView>
-    <!-- SuperVoiceBoard: the correction ghost draws over whichever mode is
+    <!-- WaveKey: the correction ghost draws over whichever mode is
          showing and never takes a touch. Removing the feature is removing this
          view and the helium314.keyboard.correct package. -->
     <helium314.keyboard.correct.GhostSwapView

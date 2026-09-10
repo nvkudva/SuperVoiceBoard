@@ -164,10 +164,10 @@ class KeyboardIconsSet private constructor() {
                     ToolbarKey.PAGE_END -> R.drawable.ic_page_end
                     ToolbarKey.SPLIT -> R.drawable.ic_ime_switcher
                     ToolbarKey.BACKGROUND_GATHERING -> R.drawable.ic_settings_gesture
-                    ToolbarKey.AI_FIX -> R.drawable.ic_ai_fix // SuperVoiceBoard
-                    ToolbarKey.SWITCH_KEYBOARD -> R.drawable.ic_ime_switcher // SuperVoiceBoard
-                    ToolbarKey.RESIZE -> R.drawable.ic_resize_keyboard // SuperVoiceBoard
-                    ToolbarKey.ASR_ENGINE -> R.drawable.ic_asr_engine // SuperVoiceBoard
+                    ToolbarKey.AI_FIX -> R.drawable.ic_ai_fix // WaveKey
+                    ToolbarKey.SWITCH_KEYBOARD -> R.drawable.ic_ime_switcher // WaveKey
+                    ToolbarKey.RESIZE -> R.drawable.ic_resize_keyboard // WaveKey
+                    ToolbarKey.ASR_ENGINE -> R.drawable.ic_asr_engine // WaveKey
                 })
             }
         } }
@@ -232,10 +232,10 @@ class KeyboardIconsSet private constructor() {
                     ToolbarKey.PAGE_END -> R.drawable.ic_page_end
                     ToolbarKey.SPLIT -> R.drawable.ic_ime_switcher
                     ToolbarKey.BACKGROUND_GATHERING -> R.drawable.ic_settings_gesture
-                    ToolbarKey.AI_FIX -> R.drawable.ic_ai_fix // SuperVoiceBoard
-                    ToolbarKey.SWITCH_KEYBOARD -> R.drawable.ic_ime_switcher // SuperVoiceBoard
-                    ToolbarKey.RESIZE -> R.drawable.ic_resize_keyboard // SuperVoiceBoard
-                    ToolbarKey.ASR_ENGINE -> R.drawable.ic_asr_engine // SuperVoiceBoard
+                    ToolbarKey.AI_FIX -> R.drawable.ic_ai_fix // WaveKey
+                    ToolbarKey.SWITCH_KEYBOARD -> R.drawable.ic_ime_switcher // WaveKey
+                    ToolbarKey.RESIZE -> R.drawable.ic_resize_keyboard // WaveKey
+                    ToolbarKey.ASR_ENGINE -> R.drawable.ic_asr_engine // WaveKey
                 })
             }
         } }
@@ -300,10 +300,10 @@ class KeyboardIconsSet private constructor() {
                     ToolbarKey.PAGE_END -> R.drawable.ic_page_end_rounded
                     ToolbarKey.SPLIT -> R.drawable.ic_ime_switcher
                     ToolbarKey.BACKGROUND_GATHERING -> R.drawable.ic_settings_gesture
-                    ToolbarKey.AI_FIX -> R.drawable.ic_ai_fix // SuperVoiceBoard
-                    ToolbarKey.SWITCH_KEYBOARD -> R.drawable.ic_ime_switcher // SuperVoiceBoard
-                    ToolbarKey.RESIZE -> R.drawable.ic_resize_keyboard // SuperVoiceBoard
-                    ToolbarKey.ASR_ENGINE -> R.drawable.ic_asr_engine // SuperVoiceBoard
+                    ToolbarKey.AI_FIX -> R.drawable.ic_ai_fix // WaveKey
+                    ToolbarKey.SWITCH_KEYBOARD -> R.drawable.ic_ime_switcher // WaveKey
+                    ToolbarKey.RESIZE -> R.drawable.ic_resize_keyboard // WaveKey
+                    ToolbarKey.ASR_ENGINE -> R.drawable.ic_asr_engine // WaveKey
                 })
             }
         } }

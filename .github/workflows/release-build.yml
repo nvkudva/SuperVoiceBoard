@@ -1,4 +1,4 @@
-# SuperVoiceBoard: the build to sideload, and the GitHub Release that publishes it.
+# WaveKey: the build to sideload, and the GitHub Release that publishes it.
 # arm64 only — a 32-bit device cannot usefully run a 482 MB recognizer plus a
 # 550 MB refiner, and a second ABI is another full NDK compile of the native code.
 #
@@ -87,7 +87,7 @@ jobs:
         run: ./gradlew :app:assembleDebug -Pabi=arm64-v8a --no-daemon
 
       # Gradle bakes versionName into the filename (app/build.gradle.kts:121), so
-      # assembleDebug emits SuperVoiceBoard_4.1-debug-arm64-v8a.apk whatever the
+      # assembleDebug emits WaveKey_4.1-debug-arm64-v8a.apk whatever the
       # tag says. Rename here rather than bumping versionName: 4.1 is the
       # HeliBoard base version and belongs to whoever owns app source.
       - name: Name the asset after the tag
@@ -97,7 +97,7 @@ jobs:
           if [ "$SIGNED" = "true" ]; then variant=release; else variant=debug; fi
           built=$(ls "app/build/outputs/apk/$variant/"*arm64-v8a*.apk | head -1)
           ref="${GITHUB_REF_NAME//\//-}"
-          name="SuperVoiceBoard-${ref}-arm64-v8a-${variant}.apk"
+          name="WaveKey-${ref}-arm64-v8a-${variant}.apk"
           mkdir -p dist
           mv "$built" "dist/$name"
           echo "path=dist/$name" >> "$GITHUB_OUTPUT"
@@ -167,6 +167,6 @@ jobs:
         run: |
           gh release create "$GITHUB_REF_NAME" "${{ steps.asset.outputs.path }}" \
             --repo "$GITHUB_REPOSITORY" \
-            --title "SuperVoiceBoard $GITHUB_REF_NAME$TITLE_SUFFIX" \
+            --title "WaveKey $GITHUB_REF_NAME$TITLE_SUFFIX" \
             --notes-file body.md \
             --prerelease

@@ -43,7 +43,7 @@ fun GestureTypingScreen(
     val gestureFloatingPreviewEnabled = prefs.getBoolean(Settings.PREF_GESTURE_FLOATING_PREVIEW_TEXT, Defaults.PREF_GESTURE_FLOATING_PREVIEW_TEXT)
     val gestureEnabled = prefs.getBoolean(Settings.PREF_GESTURE_INPUT, Defaults.PREF_GESTURE_INPUT)
     val trailEnabled = prefs.getBoolean(Settings.PREF_GESTURE_PREVIEW_TRAIL, Defaults.PREF_GESTURE_PREVIEW_TRAIL)
-    // SuperVoiceBoard: the native library decodes while the finger is still down, so all
+    // WaveKey: the native library decodes while the finger is still down, so all
     // seven options mean something and its screen is left exactly as upstream wrote it.
     // The built-in decoder produces one word on lift, so floating preview, dynamic
     // floating preview and phrase gesture would be switches that control nothing —
@@ -79,7 +79,7 @@ fun GestureTypingScreen(
     )
 }
 
-// SuperVoiceBoard: not a preference, so it has no Settings key of its own; it still needs
+// WaveKey: not a preference, so it has no Settings key of its own; it still needs
 // one here because SearchSettingsScreen resolves every row through the settings container.
 const val GLIDE_DECODER_NOTE = "glide_decoder_note"
 

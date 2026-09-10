@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-only
 //
 // Ported from VBoard's :core module. The sources under src/ are unchanged;
-// this build file is rewritten because SuperVoiceBoard (inherited from
+// this build file is rewritten because WaveKey (inherited from
 // HeliBoard) had no version catalog. It has one now, for the fork's own
 // modules: gradle/libs.versions.toml.
 plugins {

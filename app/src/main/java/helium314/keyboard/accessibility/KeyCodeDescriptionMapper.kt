@@ -37,7 +37,7 @@ internal class KeyCodeDescriptionMapper private constructor() {
         put(KeyCode.ACTION_PREVIOUS, R.string.spoken_description_action_previous)
         put(KeyCode.EMOJI, R.string.spoken_description_emoji)
         put(KeyCode.EMOJI_SEARCH, R.string.spoken_description_search)
-        // SuperVoiceBoard: the fork's own keys, or TalkBack reads the raw
+        // WaveKey: the fork's own keys, or TalkBack reads the raw
         // keycode. These reuse the labels the keys already carry elsewhere.
         put(KeyCode.AI_FIX, R.string.ai_fix)
         put(KeyCode.AI_FIX_ATTRIBUTION, R.string.ai_fix_attribution_title)

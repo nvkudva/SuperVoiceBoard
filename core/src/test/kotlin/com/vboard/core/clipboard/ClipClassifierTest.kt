@@ -209,7 +209,7 @@ class ClipClassifierTest {
 
     // ------------------------------------------- non-ASCII separators and digits
 
-    // SuperVoiceBoard W1.3: the separator class was once ASCII space and
+    // WaveKey W1.3: the separator class was once ASCII space and
     // hyphen-minus only, so a card grouped the way a web page or a banking app
     // actually renders it never reached Luhn and landed on disk as NORMAL.
     @ParameterizedTest
@@ -227,7 +227,7 @@ class ClipClassifierTest {
         assertKept(ClipClass.SESSION_ONLY, classify(text))
     }
 
-    // SuperVoiceBoard W1.2: the card rule once read the raw text, so an
+    // WaveKey W1.2: the card rule once read the raw text, so an
     // invisible code point pasted into the middle of a number broke the digit
     // run and the number was persisted.
     @ParameterizedTest

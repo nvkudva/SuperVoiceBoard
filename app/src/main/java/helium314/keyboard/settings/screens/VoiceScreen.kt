@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-only
 //
-// SuperVoiceBoard: voice settings, inside HeliBoard's settings rather than
+// WaveKey: voice settings, inside HeliBoard's settings rather than
 // carried over from VBoard's own settings app (W2.5). The keys and defaults are
 // :voice's — see com.vboard.app.settings.SettingsRepository — so the screen and
 // the dictation path cannot disagree about what a switch means.

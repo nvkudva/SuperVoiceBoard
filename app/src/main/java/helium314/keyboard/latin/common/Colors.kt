@@ -232,7 +232,7 @@ class DynamicColors(context: Context, override val themeStyle: String, override 
                 if (!isNight) pressedStateList(doubleAdjustedFunctionalKey, functionalKey)
                 else pressedStateList(functionalKey, doubleAdjustedKeyBackground)
 
-            // SuperVoiceBoard: in these two styles the action key is a key like
+            // WaveKey: in these two styles the action key is a key like
             // any other — one key treatment across the board, and an accent slab
             // in the corner reads as a different kind of control.
             actionKeyStateList = if (themeStyle == STYLE_OUTLINED || themeStyle == STYLE_EDGE_LIT) keyStateList
@@ -257,7 +257,7 @@ class DynamicColors(context: Context, override val themeStyle: String, override 
                 if (themeStyle == STYLE_HOLO) pressedStateList(functionalKey, Color.TRANSPARENT)
                 else keyStateList
 
-            // SuperVoiceBoard: in these two styles the action key is a key like
+            // WaveKey: in these two styles the action key is a key like
             // any other — one key treatment across the board, and an accent slab
             // in the corner reads as a different kind of control.
             actionKeyStateList = if (themeStyle == STYLE_OUTLINED || themeStyle == STYLE_EDGE_LIT) keyStateList

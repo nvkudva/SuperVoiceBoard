@@ -1,5 +1,5 @@
 <!-- SPDX-License-Identifier: GPL-3.0-only -->
-<!-- SuperVoiceBoard: toggles dictation between the system recognizer and the
+<!-- WaveKey: toggles dictation between the system recognizer and the
      on-device model. A mic with a swap arrow, so the key reads as "which mic". -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="24dp"

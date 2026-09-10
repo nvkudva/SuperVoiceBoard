@@ -34,7 +34,7 @@ internal object ModelRoots {
      */
     /**
      * Internal storage wins, and external is only read when models are already
-     * there (SuperVoiceBoard).
+     * there (WaveKey).
      *
      * VBoard preferred `Android/media`, so an uninstall would not take a
      * gigabyte of models with it. That is the wrong trade for a keyboard: the

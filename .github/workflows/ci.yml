@@ -1,4 +1,4 @@
-# SuperVoiceBoard CI — ported from VBoard's ci.yml.
+# WaveKey CI — ported from VBoard's ci.yml.
 # The upstream HeliBoard workflows (build-debug-apk, build-test-auto) are kept
 # as-is so they stay mergeable; this is the fork's own gate.
 name: CI

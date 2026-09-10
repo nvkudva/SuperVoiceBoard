@@ -77,14 +77,14 @@ public class AppsBinaryDictionary extends ExpandableBinaryDictionary implements 
         // TODO: Better tokenization for non-Latin writing systems
         for (final String word : new SpacedTokens(appLabel)) {
             if (DEBUG_DUMP) {
-                // SuperVoiceBoard: never log user content (PLAN.md §3.4).
+                // WaveKey: never log user content (PLAN.md §3.4).
                 Log.d(TAG, "addName word of length " + word.length());
             }
             final int wordLen = StringUtils.codePointCount(word);
             // Don't add single letter words, possibly confuses capitalization of i.
             if (1 < wordLen && wordLen <= MAX_WORD_LENGTH) {
                 if (DEBUG) {
-                    // SuperVoiceBoard: never log user content (PLAN.md §3.4).
+                    // WaveKey: never log user content (PLAN.md §3.4).
                     Log.d(TAG, "addName with ngram context");
                 }
                 runGCIfRequiredLocked(true /* mindsBlockByGC */);

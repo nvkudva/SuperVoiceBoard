@@ -125,7 +125,7 @@ class SuggestionStripView(context: Context, attrs: AttributeSet?, defStyle: Int)
     private val suggestionsStrip: ViewGroup = findViewById(R.id.suggestions_strip)
     private val toolbarExpandKey = findViewById<ImageButton>(R.id.suggestions_strip_toolbar_key)
 
-    // SuperVoiceBoard: the always-visible mic at the right-hand end of the row.
+    // WaveKey: the always-visible mic at the right-hand end of the row.
     // Not a pinned toolbar key, because those are hidden while the toolbar is
     // expanded, and this one must survive every state of the strip (W3.2).
     private val micKey = findViewById<ImageButton>(R.id.supervoiceboard_mic_key)
@@ -134,7 +134,7 @@ class SuggestionStripView(context: Context, attrs: AttributeSet?, defStyle: Int)
     var onMicClick: (() -> Unit)? = null
 
     /**
-     * SuperVoiceBoard (W6.3/W6.4): press-and-hold on the mic.
+     * WaveKey (W6.3/W6.4): press-and-hold on the mic.
      *
      * `onMicHoldStart` fires once the press has lasted long enough to be a hold
      * rather than a tap, `onMicHoldEnd` when the finger lifts. Tap-to-toggle is
@@ -174,10 +174,10 @@ class SuggestionStripView(context: Context, attrs: AttributeSet?, defStyle: Int)
         colors.setColor(toolbarExpandKey, ColorType.TOOL_BAR_EXPAND_KEY)
         colors.setColor(toolbarExpandKey.background, ColorType.TOOL_BAR_EXPAND_KEY_BACKGROUND)
 
-        // SuperVoiceBoard: mic key styling, matching the toolbar keys around it
+        // WaveKey: mic key styling, matching the toolbar keys around it
         micKey.scaleType = android.widget.ImageView.ScaleType.CENTER
         micKey.setImageDrawable(KeyboardIconsSet.instance.getNewDrawable(ToolbarKey.VOICE.name, context))
-        // SuperVoiceBoard: the mic is the one saturated thing on the strip — a
+        // WaveKey: the mic is the one saturated thing on the strip — a
         // spectrum pill with a dark glyph, so the way in to dictation is legible
         // at a glance and in the corner of the eye. It keeps the strip's own
         // colours out of it deliberately: this is the brand mark, not a key.
@@ -293,7 +293,7 @@ class SuggestionStripView(context: Context, attrs: AttributeSet?, defStyle: Int)
         )
         isExternalSuggestionVisible = false
         updateKeys()
-        // SuperVoiceBoard: typing collapses an open toolbar, so the words the
+        // WaveKey: typing collapses an open toolbar, so the words the
         // user is about to want are not hidden behind the tools. Only when there
         // is something to show — an empty strip would close the toolbar the user
         // just opened, before they had touched a key.
@@ -595,7 +595,7 @@ class SuggestionStripView(context: Context, attrs: AttributeSet?, defStyle: Int)
     }
 
     /**
-     * SuperVoiceBoard: a spectrum hairline along the bottom of the strip, dim
+     * WaveKey: a spectrum hairline along the bottom of the strip, dim
      * while idle. It is the same object the dictation meter moves, so the strip
      * gains a live state without gaining a widget.
      */
@@ -617,7 +617,7 @@ class SuggestionStripView(context: Context, attrs: AttributeSet?, defStyle: Int)
     }
 
     fun updateVoiceKey() {
-        // SuperVoiceBoard: the strip's own mic is the only mic — VOICE is not a
+        // WaveKey: the strip's own mic is the only mic — VOICE is not a
         // toolbar key here — and it follows the voice-input-key setting (W3.2).
         micKey.isVisible = Settings.getValues().mShowsVoiceInputKey
     }
@@ -669,7 +669,7 @@ class SuggestionStripView(context: Context, attrs: AttributeSet?, defStyle: Int)
         var DEBUG_SUGGESTIONS = false
         private const val DEBUG_INFO_TEXT_SIZE_IN_DIP = 6.5f
 
-        // SuperVoiceBoard: a press is a hold past this, and raw dictation past
+        // WaveKey: a press is a hold past this, and raw dictation past
         // the second one. Both are deliberately longer than the system's
         // long-press timeout, which fires while a user is still deciding.
         private const val MIC_HOLD_MS = 350L

@@ -48,7 +48,7 @@ private constructor(val themeId: Int, @JvmField val mStyleId: Int) {
         const val STYLE_HOLO = "Holo"
         const val STYLE_ROUNDED = "Rounded"
 
-        // SuperVoiceBoard: two key treatments of our own. Both draw their own key
+        // WaveKey: two key treatments of our own. Both draw their own key
         // shape, so neither offers the borderless variant the older styles have.
         const val STYLE_OUTLINED = "Outlined"
         const val STYLE_EDGE_LIT = "Edgelit"
@@ -90,7 +90,7 @@ private constructor(val themeId: Int, @JvmField val mStyleId: Int) {
         val STYLES = arrayOf(STYLE_MATERIAL, STYLE_HOLO, STYLE_ROUNDED, STYLE_OUTLINED, STYLE_EDGE_LIT)
 
         /**
-         * Styles that carry an icon set. The two SuperVoiceBoard styles change key
+         * Styles that carry an icon set. The two WaveKey styles change key
          * shape, not iconography — they borrow Material's icons — so offering them
          * in the icon picker would list two entries that render identically.
          */
@@ -188,7 +188,7 @@ private constructor(val themeId: Int, @JvmField val mStyleId: Int) {
                     ContextCompat.getColor(context, R.color.key_hint_letter_color_lxx_light),
                     keyboardBackground = backgroundImage
                 )
-                // SuperVoiceBoard: upstream's dark is Material blue-grey 900, which
+                // WaveKey: upstream's dark is Material blue-grey 900, which
                 // reads green next to a neutral phone UI. These are the same
                 // values pulled onto the grey axis, keeping the three steps —
                 // board, key, functional key — the same distance apart.

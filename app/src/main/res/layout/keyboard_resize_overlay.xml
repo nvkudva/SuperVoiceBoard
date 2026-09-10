@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-    SuperVoiceBoard: overlay shown on top of the keyboard while resize mode is active.
+    WaveKey: overlay shown on top of the keyboard while resize mode is active.
     SPDX-License-Identifier: GPL-3.0-only
 -->
 <helium314.keyboard.keyboard.KeyboardResizeOverlayView

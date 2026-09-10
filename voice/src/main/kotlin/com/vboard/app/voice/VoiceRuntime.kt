@@ -16,7 +16,7 @@ import kotlinx.coroutines.CoroutineScope
  * What the voice layer needs from the hosting application.
  *
  * VBoard handed its `Application` subclass straight to the session controller,
- * the download worker and the refiner client. SuperVoiceBoard cannot: the
+ * the download worker and the refiner client. WaveKey cannot: the
  * hosting Application is HeliBoard's, an upstream class this fork does not own
  * (PLAN.md §3.2). This is the same set of members under an interface the
  * keyboard's Application implements, so nothing in :voice knows which keyboard

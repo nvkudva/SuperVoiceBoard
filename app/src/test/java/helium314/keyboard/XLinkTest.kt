@@ -74,7 +74,7 @@ class XLinkTest { // Without the X, SubtypeTests fail with ClassCastException. W
         val url = URL(link)
         val connection = url.openConnection() as HttpURLConnection
         connection.requestMethod = "HEAD"
-        // SuperVoiceBoard: some hosts (reddit, lemmy) answer a CI runner's IP with
+        // WaveKey: some hosts (reddit, lemmy) answer a CI runner's IP with
         // 403 or 429 no matter what the link is. That says nothing about whether
         // the link is dead, which is all this test is for.
         if (connection.responseCode in listOf(403, 429)) {

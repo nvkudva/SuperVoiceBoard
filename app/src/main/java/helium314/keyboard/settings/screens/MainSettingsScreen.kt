@@ -33,6 +33,7 @@ import helium314.keyboard.settings.SearchSettingsScreen
 import helium314.keyboard.latin.utils.Theme
 import helium314.keyboard.settings.initPreview
 import helium314.keyboard.settings.preferences.Preference
+import helium314.keyboard.settings.preferences.PreferenceCategory
 import helium314.keyboard.settings.preferences.PreferenceGroup
 import helium314.keyboard.latin.utils.previewDark
 import helium314.keyboard.settings.screens.gesturedata.END_DATE_EPOCH_MILLIS
@@ -95,6 +96,7 @@ fun MainSettingsScreen(
                     .then(Modifier.padding(innerPadding))
                     .padding(bottom = 24.dp)
             ) {
+                PreferenceCategory(stringResource(R.string.settings_category_input))
                 PreferenceGroup {
                     Preference(
                         name = stringResource(R.string.language_and_layouts_title),
@@ -115,6 +117,10 @@ fun MainSettingsScreen(
                         onClick = onClickVoice,
                         icon = R.drawable.ic_settings_voice
                     ) { NextScreenIcon() }
+                }
+
+                PreferenceCategory(stringResource(R.string.settings_screen_appearance))
+                PreferenceGroup {
                     Preference(
                         name = stringResource(R.string.settings_door_look),
                         description = lookSummary,
@@ -127,15 +133,17 @@ fun MainSettingsScreen(
                         onClick = onClickToolbar,
                         icon = R.drawable.ic_settings_toolbar
                     ) { NextScreenIcon() }
+                }
+
+                PreferenceCategory(stringResource(R.string.wk_category_data))
+                PreferenceGroup {
                     Preference(
                         name = stringResource(R.string.settings_door_privacy),
                         description = stringResource(R.string.settings_door_privacy_summary),
                         onClick = onClickPrivacyAdvanced,
                         icon = R.drawable.ic_settings_advanced
                     ) { NextScreenIcon() }
-                }
 
-                PreferenceGroup {
                     // Upstream's research collection, which deletes itself two
                     // weeks after the gathering phase ends.
                     if (JniUtils.sHaveGestureLib && System.currentTimeMillis() < END_DATE_EPOCH_MILLIS + TWO_WEEKS_IN_MILLIS)

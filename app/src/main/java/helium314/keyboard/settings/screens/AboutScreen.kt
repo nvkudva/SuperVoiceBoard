@@ -54,7 +54,7 @@ fun AboutScreen(
         SettingsWithoutKey.APP,
         SettingsWithoutKey.VERSION,
         SettingsWithoutKey.LICENSE,
-        SettingsWithoutKey.BASED_ON, // SuperVoiceBoard: upstream attribution
+        SettingsWithoutKey.BASED_ON, // WaveKey: upstream attribution
         SettingsWithoutKey.HIDDEN_FEATURES,
         SettingsWithoutKey.GITHUB_WIKI,
         SettingsWithoutKey.COMMUNITY_LINKS,
@@ -109,7 +109,7 @@ fun createAboutSettings(context: Context) = listOf(
             icon = R.drawable.ic_settings_about_license
         )
     },
-    // SuperVoiceBoard: this fork must credit the keyboard it is built on; opens the upstream project
+    // WaveKey: this fork must credit the keyboard it is built on; opens the upstream project
     Setting(context, SettingsWithoutKey.BASED_ON, R.string.about_based_on, R.string.about_based_on_description) {
         val ctx = LocalContext.current
         Preference(

@@ -650,7 +650,7 @@ class VoiceSessionController(
      * change is the wrong side of that bargain.
      */
     private suspend fun cleanTranscript(raw: String): CleanupResult {
-        // SuperVoiceBoard (W4.2): shield before the cleaner, restore after.
+        // WaveKey (W4.2): shield before the cleaner, restore after.
         //
         // The tokenizer was built for prose and drops every symbol it does not
         // recognize, so a recognizer that writes "$5.99", "3.14" or an email

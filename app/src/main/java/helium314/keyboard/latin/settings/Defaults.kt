@@ -45,7 +45,7 @@ object Defaults {
 
     private const val DEFAULT_SIZE_SCALE = 1.0f // 100%
     const val PREF_THEME_STYLE = KeyboardTheme.STYLE_MATERIAL
-    // Icons follow the keyboard style, except for the two SuperVoiceBoard styles:
+    // Icons follow the keyboard style, except for the two WaveKey styles:
     // they change key shape, not iconography, and carry no icon set of their own.
     fun PREF_ICON_STYLE(prefs: SharedPreferences): String {
         val style = prefs.getString(Settings.PREF_THEME_STYLE, PREF_THEME_STYLE)!!
@@ -91,7 +91,7 @@ object Defaults {
     @JvmField
     val PREF_SPLIT_SPACER_SCALE = Array(4) { DEFAULT_SIZE_SCALE }
     @JvmField
-    // SuperVoiceBoard: 10% taller than upstream out of the box. The keys were
+    // WaveKey: 10% taller than upstream out of the box. The keys were
     // under the 48dp target on a phone, and every other scale here stays at 100%
     // so the user's own height setting still reads as a delta from a round number.
     val PREF_KEYBOARD_HEIGHT_SCALE = Array(4) { 1.1f }

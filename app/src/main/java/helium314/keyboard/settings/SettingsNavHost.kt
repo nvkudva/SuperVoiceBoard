@@ -16,9 +16,9 @@ import androidx.navigation.compose.rememberNavController
 import helium314.keyboard.latin.common.LocaleUtils.constructLocale
 import helium314.keyboard.latin.settings.SettingsSubtype.Companion.toSettingsSubtype
 import helium314.keyboard.latin.settings.getTransitionAnimationScale
-import helium314.keyboard.settings.screens.PrivacyBreakingScreen // SuperVoiceBoard
-import helium314.keyboard.settings.screens.VoiceModelsScreen // SuperVoiceBoard
-import helium314.keyboard.settings.screens.VoiceScreen // SuperVoiceBoard
+import helium314.keyboard.settings.screens.PrivacyBreakingScreen // WaveKey
+import helium314.keyboard.settings.screens.VoiceModelsScreen // WaveKey
+import helium314.keyboard.settings.screens.VoiceScreen // WaveKey
 import helium314.keyboard.settings.screens.AboutScreen
 import helium314.keyboard.settings.screens.AdvancedSettingsScreen
 import helium314.keyboard.settings.screens.AppearanceScreen
@@ -130,13 +130,13 @@ fun SettingsNavHost(
         composable(SettingsDestination.Advanced) {
             AdvancedSettingsScreen(onClickBack = ::goBack)
         }
-        composable(SettingsDestination.Voice) { // SuperVoiceBoard
+        composable(SettingsDestination.Voice) { // WaveKey
             VoiceScreen(onClickBack = ::goBack)
         }
-        composable(SettingsDestination.PrivacyBreaking) { // SuperVoiceBoard
+        composable(SettingsDestination.PrivacyBreaking) { // WaveKey
             PrivacyBreakingScreen(onClickBack = ::goBack)
         }
-        composable(SettingsDestination.VoiceModels) { // SuperVoiceBoard
+        composable(SettingsDestination.VoiceModels) { // WaveKey
             VoiceModelsScreen(onClickBack = ::goBack)
         }
         composable(SettingsDestination.Debug) {
@@ -194,9 +194,9 @@ object SettingsDestination {
     const val DataGathering = "data_gathering" // remove when data gathering phase is done (end of 2026 latest)
     const val DataReview = "data_review" // remove when data gathering phase is done (end of 2026 latest)
     const val Advanced = "advanced"
-    const val Voice = "voice" // SuperVoiceBoard
-    const val VoiceModels = "voice_models" // SuperVoiceBoard
-    const val PrivacyBreaking = "privacy_breaking" // SuperVoiceBoard
+    const val Voice = "voice" // WaveKey
+    const val VoiceModels = "voice_models" // WaveKey
+    const val PrivacyBreaking = "privacy_breaking" // WaveKey
     const val Typing = "typing" // WaveKey: the Typing door
     const val ToolbarKeys = "toolbar_keys" // WaveKey: the toolbar key editor
     const val PrivacyAdvanced = "privacy_advanced" // WaveKey: the Privacy & advanced door

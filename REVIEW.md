@@ -1,4 +1,4 @@
-# Code review — SuperVoiceBoard
+# Code review — WaveKey
 
 A HeliBoard fork that adds on-device dictation (sherpa-onnx streaming Zipformer plus a Parakeet final pass) and an optional out-of-process 0.5B LLM that refines dictated speech and powers an "AI fix" toolbar key.
 

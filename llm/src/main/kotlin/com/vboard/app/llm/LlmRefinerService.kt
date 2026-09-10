@@ -86,7 +86,7 @@ class LlmRefinerService : Service() {
     /** Builds the engine on first use; null when no refiner pack is installed. */
     private fun engineOrNull(): LlmRefiner? {
         refiner?.let { return it }
-        // SuperVoiceBoard: the hosting Application is HeliBoard's, so the model
+        // WaveKey: the hosting Application is HeliBoard's, so the model
         // path arrives through an interface instead of a concrete app class.
         // MediaPipe's LLM inference needs API 24; the keyboard supports 21.
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) return null

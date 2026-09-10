@@ -9,7 +9,7 @@ plugins {
 }
 
 /**
- * SuperVoiceBoard: which architectures to build.
+ * WaveKey: which architectures to build.
  *
  * A phone needs one. Building four (plus the universal APK that is a copy of
  * all of them) is three quarters of the native compile thrown away, so the
@@ -32,7 +32,7 @@ android {
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "com.supervoiceboard.app" // SuperVoiceBoard: rebrand; namespace stays helium314.keyboard.* for upstream rebaseability
+        applicationId = "com.supervoiceboard.app" // WaveKey: rebrand; namespace stays helium314.keyboard.* for upstream rebaseability
         minSdk = 21
         targetSdk = 36
         versionCode = 4101
@@ -45,11 +45,11 @@ android {
             if (!abiNarrowed) abiFilters.addAll(buildAbis)
         }
         proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
-        // SuperVoiceBoard: the emulator UI QA suite (app/src/androidTest)
+        // WaveKey: the emulator UI QA suite (app/src/androidTest)
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
-    // SuperVoiceBoard: release builds must be installable. The keystore lives
+    // WaveKey: release builds must be installable. The keystore lives
     // outside the repo; without it (CI, a fresh clone) the release build still
     // works and comes out unsigned, exactly as upstream's does.
     signingConfigs {
@@ -64,26 +64,26 @@ android {
         }
     }
 
-    // SuperVoiceBoard: the UI QA suite runs against debugNoMinify — "debug" here
+    // WaveKey: the UI QA suite runs against debugNoMinify — "debug" here
     // is minified, and R8 renames the very things the tests look for.
     testBuildType = "debugNoMinify"
 
     buildTypes {
         release {
             isMinifyEnabled = true
-            // SuperVoiceBoard: safe-mode shrinking (the default), so resources
+            // WaveKey: safe-mode shrinking (the default), so resources
             // reached by name at runtime survive; 117 locale folders and the
             // whole Compose resource set ship in every one of the five ABI APKs.
             isShrinkResources = true
             isDebuggable = false
             isJniDebuggable = false
-            // SuperVoiceBoard: sign when the local keystore is present
+            // WaveKey: sign when the local keystore is present
             signingConfigs.getByName("supervoiceboard").storeFile?.let {
                 signingConfig = signingConfigs.getByName("supervoiceboard")
             }
         }
         create("nouserlib") { // same as release, but does not allow the user to provide a library
-            // SuperVoiceBoard: :core/:voice/:llm only have debug and release
+            // WaveKey: :core/:voice/:llm only have debug and release
             matchingFallbacks += "release"
             isMinifyEnabled = true
             isShrinkResources = true
@@ -122,14 +122,14 @@ android {
             }
             variant.outputs.forEach { output ->
                 if (output is com.android.build.api.variant.impl.VariantOutputImpl) {
-                    // SuperVoiceBoard: ABI splits mean several outputs per variant,
+                    // WaveKey: ABI splits mean several outputs per variant,
                     // so the ABI goes in the name; the universal APK has none.
                     val abi = output.filters
                         .firstOrNull { it.filterType == com.android.build.api.variant.FilterConfiguration.FilterType.ABI }
                         ?.identifier
                     val suffix = if (abi == null) "universal" else abi
                     output.outputFileName =
-                        "SuperVoiceBoard_${defaultConfig.versionName}-${variant.buildType}-$suffix.apk"
+                        "WaveKey_${defaultConfig.versionName}-${variant.buildType}-$suffix.apk"
                 }
             }
         }
@@ -148,7 +148,7 @@ android {
     }
     ndkVersion = "28.0.13004108"
 
-    // SuperVoiceBoard: the ASR and refiner runtimes bring ~31 MB of native code
+    // WaveKey: the ASR and refiner runtimes bring ~31 MB of native code
     // per ABI, which turns a 21 MB universal APK into a 93 MB one. Release builds
     // are split per ABI so a phone downloads one architecture, not four; the
     // universal APK is still produced for anyone who wants it (W6.2).
@@ -213,7 +213,7 @@ android {
 }
 
 dependencies {
-    // SuperVoiceBoard: the voice layer and the out-of-process refiner
+    // WaveKey: the voice layer and the out-of-process refiner
     implementation(project(":core"))
     implementation(project(":voice"))
     implementation(project(":llm"))
@@ -248,7 +248,7 @@ dependencies {
     testImplementation("androidx.test:runner:1.7.0")
     testImplementation("androidx.test:core:1.7.0")
 
-    // SuperVoiceBoard: on-device UI QA. Compose for the settings surface,
+    // WaveKey: on-device UI QA. Compose for the settings surface,
     // UiAutomator for the keyboard itself, which lives in another window.
     androidTestImplementation(platform("androidx.compose:compose-bom:2025.11.01"))
     androidTestImplementation("androidx.compose.ui:ui-test-junit4")

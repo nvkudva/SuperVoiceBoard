@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-only
 //
-// SuperVoiceBoard. Self-contained on purpose: this whole package plus the one
+// WaveKey. Self-contained on purpose: this whole package plus the one
 // call in LatinIME is the entire feature. Delete both and nothing else changes.
 package helium314.keyboard.correct
 

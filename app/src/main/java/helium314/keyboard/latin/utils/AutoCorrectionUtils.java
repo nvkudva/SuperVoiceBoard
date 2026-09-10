@@ -34,7 +34,7 @@ public final class AutoCorrectionUtils {
             final float normalizedScore = BinaryDictionaryUtils.calcNormalizedScore(
                     consideredWord, suggestion.mWord, autoCorrectionSuggestionScore);
             if (DebugFlags.DEBUG_ENABLED) {
-                // SuperVoiceBoard: never log user content (PLAN.md §3.4).
+                // WaveKey: never log user content (PLAN.md §3.4).
                 Log.d(TAG, "Normalized score: "
                         + autoCorrectionSuggestionScore + ", " + normalizedScore
                         + " (" + threshold + ")");

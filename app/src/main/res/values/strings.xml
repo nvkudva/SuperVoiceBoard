@@ -9,11 +9,11 @@
     xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2"
     tools:ignore="MissingTranslation">
     <!-- Name of Android spell checker service. The app name should not be translated. -->
-    <string name="spell_checker_service_name">SuperVoiceBoard Spell Checker</string>
+    <string name="spell_checker_service_name">WaveKey Spell Checker</string>
     <!-- Title for IME settings screen. The app name should not be translated. -->
     <string name="ime_settings">Settings</string>
     <!-- Title for the spell checking service settings screen. The app name should not be translated. -->
-    <string name="android_spell_checker_settings">SuperVoiceBoard Spell Checker Settings</string>
+    <string name="android_spell_checker_settings">WaveKey Spell Checker Settings</string>
     <!-- Option to provide vibrate/haptic feedback on keypress -->
     <string name="vibrate_on_keypress">Vibrate on keypress</string>
     <!-- Option to provide vibrate/haptic feedback on keypress even in do not disturb mode -->
@@ -354,9 +354,9 @@
     <string name="clipboard" tools:keep="@string/clipboard">Clipboard</string>
     <string name="clear_clipboard" tools:keep="@string/clear_clipboard">Clear clipboard</string>
     <string name="voice" tools:keep="@string/voice">Voice input</string>
-    <!-- SuperVoiceBoard: name of the AI fix toolbar key (W5.1) -->
+    <!-- WaveKey: name of the AI fix toolbar key (W5.1) -->
     <string name="ai_fix" tools:keep="@string/ai_fix">AI fix</string>
-    <!-- SuperVoiceBoard: name of the keyboard-switcher toolbar key -->
+    <!-- WaveKey: name of the keyboard-switcher toolbar key -->
     <string name="switch_keyboard" tools:keep="@string/switch_keyboard">Switch keyboard</string>
     <string name="numpad" tools:keep="@string/numpad" translatable="false">@string/layout_numpad</string>
     <string name="dpad" tools:keep="@string/dpad" translatable="false">@string/layout_dpad</string>
@@ -796,11 +796,11 @@ New dictionary:
     <string name="settings_screen_about">About</string>
     <!-- version for about screen -->
     <string name="version">Version</string>
-    <!-- SuperVoiceBoard: AI fix attribution (W5.2) -->
+    <!-- WaveKey: AI fix attribution (W5.2) -->
     <string name="ai_fix_attribution_line">“%1$s” → “%2$s”</string>
     <string name="ai_fix_attribution_title">What the model changed</string>
     <string name="ai_fix_attribution_none">The model changed no wording — only spelling and spacing</string>
-    <!-- SuperVoiceBoard: attribution entry for the upstream project this fork is built on -->
+    <!-- WaveKey: attribution entry for the upstream project this fork is built on -->
     <string name="about_based_on">Based on HeliBoard</string>
     <string name="about_based_on_description">All typing functionality comes from HeliBoard (GPL-3.0), itself a fork of OpenBoard and AOSP LatinIME</string>
     <string name="about_github_link">View on GitHub</string>

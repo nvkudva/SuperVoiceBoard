@@ -95,10 +95,10 @@ fun getCodeForToolbarKey(key: ToolbarKey) = Settings.getInstance().getCustomTool
     SPLIT -> KeyCode.SPLIT_LAYOUT
     FLOATING -> KeyCode.TOGGLE_FLOATING_WINDOW
     BACKGROUND_GATHERING -> KeyCode.BACKGROUND_GATHERING
-    AI_FIX -> KeyCode.AI_FIX // SuperVoiceBoard
-    SWITCH_KEYBOARD -> KeyCode.SYSTEM_INPUT_METHOD_PICKER // SuperVoiceBoard
-    RESIZE -> KeyCode.TOGGLE_RESIZE_MODE // SuperVoiceBoard
-    ASR_ENGINE -> KeyCode.TOGGLE_ASR_ENGINE // SuperVoiceBoard
+    AI_FIX -> KeyCode.AI_FIX // WaveKey
+    SWITCH_KEYBOARD -> KeyCode.SYSTEM_INPUT_METHOD_PICKER // WaveKey
+    RESIZE -> KeyCode.TOGGLE_RESIZE_MODE // WaveKey
+    ASR_ENGINE -> KeyCode.TOGGLE_ASR_ENGINE // WaveKey
 }
 
 fun getCodeForToolbarKeyLongClick(key: ToolbarKey) = Settings.getInstance().getCustomToolbarLongpressCode(key) ?: when (key) {
@@ -118,7 +118,7 @@ fun getCodeForToolbarKeyLongClick(key: ToolbarKey) = Settings.getInstance().getC
     PAGE_UP -> KeyCode.MOVE_START_OF_PAGE
     PAGE_DOWN -> KeyCode.MOVE_END_OF_PAGE
     BACKGROUND_GATHERING -> KeyCode.BACKGROUND_GATHERING_TEMP_OFF
-    AI_FIX -> KeyCode.AI_FIX_ATTRIBUTION // SuperVoiceBoard (W5.2)
+    AI_FIX -> KeyCode.AI_FIX_ATTRIBUTION // WaveKey (W5.2)
     else -> KeyCode.UNSPECIFIED
 }
 
@@ -127,10 +127,10 @@ enum class ToolbarKey {
     VOICE, CLIPBOARD, NUMPAD, DPAD, UNDO, REDO, SETTINGS, SELECT_ALL, SELECT_WORD, COPY, CUT, PASTE, ONE_HANDED, FLOATING, SPLIT,
     INCOGNITO, AUTOCORRECT, CLEAR_CLIPBOARD, CLOSE_HISTORY, EMOJI, LEFT, RIGHT, UP, DOWN, WORD_LEFT, WORD_RIGHT,
     PAGE_UP, PAGE_DOWN, FULL_LEFT, FULL_RIGHT, PAGE_START, PAGE_END, BACKGROUND_GATHERING,
-    AI_FIX, // SuperVoiceBoard (W5.1)
-    SWITCH_KEYBOARD, // SuperVoiceBoard: opens the system input-method picker
-    RESIZE, // SuperVoiceBoard: enters interactive keyboard resize mode
-    ASR_ENGINE // SuperVoiceBoard: flips dictation between the system recognizer and Parakeet
+    AI_FIX, // WaveKey (W5.1)
+    SWITCH_KEYBOARD, // WaveKey: opens the system input-method picker
+    RESIZE, // WaveKey: enters interactive keyboard resize mode
+    ASR_ENGINE // WaveKey: flips dictation between the system recognizer and Parakeet
 }
 
 enum class ToolbarMode {
@@ -139,12 +139,12 @@ enum class ToolbarMode {
 
 val toolbarKeyStrings = entries.associateWithTo(EnumMap(ToolbarKey::class.java)) { it.toString().lowercase(Locale.US) }
 
-// SuperVoiceBoard: the mic lives in the suggestion strip itself and is always
+// WaveKey: the mic lives in the suggestion strip itself and is always
 // visible there, so a toolbar VOICE key could only ever be a second mic icon.
 private val hiddenToolbarKeys = setOf(VOICE)
 
 val defaultToolbarPref by lazy {
-    // SuperVoiceBoard: AI_FIX is on by default — it is the fork's reason to exist,
+    // WaveKey: AI_FIX is on by default — it is the fork's reason to exist,
     // and a key nobody can find is a feature nobody has (W5.1). It sits at the end,
     // so in LTR it lands under the thumb on the right.
     // LEFT/RIGHT are off by default: single-character cursor nudges earn their place
@@ -156,7 +156,7 @@ val defaultToolbarPref by lazy {
 }
 
 val defaultPinnedToolbarPref = entries.filterNot { it == CLOSE_HISTORY || it in hiddenToolbarKeys }.joinToString(Separators.ENTRY) {
-    // SuperVoiceBoard: AI_FIX is pinned to the strip by default (W5.1); everything
+    // WaveKey: AI_FIX is pinned to the strip by default (W5.1); everything
     // else keeps upstream's "pinned to nothing" default.
     it.name + Separators.KV + (it == AI_FIX)
 }

@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-only
 //
-// SuperVoiceBoard. New file: everything that binds the IME-agnostic :voice
+// WaveKey. New file: everything that binds the IME-agnostic :voice
 // module to this particular keyboard lives here, so LatinIME's own edits stay
 // down to lifecycle calls (PLAN.md §3.2).
 package helium314.keyboard.voice
@@ -54,7 +54,7 @@ class VoiceController(
     private var googleForSession = false
 
     /**
-     * SuperVoiceBoard: true when this session is on the platform recognizer
+     * WaveKey: true when this session is on the platform recognizer
      * because Parakeet is not downloaded yet, rather than because the user
      * asked for it. Only that case gets the download-shaped error recovery.
      */
@@ -265,7 +265,7 @@ class VoiceController(
     }
 
     /**
-     * SuperVoiceBoard: true when a mic press with the local engine selected
+     * WaveKey: true when a mic press with the local engine selected
      * would land on the platform's on-device recognizer instead of Parakeet.
      *
      * Ordered so a device with Parakeet installed never touches the recognizer
@@ -326,7 +326,7 @@ class VoiceController(
             googleSession.start()
             return
         }
-        // SuperVoiceBoard: a fresh install has no Parakeet and a 482 MB wait
+        // WaveKey: a fresh install has no Parakeet and a 482 MB wait
         // before the mic key does anything. Where the platform has an offline
         // recognizer of its own, borrow it until ours is downloaded. Bound to
         // the on-device one — the fallback is automatic, so it must never be
@@ -569,7 +569,7 @@ class VoiceController(
     override fun onGoogleFinalizing() = showFinalizing()
 
     /**
-     * SuperVoiceBoard: the recognizer's own message, routed to the recovery it
+     * WaveKey: the recognizer's own message, routed to the recovery it
      * actually needs. A missing microphone permission is the likeliest error on
      * the very first press — this path has no permission gate of its own, it
      * finds out from the recognizer — and answering that with "download 482 MB"
@@ -643,12 +643,12 @@ class VoiceController(
         private const val TAG = "SVBVoice"
         /** Enough context for spacing and capitalization decisions, no more. */
         private const val PRECEDING_CHARS = 16
-        private const val SCREEN_LOCK_TAG = "SuperVoiceBoard:dictation"
+        private const val SCREEN_LOCK_TAG = "WaveKey:dictation"
         /** Longer than any dictation, short enough to bound a leak. */
         private const val SCREEN_LOCK_TIMEOUT_MS = 10L * 60L * 1000L
 
         /**
-         * SuperVoiceBoard: the "we borrowed your phone's recognizer" toast is
+         * WaveKey: the "we borrowed your phone's recognizer" toast is
          * shown once per keyboard process, not once per session — it explains a
          * state, and a state does not need re-explaining every time the mic
          * opens. Deliberately not a preference: nothing to migrate, and a fresh

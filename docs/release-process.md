@@ -1,6 +1,6 @@
 # Release process
 
-How a SuperVoiceBoard build gets from a tag to a page a person can download from.
+How a WaveKey build gets from a tag to a page a person can download from.
 Everything here is `.github/workflows/release-build.yml` plus the handful of steps
 a workflow cannot do for itself.
 
@@ -8,7 +8,7 @@ a workflow cannot do for itself.
 
 One tag, one GitHub Release, one asset:
 
-- `SuperVoiceBoard-<tag>-arm64-v8a-debug.apk`, or `-release.apk` once the repo has
+- `WaveKey-<tag>-arm64-v8a-debug.apk`, or `-release.apk` once the repo has
   a keystore.
 - No universal APK, no second ABI, no mapping file.
 
@@ -45,7 +45,7 @@ Publish forward. `v0.8`, `v0.8.0-rc.1` and `v0.9.0` are assetless and stay that 
 ## Why the asset is renamed
 
 `app/build.gradle.kts:121` bakes `versionName` into the output filename, so
-`assembleDebug` emits `SuperVoiceBoard_4.1-debug-arm64-v8a.apk` no matter what the
+`assembleDebug` emits `WaveKey_4.1-debug-arm64-v8a.apk` no matter what the
 tag says. The workflow renames it at upload time and the release body's footer says
 what the 4.1 is: the HeliBoard base version, `versionCode 4101`, not this release.
 

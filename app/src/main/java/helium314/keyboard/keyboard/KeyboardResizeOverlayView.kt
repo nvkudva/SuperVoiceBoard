@@ -21,7 +21,7 @@ import helium314.keyboard.latin.utils.prefs
 import kotlin.math.abs
 
 /**
- * SuperVoiceBoard: interactive keyboard resize. Sits on top of the keyboard, catches all touches
+ * WaveKey: interactive keyboard resize. Sits on top of the keyboard, catches all touches
  * and turns drags of its four handles into live changes of the very same size preferences the
  * appearance sliders write, so both stay in sync and the size survives the keyboard being closed.
  */

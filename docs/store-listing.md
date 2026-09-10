@@ -16,7 +16,7 @@ conflict against upstream, for a store submission nobody has started.
 
 > Does not use internet permission, and thus is 100% offline.
 
-SuperVoiceBoard holds `INTERNET`. It is scoped to the `:ui` process and used only to
+WaveKey holds `INTERNET`. It is scoped to the `:ui` process and used only to
 download models, and the keyboard process itself has no network component — but the
 permission is there, and the sentence as written is a false claim. It must never be
 published as-is, in `en-US` or in any of the 27 translations that repeat it.
@@ -37,7 +37,7 @@ the emulator. See `docs/release-process.md`.
 
 ## Draft — title
 
-    SuperVoiceBoard
+    WaveKey
 
 ## Draft — short description
 
@@ -45,7 +45,7 @@ the emulator. See `docs/release-process.md`.
 
 ## Draft — full description
 
-    SuperVoiceBoard is an Android keyboard with English dictation that runs on
+    WaveKey is an Android keyboard with English dictation that runs on
     your phone. Your speech is not uploaded, transcribed in a datacentre, or
     retained by anyone: the recogniser and the text cleanup both run locally.
 
@@ -59,7 +59,7 @@ the emulator. See `docs/release-process.md`.
     • An "AI fix" key that rewrites the text you point it at, also on-device.
     • Falls back to your system speech recogniser while the model downloads.
 
-    Network use: SuperVoiceBoard requests the INTERNET permission and uses it for
+    Network use: WaveKey requests the INTERNET permission and uses it for
     one thing — downloading the speech and language models, once, when you ask it
     to from Settings. The keyboard process itself has no network component; that
     split is enforced at build time. Nothing you type or say is sent anywhere.

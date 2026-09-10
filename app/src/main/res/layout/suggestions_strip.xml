@@ -63,7 +63,7 @@
             android:minWidth="0dp"
             style="?attr/suggestionWordStyle">
         </LinearLayout>
-        <!-- SuperVoiceBoard: the mic lives at the right-hand end of this row and
+        <!-- WaveKey: the mic lives at the right-hand end of this row and
              stays there in every state of it — collapsed suggestions, expanded
              toolbar, empty strip. That is what Gboard does (see
              docs/reference/gboard-strip-idle.png), and it is why it is a sibling

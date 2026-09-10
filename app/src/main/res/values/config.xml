@@ -28,7 +28,7 @@
 
     <fraction name="config_keyboard_top_padding_holo">2.335%p</fraction>
     <fraction name="config_keyboard_bottom_padding_holo">4.669%p</fraction>
-    <!-- SuperVoiceBoard: the row gap matched to the key gap. These are
+    <!-- WaveKey: the row gap matched to the key gap. These are
          fractions of different things — the horizontal one of the keyboard's
          width, the vertical one of its height — so the number differs while the
          gap on screen does not. -->
@@ -55,7 +55,7 @@
     <dimen name="config_key_hint_letter_padding">1dp</dimen>
     <dimen name="config_key_shifted_letter_hint_padding">2dp</dimen>
 
-    <!-- SuperVoiceBoard: 48dp, so every toolbar key and the mic clear the
+    <!-- WaveKey: 48dp, so every toolbar key and the mic clear the
          48dp touch target with padding around the glyph. Upstream is 40dp. -->
     <dimen name="config_suggestions_strip_height">48dp</dimen>
     <dimen name="config_suggestions_strip_edge_key_width">36dp</dimen>
@@ -64,7 +64,7 @@
     <fraction name="config_min_more_suggestions_width">90%</fraction>
     <dimen name="config_suggestion_min_width">44dp</dimen>
     <dimen name="config_suggestion_text_horizontal_padding">6dp</dimen>
-    <!-- SuperVoiceBoard: smaller than upstream's 18dp. Three suggestions and
+    <!-- WaveKey: smaller than upstream's 18dp. Three suggestions and
          a mic have to share one row, and the words are read, not tapped for size. -->
     <dimen name="config_suggestion_text_size">15dp</dimen>
     <dimen name="config_more_suggestions_hint_text_size">27dp</dimen>

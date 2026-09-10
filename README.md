@@ -1,4 +1,4 @@
-# SuperVoiceBoard
+# WaveKey
 
 An Android keyboard with on-device English dictation, transcript cleanup and text
 rewriting, for people who do not want their speech leaving the phone.
@@ -24,14 +24,14 @@ HeliBoard's, unchanged. This repo adds the voice layer.
 ## Run it
 
 ```bash
-git clone https://github.com/nvkudva/SuperVoiceBoard.git
-cd SuperVoiceBoard
+git clone https://github.com/nvkudva/WaveKey.git
+cd WaveKey
 ./gradlew :app:assembleDebug
 # ABI splits produce one APK per architecture; install the one matching your device
 adb install app/build/outputs/apk/debug/<arm64-v8a or x86_64 APK>
 ```
 
-"SuperVoiceBoard" then appears in Android's keyboard list. Enable it, switch to it, and
+"WaveKey" then appears in Android's keyboard list. Enable it, switch to it, and
 open its settings to download the voice models — the microphone key does nothing until
 the two required packs are installed.
 

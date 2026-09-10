@@ -1,4 +1,4 @@
-# SuperVoiceBoard — plan of record
+# WaveKey — plan of record
 
 Architecture, decisions and constraints. **No task state lives here** — that is
 [TODO.md](TODO.md).
@@ -68,7 +68,7 @@ read as Gboard rather than as a keyboard with a voice accessory.
 ### 3.1 GPL-3.0 — accepted, and it binds everything
 
 HeliBoard is GPL-3.0-only (with Apache-2.0 and CC-BY-SA-4.0 for inherited
-parts). SuperVoiceBoard ships as GPL-3.0. **The voice intelligence carried over
+parts). WaveKey ships as GPL-3.0. **The voice intelligence carried over
 from VBoard is published with it** — `core/`, the ASR session logic, the
 refiner. That was decided knowingly on 2026-08-31; it is not revisitable
 per-file. Upstream `LICENSE*` files stay, attribution to HeliBoard and to AOSP
@@ -175,7 +175,7 @@ The module is ported verbatim, package names included. Renaming to
 `com.supervoiceboard.core` would touch all 78 files and every test on the way
 in, which is exactly the diff W1.1 exists to avoid — the point of the gate is
 that the tests pass *unchanged*. The Gradle module is `:core` and its build file
-is rewritten (SuperVoiceBoard has no version catalog; versions are literal).
+is rewritten (WaveKey has no version catalog; versions are literal).
 A rename, if wanted, is a separate mechanical commit after the module is wired.
 
 ### R4 — 2026-08-31: W1.2 and W1.3 arrived already fixed; closed with tests

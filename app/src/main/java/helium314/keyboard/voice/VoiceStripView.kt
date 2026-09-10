@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-only
 //
-// SuperVoiceBoard. New file: voice is the fourth mode of the existing strip row
+// WaveKey. New file: voice is the fourth mode of the existing strip row
 // (PLAN.md §2), so this is a sibling of SuggestionStripView, emoji_tab_strip and
 // clipboard_strip inside strip_container — not a bar of its own.
 package helium314.keyboard.voice

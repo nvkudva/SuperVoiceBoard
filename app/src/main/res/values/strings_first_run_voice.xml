@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- SPDX-License-Identifier: GPL-3.0-only -->
-<!-- SuperVoiceBoard: dictation before anything is downloaded. Kept in its own
+<!-- WaveKey: dictation before anything is downloaded. Kept in its own
      file so the upstream strings.xml stays mergeable.
 
      "your phone's recognizer", never "Google": this path does not leave the

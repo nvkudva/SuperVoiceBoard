@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-    SuperVoiceBoard: the strip while dictation runs. Mirrors
+    WaveKey: the strip while dictation runs. Mirrors
     docs/reference/gboard-strip-listening.png — back at the left, status in the
     middle, controls at the right — inside the existing strip row.
     SPDX-License-Identifier: GPL-3.0-only

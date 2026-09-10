@@ -23,7 +23,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 
-// SuperVoiceBoard: the Application also hosts the voice runtime and configures
+// WaveKey: the Application also hosts the voice runtime and configures
 // WorkManager, so model downloads run in the `:ui` process rather than the
 // keyboard's (PLAN.md §3.3). Everything above and below this is upstream's.
 class App : Application(), VoiceRuntimeHost, RefinerModelHost, Configuration.Provider {

@@ -78,7 +78,7 @@ fun WelcomeWizard(
 ) {
     val ctx = LocalContext.current
     val imm = ctx.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-    // SuperVoiceBoard: the microphone is asked for during setup, not on the
+    // WaveKey: the microphone is asked for during setup, not on the
     // first press of the voice key, because dictation is the headline feature
     // and a permission dialog mid-sentence is the worst place to meet it.
     var micAsked by rememberSaveable { mutableStateOf(false) }
@@ -193,7 +193,7 @@ fun WelcomeWizard(
                                 actionText = stringResource(R.string.setup_step3_action),
                                 action = close,
                             )
-                            // SuperVoiceBoard: the model download is offered here rather
+                            // WaveKey: the model download is offered here rather
                             // than with the microphone step, because it costs a several-
                             // hundred megabyte download. Setup completes without it; this
                             // card leads to the models screen, and skipping it is the

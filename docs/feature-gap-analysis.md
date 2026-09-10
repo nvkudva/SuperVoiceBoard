@@ -1,6 +1,6 @@
-# Feature gap analysis — SuperVoiceBoard vs Gboard and Samsung Keyboard
+# Feature gap analysis — WaveKey vs Gboard and Samsung Keyboard
 
-Dated 2026-09-09. Audited against the tree at `/home/user/SuperVoiceBoard`: `PLAN.md`,
+Dated 2026-09-09. Audited against the tree at `/home/user/WaveKey`: `PLAN.md`,
 `README.md`, `TODO.md`, `REVIEW.md`, every screen under
 `app/src/main/java/helium314/keyboard/settings/screens/`, `ToolbarUtils.kt`,
 `app/src/main/java/helium314/keyboard/voice/`, `voice/`, `llm/` and

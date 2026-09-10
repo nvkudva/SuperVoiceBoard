@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-    SuperVoiceBoard: the Outlined style's resting key — a hairline, no fill.
+    WaveKey: the Outlined style's resting key — a hairline, no fill.
     Drawn in white because Colors tints key backgrounds with PorterDuff.MULTIPLY:
     white becomes the theme's key colour, and the transparent interior stays
     transparent whatever the theme.

@@ -537,6 +537,13 @@ public final class KeyboardSwitcher implements KeyboardState.SwitchActions {
         }
         if (mResizeOverlay.isResizing()) mResizeOverlay.hide();
         else mResizeOverlay.show(mKeyboardViewWrapper);
+        // Resize mode is not a preference, so nothing else tells the key it is lit.
+        if (mSuggestionStripView != null) mSuggestionStripView.refreshToolbarActivatedState();
+    }
+
+    /** WaveKey: whether the resize overlay is open, for the RESIZE key's lit state. */
+    public boolean isResizing() {
+        return mResizeOverlay != null && mResizeOverlay.isResizing();
     }
 
     public void toggleSplitKeyboardMode() {

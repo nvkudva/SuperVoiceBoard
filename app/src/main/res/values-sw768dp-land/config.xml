@@ -33,8 +33,8 @@
     <fraction name="config_key_shifted_letter_hint_ratio_lxx">24%</fraction>
     <fraction name="config_language_on_spacebar_text_ratio">30.00%</fraction>
 
-    <dimen name="config_suggestions_strip_height">40dp</dimen>
-    <dimen name="config_suggestions_strip_edge_key_width">54dp</dimen>
+    <dimen name="config_suggestions_strip_height">52dp</dimen>
+    <dimen name="config_suggestions_strip_edge_key_width">44dp</dimen>
     <fraction name="config_min_more_suggestions_width">50%</fraction>
 
     <!-- Gesture floating preview text parameters -->
@@ -49,4 +49,10 @@
     <fraction name="config_emoji_keyboard_key_letter_size">58%p</fraction>
     <fraction name="config_emoji_keyboard_key_label_size">58%p</fraction>
     <integer name="config_emoji_keyboard_max_recents_key_count">39</integer>
+    <!-- WaveKey: the toolbar key box is square (it is the strip height), so a
+         centred tile of this size leaves the same 5dp on all four sides. -->
+    <dimen name="config_toolbar_key_tile">34dp</dimen>
+    <!-- Clear air under the spectrum rail, so the keys are not sitting on it. -->
+    <dimen name="config_toolbar_rail_gap">8dp</dimen>
+    <dimen name="config_toolbar_key_inset">5dp</dimen>
 </resources>

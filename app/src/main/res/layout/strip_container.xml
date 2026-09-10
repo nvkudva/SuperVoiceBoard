@@ -39,17 +39,14 @@
         android:layout_height="match_parent"
         style="?attr/suggestionStripViewStyle"
         android:scrollbarThumbHorizontal="@color/toolbar_scrollbar" >
+        <!-- WaveKey: the clipboard keys start where the text does. Upstream
+             pushed them to the far edge with a weighted spacer, which put the
+             first key furthest from the thumb that had just opened the strip. -->
         <LinearLayout
             android:id="@+id/clipboard_strip"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
-            android:layout_gravity="end" >
-            <!-- empty view to move buttons to the right -->
-            <View
-                android:layout_width="0dp"
-                android:layout_height="0dp"
-                android:layout_weight="1" />
-        </LinearLayout>
+            android:layout_gravity="start" />
     </HorizontalScrollView>
     <!-- WaveKey: the correction ghost draws over whichever mode is
          showing and never takes a touch. Removing the feature is removing this

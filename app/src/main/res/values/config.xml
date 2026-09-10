@@ -57,8 +57,8 @@
 
     <!-- WaveKey: 48dp, so every toolbar key and the mic clear the
          48dp touch target with padding around the glyph. Upstream is 40dp. -->
-    <dimen name="config_suggestions_strip_height">48dp</dimen>
-    <dimen name="config_suggestions_strip_edge_key_width">36dp</dimen>
+    <dimen name="config_suggestions_strip_height">62dp</dimen>
+    <dimen name="config_suggestions_strip_edge_key_width">52dp</dimen>
     <dimen name="config_more_suggestions_row_height">40dp</dimen>
     <integer name="config_max_more_suggestions_row">6</integer>
     <fraction name="config_min_more_suggestions_width">90%</fraction>
@@ -106,4 +106,10 @@
     <string-array name="keyboard_switcher_symbols_shifted" translatable="false">
         <item>58,32</item> <!-- KeyEvent.KEYCODE_ALT_RIGHT , KeyEvent.META_ALT_RIGHT_ON -->
     </string-array>
+    <!-- WaveKey: the toolbar key box is square (it is the strip height), so a
+         centred tile of this size leaves the same 6dp on all four sides. -->
+    <dimen name="config_toolbar_key_tile">40dp</dimen>
+    <!-- Clear air under the spectrum rail, so the keys are not sitting on it. -->
+    <dimen name="config_toolbar_rail_gap">10dp</dimen>
+    <dimen name="config_toolbar_key_inset">6dp</dimen>
 </resources>

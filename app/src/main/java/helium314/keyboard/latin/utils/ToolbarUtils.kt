@@ -11,6 +11,7 @@ import android.widget.ImageView
 import androidx.core.content.edit
 import androidx.core.view.forEach
 import helium314.keyboard.event.HapticEvent
+import helium314.keyboard.keyboard.KeyboardSwitcher
 import helium314.keyboard.keyboard.internal.KeyboardIconsSet
 import helium314.keyboard.keyboard.internal.keyboard_parser.floris.KeyCode
 import helium314.keyboard.latin.AudioAndHapticFeedbackManager
@@ -18,6 +19,7 @@ import helium314.keyboard.latin.R
 import helium314.keyboard.latin.common.Constants.Separators
 import helium314.keyboard.latin.settings.Defaults
 import helium314.keyboard.latin.settings.Settings
+import helium314.keyboard.settings.screens.PrivacyBreakingSettings
 import helium314.keyboard.latin.utils.ToolbarKey.*
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
@@ -39,6 +41,7 @@ fun setToolbarButtonsActivatedStateOnPrefChange(buttonsGroup: ViewGroup, key: St
     // settings need to be updated when buttons change
     if (key != Settings.PREF_AUTO_CORRECTION
         && key != Settings.PREF_ALWAYS_INCOGNITO_MODE
+        && key != PrivacyBreakingSettings.PREF_GOOGLE_VOICE // WaveKey: the dictation engine key
         && key != GestureDataGatheringSettings.PREF_BACKGROUND_GATHERING_ENABLED
         && key != GestureDataGatheringSettings.PREF_BACKGROUND_DISABLED_BEFORE_TIME_MILLIS
         && key?.startsWith(Settings.PREF_ONE_HANDED_MODE_PREFIX) == false)
@@ -46,8 +49,13 @@ fun setToolbarButtonsActivatedStateOnPrefChange(buttonsGroup: ViewGroup, key: St
 
     GlobalScope.launch {
         delay(10) // need to wait until SettingsValues are reloaded
-        buttonsGroup.forEach { if (it is ImageButton) setToolbarButtonActivatedState(it) }
+        setToolbarButtonsActivatedState(buttonsGroup)
     }
+}
+
+/** WaveKey: re-read every button's state, for the toggles that are not prefs. */
+fun setToolbarButtonsActivatedState(buttonsGroup: ViewGroup) {
+    buttonsGroup.forEach { if (it is ImageButton) setToolbarButtonActivatedState(it) }
 }
 
 private fun setToolbarButtonActivatedState(button: ImageButton) {
@@ -57,6 +65,13 @@ private fun setToolbarButtonActivatedState(button: ImageButton) {
         SPLIT -> Settings.getValues().mIsSplitKeyboardEnabled
         AUTOCORRECT -> Settings.getValues().mAutoCorrectionEnabledPerUserSettings
         BACKGROUND_GATHERING -> useBackgroundGathering
+        // WaveKey: the fork's own toggles. Without these they fall to the
+        // `else` below and are drawn lit forever, so they have no off state.
+        ASR_ENGINE -> PrivacyBreakingSettings.googleVoiceEnabled(button.context.prefs())
+        RESIZE -> KeyboardSwitcher.getInstance().isResizing()
+        // Driven by the fix's own lifecycle, not by anything readable here.
+        AI_FIX -> false
+        // Everything else has no on and off: full-strength ink is its only state.
         else -> true
     }
 }
@@ -141,24 +156,27 @@ val toolbarKeyStrings = entries.associateWithTo(EnumMap(ToolbarKey::class.java))
 
 // WaveKey: the mic lives in the suggestion strip itself and is always
 // visible there, so a toolbar VOICE key could only ever be a second mic icon.
-private val hiddenToolbarKeys = setOf(VOICE)
+/**
+ * Keys the strip draws itself, in a fixed slot, so they are never a row the user
+ * scrolls to find. They are not offered as toolbar keys anywhere.
+ */
+val hiddenToolbarKeys = setOf(VOICE, AI_FIX)
 
 val defaultToolbarPref by lazy {
-    // WaveKey: AI_FIX is on by default — it is the fork's reason to exist,
-    // and a key nobody can find is a feature nobody has (W5.1). It sits at the end,
-    // so in LTR it lands under the thumb on the right.
+    // WaveKey: AI_FIX is not here — the strip gives it a fixed slot next to the
+    // mic, so it is reachable whether the toolbar is open or shut (W5.1).
     // LEFT/RIGHT are off by default: single-character cursor nudges earn their place
     // on few keyboards, and the arrow keys remain one toggle away in settings.
-    val default = listOf(SETTINGS, CLIPBOARD, UNDO, REDO, SELECT_WORD, COPY, PASTE, SWITCH_KEYBOARD, RESIZE, ASR_ENGINE, AI_FIX)
+    val default = listOf(SETTINGS, CLIPBOARD, UNDO, REDO, SELECT_WORD, COPY, PASTE, SWITCH_KEYBOARD, RESIZE, ASR_ENGINE)
     val others = entries.filterNot { it in default || it == CLOSE_HISTORY || it in hiddenToolbarKeys }
     default.joinToString(Separators.ENTRY) { it.name + Separators.KV + true } + Separators.ENTRY +
             others.joinToString(Separators.ENTRY) { it.name + Separators.KV + false }
 }
 
 val defaultPinnedToolbarPref = entries.filterNot { it == CLOSE_HISTORY || it in hiddenToolbarKeys }.joinToString(Separators.ENTRY) {
-    // WaveKey: AI_FIX is pinned to the strip by default (W5.1); everything
-    // else keeps upstream's "pinned to nothing" default.
-    it.name + Separators.KV + (it == AI_FIX)
+    // Upstream's "pinned to nothing" default. AI_FIX used to be pinned here; it
+    // has its own slot on the strip now.
+    it.name + Separators.KV + false
 }
 
 val defaultClipboardToolbarPref by lazy {

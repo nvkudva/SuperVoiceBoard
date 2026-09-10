@@ -34,8 +34,8 @@
     <fraction name="config_language_on_spacebar_text_ratio">30.0%</fraction>
     <dimen name="config_key_shifted_letter_hint_padding">4dp</dimen>
 
-    <dimen name="config_suggestions_strip_height">44dp</dimen>
-    <dimen name="config_suggestions_strip_edge_key_width">54dp</dimen>
+    <dimen name="config_suggestions_strip_height">58dp</dimen>
+    <dimen name="config_suggestions_strip_edge_key_width">48dp</dimen>
     <integer name="config_max_more_suggestions_row">5</integer>
     <fraction name="config_min_more_suggestions_width">50%</fraction>
 
@@ -54,4 +54,10 @@
 
     <!-- Clipboard keyboard -->
     <integer name="config_clipboard_keyboard_col_count">4</integer>
+    <!-- WaveKey: the toolbar key box is square (it is the strip height), so a
+         centred tile of this size leaves the same 6dp on all four sides. -->
+    <dimen name="config_toolbar_key_tile">36dp</dimen>
+    <!-- Clear air under the spectrum rail, so the keys are not sitting on it. -->
+    <dimen name="config_toolbar_rail_gap">10dp</dimen>
+    <dimen name="config_toolbar_key_inset">6dp</dimen>
 </resources>

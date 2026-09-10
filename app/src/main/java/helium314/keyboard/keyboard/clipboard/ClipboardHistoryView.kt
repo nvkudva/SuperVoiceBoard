@@ -106,7 +106,9 @@ class ClipboardHistoryView @JvmOverloads constructor(
             it.setOnClickListener(this@ClipboardHistoryView)
             it.setOnLongClickListener(this@ClipboardHistoryView)
             colors.setColor(it, ColorType.TOOL_BAR_KEY)
-            colors.setBackground(it, ColorType.STRIP_BACKGROUND)
+            // WaveKey: the same rounded square the main toolbar draws.
+            it.setBackgroundResource(R.drawable.toolbar_key_background)
+            colors.setBackground(it, ColorType.FUNCTIONAL_KEY_BACKGROUND)
         }
     }
 

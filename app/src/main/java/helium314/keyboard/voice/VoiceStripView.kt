@@ -65,6 +65,14 @@ class VoiceStripView(context: Context, attrs: AttributeSet?) : LinearLayout(cont
     private var errorAction: VoiceErrorAction? = null
 
     init {
+        // WaveKey: clear the spectrum meter at the top edge, matching the
+        // suggestion strip so nothing shifts when the two swap.
+        setPadding(
+            paddingLeft,
+            resources.getDimensionPixelSize(helium314.keyboard.latin.R.dimen.config_toolbar_rail_gap),
+            paddingRight,
+            paddingBottom,
+        )
         orientation = HORIZONTAL
         LayoutInflater.from(context).inflate(R.layout.voice_strip, this, true)
         backKey = findViewById(R.id.voice_strip_back)
@@ -76,12 +84,14 @@ class VoiceStripView(context: Context, attrs: AttributeSet?) : LinearLayout(cont
         colors.setBackground(this, ColorType.STRIP_BACKGROUND)
         for (key in listOf(backKey, minimizeKey)) {
             colors.setColor(key, ColorType.TOOL_BAR_KEY)
-            colors.setBackground(key, ColorType.STRIP_BACKGROUND)
+            // WaveKey: the same rounded square every other strip key wears.
+            key.setBackgroundResource(R.drawable.toolbar_key_background)
+            colors.setBackground(key, ColorType.FUNCTIONAL_KEY_BACKGROUND)
         }
         // The stop control sits where the mic was and wears the same spectrum
-        // pill: one target starts dictation and ends it, and it never moves
+        // tile: one target starts dictation and ends it, and it never moves
         // under the finger that just pressed it.
-        doneKey.setBackgroundResource(R.drawable.spectrum_pill)
+        doneKey.setBackgroundResource(R.drawable.spectrum_tile)
         doneKey.setImageResource(R.drawable.ic_close_rounded)
         doneKey.setColorFilter(SuggestionStripView.SPECTRUM_GLYPH)
         doneKey.contentDescription = context.getString(R.string.voice_done)
@@ -180,7 +190,7 @@ class VoiceStripView(context: Context, attrs: AttributeSet?) : LinearLayout(cont
         // keyboard that stopped listening.
         val span = half * (0.34f + 0.66f * level)
         levelPaint.alpha = 255
-        canvas.drawRect(half - span, height - h, half + span, height.toFloat(), levelPaint)
+        canvas.drawRect(half - span, 0f, half + span, h, levelPaint)
     }
 
     companion object {

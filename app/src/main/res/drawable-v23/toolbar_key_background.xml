@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    WaveKey: the toolbar key container, pinned to a real square and centred in
+    whatever box the key gets. Keys on the pinned row are stretched by a layout
+    weight, so an inset alone would draw a wide pill there and a square on the
+    scrolling toolbar — the same key, two shapes.
+    SPDX-License-Identifier: GPL-3.0-only
+-->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:width="@dimen/config_toolbar_key_tile"
+        android:height="@dimen/config_toolbar_key_tile"
+        android:gravity="center">
+        <shape android:shape="rectangle">
+            <solid android:color="@android:color/white" />
+            <corners android:radius="10dp" />
+        </shape>
+    </item>
+</layer-list>

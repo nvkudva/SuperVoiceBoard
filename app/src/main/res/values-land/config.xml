@@ -32,7 +32,7 @@
     <fraction name="config_key_letter_ratio_holo">65%</fraction>
     <fraction name="config_key_letter_ratio_lxx">65%</fraction>
     <fraction name="config_key_large_letter_ratio_holo">74%</fraction>
-    <fraction name="config_key_large_letter_ratio_lxx">90%</fraction>
+    <fraction name="config_key_large_letter_ratio_lxx">70%</fraction>
     <fraction name="config_key_label_ratio_holo">40%</fraction>
     <fraction name="config_key_label_ratio_lxx">40%</fraction>
     <fraction name="config_key_hint_letter_ratio_holo">30%</fraction>
@@ -58,8 +58,8 @@
     <!-- Emoji keyboard -->
     <fraction name="config_emoji_keyboard_key_width">8.33%p</fraction>
     <fraction name="config_emoji_keyboard_row_height">41%p</fraction>
-    <fraction name="config_emoji_keyboard_key_letter_size">78%p</fraction>
-    <fraction name="config_emoji_keyboard_key_label_size">78%p</fraction>
+    <fraction name="config_emoji_keyboard_key_letter_size">39%p</fraction>
+    <fraction name="config_emoji_keyboard_key_label_size">39%p</fraction>
     <integer name="config_emoji_keyboard_max_recents_key_count">32</integer>
 
     <!-- Clipboard keyboard -->

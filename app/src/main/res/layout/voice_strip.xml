@@ -15,11 +15,15 @@
         android:src="@drawable/ic_arrow_left"
         style="?attr/suggestionWordStyle"
         android:contentDescription="@string/voice_cancel" />
-    <!-- WaveKey: the right side carries two keys and the left one, so the status
-         text's box was 48dp off centre while the level rail is drawn centred on
-         the strip. This spacer balances the two sides. -->
+    <!-- WaveKey: the status text is centred in whatever box is left over, while
+         the level rail is drawn centred on the whole strip. The two only agree
+         when both sides weigh the same, and the right side changes: Done and
+         Minimize come and go with the session, and Minimize is off by default.
+         VoiceStripView sizes this spacer to whatever the right side currently
+         is, so the text stays under the rail in every state. -->
     <Space
-        android:layout_width="@dimen/config_suggestions_strip_height"
+        android:id="@+id/voice_strip_balance"
+        android:layout_width="0dp"
         android:layout_height="match_parent" />
     <TextView
         android:id="@+id/voice_strip_status"
@@ -41,7 +45,7 @@
         android:contentDescription="@string/voice_minimize_keyboard" />
     <ImageButton
         android:id="@+id/voice_strip_done"
-        android:layout_width="@dimen/config_suggestions_strip_height"
+        android:layout_width="@dimen/config_suggestions_strip_edge_key_width"
         android:layout_height="match_parent"
         android:layout_gravity="center_vertical"
         android:scaleType="center"

@@ -57,6 +57,9 @@ class VoiceStripView(context: Context, attrs: AttributeSet?) : LinearLayout(cont
     private val minimizeKey: ImageButton
     private val doneKey: ImageButton
 
+    /** Left-hand ballast for whatever the right side currently weighs. */
+    private val balance: View
+
     /** Smoothed 0..1 input level, drawn as a bar behind the status text. */
     private var level = 0f
     private val levelPaint = Paint(Paint.ANTI_ALIAS_FLAG)
@@ -79,6 +82,7 @@ class VoiceStripView(context: Context, attrs: AttributeSet?) : LinearLayout(cont
         statusText = findViewById(R.id.voice_strip_status)
         minimizeKey = findViewById(R.id.voice_strip_minimize)
         doneKey = findViewById(R.id.voice_strip_done)
+        balance = findViewById(R.id.voice_strip_balance)
 
         val colors: Colors = Settings.getValues().mColors
         colors.setBackground(this, ColorType.STRIP_BACKGROUND)
@@ -147,8 +151,24 @@ class VoiceStripView(context: Context, attrs: AttributeSet?) : LinearLayout(cont
         // and it could not be removed before because it is not a toolbar key.
         minimizeKey.isVisible = showDone && context.prefs()
             .getBoolean(SHOW_MINIMIZE_KEY, DEFAULT_SHOW_MINIMIZE_KEY)
+        rebalance()
         statusText.contentDescription = status
         announceForAccessibility(status)
+    }
+
+    /**
+     * Match the left of the row to the right of it, so the status text's box is
+     * centred on the strip and lands under the rail rather than beside it.
+     */
+    private fun rebalance() {
+        val key = resources.getDimensionPixelSize(R.dimen.config_suggestions_strip_edge_key_width)
+        var right = 0
+        if (doneKey.isVisible) right += key
+        if (minimizeKey.isVisible) right += key
+        val want = (right - key).coerceAtLeast(0) // the back key already holds one
+        if (balance.layoutParams.width != want) {
+            balance.layoutParams = balance.layoutParams.also { it.width = want }
+        }
     }
 
     /** Called on the audio callback's cadence; smoothed here rather than there. */

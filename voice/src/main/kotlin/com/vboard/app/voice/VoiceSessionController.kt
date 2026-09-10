@@ -552,6 +552,9 @@ class VoiceSessionController(
             return
         }
         val samples = takeUtteranceAudio()
+        // Counts only, never text (PLAN.md §3.4). This is the line that says
+        // whether a session that heard something had anything to transcribe.
+        Log.i(TAG, "finalize: samples=${samples.size} engine=${VoiceEngines.finalPass != null}")
         host.showFinalizing()
 
         finalizeJob = scope.launch {
@@ -591,6 +594,7 @@ class VoiceSessionController(
             val finalText = FinalTranscriptPolicy.choose(decoded, partial)
 
             val cleaned = cleanTranscript(finalText)
+            Log.i(TAG, "finalize: decoded=${decoded?.length ?: -1} committed=${cleaned.text.length}")
             // With a provisional commit already in the field, the machine must
             // not commit a second copy: it is told the utterance is finished
             // (blank), and the text in the field is corrected in place instead.

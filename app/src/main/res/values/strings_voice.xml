@@ -92,4 +92,7 @@
     <string name="voice_provisional_commit_summary">Types the live model\'s text the moment you stop speaking, then corrects it in place when the accurate model finishes. The text you keep is always the accurate one</string>
     <string name="voice_llm_refine">AI refinement</string>
     <string name="voice_llm_refine_summary">Tidy dictated text with the on-device model. Runs outside the keyboard, and needs the refiner model downloaded</string>
+    <!-- The minimize control on the listening strip -->
+    <string name="voice_minimize_key">Show the minimize key while dictating</string>
+    <string name="voice_minimize_key_summary">Hides the keyboard but keeps listening. Off by default: it sits next to the stop button and is easy to hit by mistake</string>
 </resources>

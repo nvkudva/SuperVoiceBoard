@@ -35,6 +35,7 @@ import com.vboard.core.model.ByteSize
 import com.vboard.core.model.ModelCatalog
 import com.vboard.core.session.SilenceTimeout
 import helium314.keyboard.latin.R
+import helium314.keyboard.voice.VoiceStripView
 import helium314.keyboard.latin.utils.Log
 import helium314.keyboard.latin.utils.NextScreenIcon
 import helium314.keyboard.latin.utils.Theme
@@ -67,6 +68,7 @@ fun VoiceScreen(
         // every switch below is describing something that cannot run.
         SettingsWithoutKey.VOICE_MODELS,
         R.string.voice_category_dictation,
+        VoiceStripView.SHOW_MINIMIZE_KEY,
         VoiceKeys.SILENCE_TIMEOUT,
         VoiceKeys.PROVISIONAL_COMMIT,
         R.string.voice_category_transcript,
@@ -130,6 +132,12 @@ fun createVoiceSettings(context: Context) = listOf(
                 NextScreenIcon()
             }
         }
+    },
+    Setting(
+        context, VoiceStripView.SHOW_MINIMIZE_KEY,
+        R.string.voice_minimize_key, R.string.voice_minimize_key_summary,
+    ) {
+        SwitchPreference(it, VoiceStripView.DEFAULT_SHOW_MINIMIZE_KEY)
     },
     Setting(context, VoiceKeys.SILENCE_TIMEOUT, R.string.voice_silence_timeout, R.string.voice_silence_timeout_summary) { setting ->
         val ctx = LocalContext.current

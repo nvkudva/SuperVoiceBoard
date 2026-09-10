@@ -23,6 +23,7 @@ import helium314.keyboard.latin.R
 import helium314.keyboard.latin.common.ColorType
 import helium314.keyboard.latin.common.Colors
 import helium314.keyboard.latin.settings.Settings
+import helium314.keyboard.latin.utils.prefs
 import kotlin.math.max
 import kotlin.math.min
 
@@ -131,7 +132,11 @@ class VoiceStripView(context: Context, attrs: AttributeSet?) : LinearLayout(cont
     private fun setState(status: String, showDone: Boolean) {
         statusText.text = status
         doneKey.isVisible = showDone
-        minimizeKey.isVisible = showDone
+        // WaveKey: the minimize key hides the keyboard and keeps listening. It
+        // is off by default — it is not a thing most people want mid-sentence,
+        // and it could not be removed before because it is not a toolbar key.
+        minimizeKey.isVisible = showDone && context.prefs()
+            .getBoolean(SHOW_MINIMIZE_KEY, DEFAULT_SHOW_MINIMIZE_KEY)
         statusText.contentDescription = status
         announceForAccessibility(status)
     }
@@ -179,6 +184,10 @@ class VoiceStripView(context: Context, attrs: AttributeSet?) : LinearLayout(cont
     }
 
     companion object {
+        /** Settings key for the minimize-while-listening control. */
+        const val SHOW_MINIMIZE_KEY = "voice_show_minimize_key"
+        const val DEFAULT_SHOW_MINIMIZE_KEY = false
+
         private const val SMOOTHING = 0.35f
         private const val BAR_INSET_PX = 4f
     }

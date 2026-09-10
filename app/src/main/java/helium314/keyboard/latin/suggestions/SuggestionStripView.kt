@@ -661,7 +661,12 @@ class SuggestionStripView(context: Context, attrs: AttributeSet?, defStyle: Int)
         view.setOnLongClickListener(this)
         (view.layoutParams as LinearLayout.LayoutParams).weight = 1f
         colors.setColor(view, ColorType.TOOL_BAR_KEY)
-        colors.setBackground(view, ColorType.STRIP_BACKGROUND)
+        // WaveKey: each toolbar key sits in a rounded container, the same shape
+        // the settings editor draws, so the strip reads as a row of keys rather
+        // than a row of loose glyphs. The tint is the functional-key colour, so
+        // it follows the theme like every other key does.
+        view.setBackgroundResource(R.drawable.toolbar_key_background)
+        colors.setBackground(view, ColorType.FUNCTIONAL_KEY_BACKGROUND)
     }
 
     companion object {

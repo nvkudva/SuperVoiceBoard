@@ -98,6 +98,8 @@ def main():
                    help="apply the shipped SpokenFormats rules before the model")
     p.add_argument("--rules-only", dest="rules_only", action="store_true",
                    help="score the rules alone, with no model call")
+    p.add_argument("--postrules", action="store_true",
+                   help="apply the SpokenFormats rules to the model's answer")
     p.add_argument("--validate", action="store_true",
                    help="score what the pipeline types after the validator rules on it")
     args = p.parse_args()
@@ -111,6 +113,16 @@ def main():
         for c, fixed in zip(cases, prerules([c["in"] for c in cases])):
             c["in"] = fixed
 
+    if args.postrules and not args.rules_only and not args.validate:
+        answers = []
+        for c in cases:
+            try:
+                answers.append(ask(args.model, system, c["in"], shots))
+            except Exception:
+                answers.append("")
+        for c, text in zip(cases, prerules(answers)):
+            c["_decided"] = text
+
     if args.validate and not args.rules_only:
         answers = []
         for c in cases:
@@ -118,6 +130,8 @@ def main():
                 answers.append(ask(args.model, system, c["in"], shots))
             except Exception:
                 answers.append("")
+        if args.postrules:
+            answers = prerules(answers)
         decided = validate(list(zip((c["in"] for c in cases), answers)))
         for c, text in zip(cases, decided):
             c["_decided"] = text
@@ -128,7 +142,7 @@ def main():
         try:
             if args.rules_only:
                 got = c["in"]
-            elif args.validate:
+            elif args.validate or args.postrules:
                 got = c["_decided"]
             else:
                 got = ask(args.model, system, c["in"], shots)

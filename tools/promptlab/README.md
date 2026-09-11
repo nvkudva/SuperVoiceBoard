@@ -35,3 +35,24 @@ answer 9. Adding more rules made every case worse, including unrelated ones.
 Real sentences: answering back is rare (1-2%). Truncation is the failure that
 matters — the refiner eating half a sentence — and example turns cut it from
 18% to 10%.
+
+## Where the rules go relative to the model
+
+Measured on 75 utterances from real history with their addresses spoken aloud:
+
+| pipeline | score |
+|---|---|
+| rules alone | 48/75 |
+| rules, model, validator | 42/75 |
+| rules, model, rules, validator | 42/75 |
+| model, then rules | 20/75 |
+| model alone | 17/75 |
+
+Rules after the model instead of before is the worst arrangement that still
+has rules in it. The rules match spoken forms - "dot", "slash", "at" - and a
+model handed those destroys them before the rules ever see them, leaving
+nothing to match. Rules after the model *as well* scores identically to rules
+before it, because by then there is no spoken form left to convert.
+
+So the rules run first, and `refine()` stands down on an utterance that
+already carries a written address.

@@ -11,6 +11,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -21,6 +22,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -62,6 +64,7 @@ import helium314.keyboard.settings.SearchSettingsScreen
 import helium314.keyboard.settings.dialogs.ConfirmationDialog
 import helium314.keyboard.settings.initPreview
 import helium314.keyboard.settings.preferences.PreferenceGroup
+import helium314.keyboard.settings.preferences.PreferenceGroupContent
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -95,7 +98,7 @@ fun VoiceModelsScreen(
  * and a switch list under a locked feature reads as settings for nothing.
  */
 @Composable
-fun VoiceModelsSection(only: ModelKind? = null) {
+fun VoiceModelsSection(only: ModelKind? = null, inOwnGroup: Boolean = true) {
     val context = LocalContext.current
     val runtime = remember { voiceRuntimeOrNull(context) }
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -113,6 +116,7 @@ fun VoiceModelsSection(only: ModelKind? = null) {
         val liveStates by ModelDownloadService.states.collectAsState()
         for (pack in ModelCatalog.packs.filter { only == null || it.kind == only }) {
             PackRow(
+                inOwnGroup = inOwnGroup,
                 pack = pack,
                 runtime = runtime,
                 liveState = liveStates[pack.id],
@@ -131,6 +135,7 @@ fun VoiceModelsSection(only: ModelKind? = null) {
 
 @Composable
 private fun PackRow(
+    inOwnGroup: Boolean = true,
     pack: ModelPack,
     runtime: VoiceRuntime,
     liveState: PackState?,
@@ -145,6 +150,7 @@ private fun PackRow(
     // Set when the link is metered and the user has not agreed to spend data on
     // this download; the dialog names the real size before anything is enqueued.
     var confirmMeteredBytes by remember(pack.id) { mutableStateOf<Long?>(null) }
+    var confirmRemove by remember(pack.id) { mutableStateOf(false) }
 
     /**
      * Never starts a download on cellular without asking. DownloadPolicy owns
@@ -197,6 +203,35 @@ private fun PackRow(
         }
     }
 
+    // Removing a pack throws away several hundred megabytes and, for a required
+    // one, stops dictation working. The metered *download* already confirms; the
+    // destructive half cannot ask for less.
+    if (confirmRemove) {
+        val size = ByteSize.format(pack.totalBytes)
+        ConfirmationDialog(
+            onDismissRequest = { confirmRemove = false },
+            onConfirmed = {
+                confirmRemove = false
+                scope.launch {
+                    withContext(Dispatchers.IO) { runtime.packInstaller.delete(pack) }
+                    diskState = PackState.NotInstalled
+                    message = context.getString(R.string.wk_models_removed, size)
+                }
+            },
+            confirmButtonText = stringResource(R.string.voice_models_remove),
+            title = { Text(pack.displayName) },
+            content = {
+                Text(
+                    stringResource(
+                        if (pack.required) R.string.wk_models_remove_required
+                        else R.string.wk_models_remove_message,
+                        size,
+                    )
+                )
+            },
+        )
+    }
+
     confirmMeteredBytes?.let { bytes ->
         ConfirmationDialog(
             onDismissRequest = { confirmMeteredBytes = null },
@@ -211,7 +246,7 @@ private fun PackRow(
             },
         )
     }
-    PreferenceGroup {
+    val body: @Composable ColumnScope.() -> Unit = {
         Column(
             Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp),
             verticalArrangement = Arrangement.spacedBy(4.dp)
@@ -233,14 +268,17 @@ private fun PackRow(
                 )
                 Text(
                     pack.displayName,
-                    style = MaterialTheme.typography.titleSmall,
+                    // The pack is the most important object in its card, so it is
+                    // not typographically smaller than the switches it governs.
+                    style = MaterialTheme.typography.titleMedium,
                     modifier = Modifier.weight(1f)
                 )
             }
             Text(
                 text = describe(context, pack, state, queued),
                 style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                color = if (state is PackState.Failed) MaterialTheme.colorScheme.error
+                    else MaterialTheme.colorScheme.onSurfaceVariant,
             )
             // WaveKey: an installed pack still has to be the one that runs.
             // Which engine and whether refinement is on both live elsewhere on
@@ -265,26 +303,37 @@ private fun PackRow(
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            // Stacked and right-aligned: the two-button case (download, import)
+            // reads as a primary action with an escape hatch under it, and one
+            // button lands in the same place as two.
+            Column(
+                Modifier.fillMaxWidth(),
+                horizontalAlignment = Alignment.End,
+                verticalArrangement = Arrangement.spacedBy(2.dp),
+            ) {
                 when {
                     running || state is PackState.Downloading || state is PackState.Verifying ->
                         TextButton(onClick = { ModelDownloadService.cancel(context, pack.id) }) {
                             Text(stringResource(R.string.voice_models_cancel))
                         }
                     state is PackState.Installed ->
-                        TextButton(onClick = {
-                            scope.launch {
-                                withContext(Dispatchers.IO) { runtime.packInstaller.delete(pack) }
-                                diskState = PackState.NotInstalled
-                                message = null
-                            }
-                        }) { Text(stringResource(R.string.voice_models_remove)) }
+                        TextButton(
+                            onClick = { confirmRemove = true },
+                            colors = ButtonDefaults.textButtonColors(
+                                contentColor = MaterialTheme.colorScheme.error
+                            ),
+                        ) { Text(stringResource(R.string.voice_models_remove)) }
                     else -> {
                         // downloading is the expected action; importing is the escape hatch
                         FilledTonalButton(
                             onClick = { requestDownload(meteredConsent = false) },
                             shape = MaterialTheme.shapes.large,
-                        ) { Text(stringResource(R.string.voice_models_download)) }
+                        ) {
+                            Text(stringResource(
+                                if (state is PackState.Failed) R.string.wk_models_retry
+                                else R.string.voice_models_download
+                            ))
+                        }
                         TextButton(onClick = { importer.launch(arrayOf("*/*")) }) {
                             Text(stringResource(R.string.voice_models_import))
                         }
@@ -293,6 +342,7 @@ private fun PackRow(
             }
         }
     }
+    if (inOwnGroup) PreferenceGroup(content = body) else PreferenceGroupContent(content = body)
 }
 
 /** Streams the picked document into the installer's staging area. */

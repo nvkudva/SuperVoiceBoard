@@ -131,4 +131,15 @@
     <string name="wk_cat_spacebar_delete">Space bar and delete</string>
     <string name="wk_screen_clipboard">Clipboard</string>
     <string name="wk_screen_clipboard_summary">History, pinning and what gets suggested</string>
+    <!-- Clipboard panel -->
+    <string name="wk_clip_pin">Keep this clip</string>
+    <string name="wk_clip_unpin">Stop keeping this clip</string>
+    <string name="wk_clip_kind_link">Link</string>
+    <string name="wk_clip_kind_image">Image</string>
+    <string name="wk_clip_kind_phone">Phone</string>
+    <string name="wk_clip_kind_text">Text</string>
+    <string name="wk_clip_kept">Kept until you unpin</string>
+    <string name="wk_clip_chars">%1$d characters</string>
+    <string name="wk_clip_empty_title">Nothing copied yet</string>
+    <string name="wk_clip_empty_body">Anything you copy lands here. Tap the pin on a clip to keep it for good.</string>
 </resources>

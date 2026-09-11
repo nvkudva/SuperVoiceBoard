@@ -53,7 +53,9 @@ class ClipboardHistoryView @JvmOverloads constructor(
     private val keyBackgroundId: Int
 
     private lateinit var clipboardRecyclerView: ClipboardHistoryRecyclerView
-    private lateinit var placeholderView: TextView
+    private lateinit var placeholderView: View
+    private lateinit var placeholderTitle: TextView
+    private lateinit var placeholderBody: TextView
     private val toolbarKeys = mutableListOf<ImageButton>()
     private lateinit var clipboardAdapter: ClipboardAdapter
 
@@ -92,6 +94,8 @@ class ClipboardHistoryView @JvmOverloads constructor(
             pinnedIconResId = pinIconId
         }
         placeholderView = findViewById(R.id.clipboard_empty_view)
+        placeholderTitle = findViewById(R.id.clipboard_empty_title)
+        placeholderBody = findViewById(R.id.clipboard_empty_body)
         clipboardRecyclerView = findViewById<ClipboardHistoryRecyclerView>(R.id.clipboard_list).apply {
             val colCount = resources.getInteger(R.integer.config_clipboard_keyboard_col_count)
             layoutManager = StaggeredGridLayoutManager(colCount, StaggeredGridLayoutManager.VERTICAL)
@@ -162,10 +166,15 @@ class ClipboardHistoryView @JvmOverloads constructor(
         setupClipKey(params)
         setupBottomRowKeyboard(editorInfo, keyboardActionListener)
 
-        placeholderView.apply {
+        // WaveKey: the empty state is two lines now — what this panel is, and
+        // what the pin does — so it is styled as prose, not as a giant glyph.
+        placeholderTitle.apply {
             KeyboardTypeface.applyToTextView(this)
             setTextColor(params.mTextColor)
-            setTextSize(TypedValue.COMPLEX_UNIT_PX, params.mLabelSize.toFloat() * 2)
+        }
+        placeholderBody.apply {
+            KeyboardTypeface.applyToTextView(this)
+            setTextColor(Settings.getValues().mColors.get(ColorType.KEY_HINT_TEXT))
         }
         clipboardRecyclerView.apply {
             adapter = clipboardAdapter

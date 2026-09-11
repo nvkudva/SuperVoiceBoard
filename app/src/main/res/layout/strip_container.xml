@@ -38,7 +38,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         style="?attr/suggestionStripViewStyle"
-        android:scrollbarThumbHorizontal="@color/toolbar_scrollbar" >
+        android:scrollbars="none" >
         <!-- WaveKey: the clipboard keys start where the text does. Upstream
              pushed them to the far edge with a weighted spacer, which put the
              first key furthest from the thumb that had just opened the strip. -->
@@ -46,6 +46,7 @@
             android:id="@+id/clipboard_strip"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
+            android:paddingHorizontal="@dimen/config_toolbar_key_inset"
             android:layout_gravity="start" />
     </HorizontalScrollView>
     <!-- WaveKey: the correction ghost draws over whichever mode is

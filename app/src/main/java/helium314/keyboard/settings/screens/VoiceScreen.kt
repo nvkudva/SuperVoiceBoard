@@ -24,6 +24,9 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.collectAsState
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.selection.selectableGroup
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.semantics.Role
 import androidx.core.content.edit
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -42,6 +45,7 @@ import com.vboard.core.model.ModelCatalog
 import com.vboard.core.model.ModelKind
 import com.vboard.core.session.SilenceTimeout
 import helium314.keyboard.latin.R
+import helium314.keyboard.voice.GoogleVoiceSession
 import helium314.keyboard.voice.VoiceStripView
 import helium314.keyboard.latin.utils.Log
 import helium314.keyboard.latin.utils.NextScreenIcon
@@ -53,6 +57,7 @@ import helium314.keyboard.settings.SearchSettingsScreen
 import helium314.keyboard.settings.SettingsSections
 import helium314.keyboard.settings.preferences.PreferenceCategory
 import helium314.keyboard.settings.preferences.PreferenceGroup
+import helium314.keyboard.settings.preferences.PreferenceGroupDivider
 import helium314.keyboard.settings.Setting
 import helium314.keyboard.settings.SettingsActivity
 import helium314.keyboard.settings.SettingsDestination
@@ -80,23 +85,26 @@ fun VoiceScreen(
         VoiceKeys.PROVISIONAL_COMMIT,
         VoiceStripView.SHOW_MINIMIZE_KEY,
     )
-    val correction = listOfNotNull(
-        VoiceKeys.LLM_REFINE,
-        if (raw) null else VoiceKeys.AUTO_CAP,
-        if (raw) null else VoiceKeys.SELF_CORRECTIONS,
-        if (raw) null else VoiceKeys.REMOVE_FILLERS,
-        if (raw) null else VoiceKeys.AGGRESSIVE_FILLERS,
-        if (raw) null else VoiceKeys.AUTO_PUNCTUATE,
-        if (raw) null else VoiceKeys.SPOKEN_COMMANDS,
-    )
-    val other = listOf(
-        VoiceKeys.TELEMETRY,
+    val correction = listOfNotNull(VoiceKeys.LLM_REFINE)
+    // Raw transcript overrides every switch below it. It used to sit at the
+    // bottom of the screen and delete them, so rows vanished with no visible
+    // cause; it leads them now, and they read as unavailable instead.
+    val cleanup = listOf(
         VoiceKeys.RAW_TRANSCRIPT,
+        VoiceKeys.AUTO_CAP,
+        VoiceKeys.SELF_CORRECTIONS,
+        VoiceKeys.REMOVE_FILLERS,
+        VoiceKeys.AGGRESSIVE_FILLERS,
+        VoiceKeys.AUTO_PUNCTUATE,
+        VoiceKeys.SPOKEN_COMMANDS,
     )
+    val other = listOf(VoiceKeys.TELEMETRY)
     SearchSettingsScreen(
         onClickBack = onClickBack,
         title = stringResource(R.string.settings_screen_voice),
-        settings = emptyList(),
+        // Registered so the settings search resolves them, even though the
+        // screen draws its own layout rather than a plain list.
+        settings = speech + correction + cleanup + other,
         content = {
             Column(
                 Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(bottom = 24.dp)
@@ -104,14 +112,35 @@ fun VoiceScreen(
                 // What turns speech into text: the model that does it, the engine
                 // choice between it and Google's, and how dictation behaves.
                 PreferenceCategory(stringResource(R.string.wk_cat_voice_to_text))
-                VoiceModelsSection(only = ModelKind.FINAL_ASR)
-                EngineChoice()
+                // The model and the engine that uses it are one decision, so they
+                // share one container: two groups stacked flush met at a shared
+                // edge and their radii read as a pinch, not as two cards.
+                PreferenceGroup {
+                    VoiceModelsSection(only = ModelKind.FINAL_ASR, inOwnGroup = false)
+                    PreferenceGroupDivider()
+                    EngineChoice()
+                }
                 SettingsSections(speech)
 
                 // What happens to the text afterwards, under the model that does it.
+                // The model and the switch that uses it. The cleanup below is
+                // deterministic and runs with no model at all, so it does not
+                // belong under a heading that implies a download gates it.
                 PreferenceCategory(stringResource(R.string.wk_engine_title))
-                VoiceModelsSection(only = ModelKind.REFINER_LLM)
-                SettingsSections(correction)
+                PreferenceGroup {
+                    VoiceModelsSection(only = ModelKind.REFINER_LLM, inOwnGroup = false)
+                    PreferenceGroupDivider()
+                    SettingsSections(correction, inOwnGroup = false)
+                }
+
+                PreferenceCategory(stringResource(R.string.wk_cat_cleanup))
+                PreferenceGroup {
+                    SettingsSections(listOf(VoiceKeys.RAW_TRANSCRIPT), inOwnGroup = false)
+                    PreferenceGroupDivider()
+                    Dimmed(!raw) {
+                        SettingsSections(cleanup.drop(1), inOwnGroup = false)
+                    }
+                }
 
                 PreferenceCategory(stringResource(R.string.wk_cat_other))
                 SettingsSections(other)
@@ -133,10 +162,15 @@ private fun EngineChoice() {
     val google = PrivacyBreakingSettings.googleVoiceEnabled(prefs)
     val runtime = voiceRuntimeOrNull(ctx)
     val ready = runtime?.modelStore?.dictationReady(runtime.packInstaller) == true
-    PreferenceGroup {
+    Column(Modifier.selectableGroup()) {
         EngineOption(
             name = stringResource(R.string.privacy_breaking_google_voice),
-            description = stringResource(R.string.privacy_breaking_google_voice_summary),
+            // The system recognizer runs locally when the platform has an offline
+            // pack and goes to Google when it does not, so the row says which.
+            description = stringResource(
+                if (GoogleVoiceSession.onDeviceAvailable(ctx)) R.string.wk_engine_google_local
+                else R.string.wk_engine_google_network
+            ),
             selected = google,
         ) { prefs.edit { putBoolean(PrivacyBreakingSettings.PREF_GOOGLE_VOICE, true) } }
         EngineOption(
@@ -145,17 +179,29 @@ private fun EngineChoice() {
                 if (ready) R.string.wk_engine_ondevice_ready else R.string.wk_engine_ondevice_missing
             ),
             selected = !google,
+            // Selecting an engine whose model is not installed picks a keyboard
+            // that cannot dictate; the row says why rather than going quiet.
+            enabled = ready,
         ) { prefs.edit { putBoolean(PrivacyBreakingSettings.PREF_GOOGLE_VOICE, false) } }
     }
 }
 
 @Composable
-private fun EngineOption(name: String, description: String, selected: Boolean, onClick: () -> Unit) {
+private fun EngineOption(
+    name: String,
+    description: String,
+    selected: Boolean,
+    enabled: Boolean = true,
+    onClick: () -> Unit,
+) {
     Row(
-        Modifier.fillMaxWidth().selectable(selected, onClick = onClick).padding(horizontal = 12.dp, vertical = 10.dp),
+        Modifier.fillMaxWidth()
+            .selectable(selected, enabled = enabled, role = Role.RadioButton, onClick = onClick)
+            .alpha(if (enabled) 1f else 0.5f)
+            .padding(horizontal = 16.dp, vertical = 10.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        RadioButton(selected = selected, onClick = onClick)
+        RadioButton(selected = selected, enabled = enabled, onClick = null)
         Column(Modifier.weight(1f).padding(start = 4.dp)) {
             Text(name, style = MaterialTheme.typography.bodyLarge)
             Text(

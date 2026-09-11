@@ -203,8 +203,9 @@ private fun ThemeRow(editNight: Boolean) {
     ) { NextScreenIcon() }
 }
 
+/** A row that is unavailable right now: shown, but visibly not in play. */
 @Composable
-private fun Dimmed(enabled: Boolean, content: @Composable () -> Unit) {
+fun Dimmed(enabled: Boolean, content: @Composable () -> Unit) {
     Box(Modifier.alpha(if (enabled) 1f else 0.38f)) { content() }
 }
 

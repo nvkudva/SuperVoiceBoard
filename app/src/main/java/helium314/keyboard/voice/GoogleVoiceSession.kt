@@ -58,9 +58,7 @@ class GoogleVoiceSession(
      * in API 31 and backed by the system's own offline packs, which the user
      * installs from system settings rather than from us.
      */
-    fun onDeviceAvailable() =
-        Build.VERSION.SDK_INT >= Build.VERSION_CODES.S &&
-            SpeechRecognizer.isOnDeviceRecognitionAvailable(context)
+    fun onDeviceAvailable(): Boolean = Companion.onDeviceAvailable(context)
 
     /**
      * WaveKey: [onDeviceOnly] binds the session to the platform's
@@ -195,5 +193,13 @@ class GoogleVoiceSession(
 
     companion object {
         private const val TAG = "SVBGoogleVoice"
+
+        /**
+         * True when the platform can recognize without sending audio anywhere.
+         * Static so settings can ask without opening a session.
+         */
+        fun onDeviceAvailable(context: Context): Boolean =
+            Build.VERSION.SDK_INT >= Build.VERSION_CODES.S &&
+                SpeechRecognizer.isOnDeviceRecognitionAvailable(context)
     }
 }

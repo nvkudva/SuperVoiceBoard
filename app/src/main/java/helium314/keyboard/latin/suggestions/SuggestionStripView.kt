@@ -165,8 +165,12 @@ class SuggestionStripView(context: Context, attrs: AttributeSet?, defStyle: Int)
     private val enabledToolKeyBackground = GradientDrawable()
     private var direction = 1 // 1 if LTR, -1 if RTL
 
+    // WaveKey: the toolbar row does not scroll. Its keys share the width with a
+    // weight, so they land on fixed positions and the gaps stay even however
+    // many keys are enabled; the tile behind each one is a fixed square, so a
+    // wider key grows its gap rather than its container.
     private val toolbarKeyLayoutParams = LinearLayout.LayoutParams(
-        resources.getDimensionPixelSize(R.dimen.config_suggestions_strip_edge_key_width),
+        0,
         LinearLayout.LayoutParams.MATCH_PARENT
     )
 

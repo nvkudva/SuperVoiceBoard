@@ -32,12 +32,13 @@
             android:layout_width="0dp"
             android:layout_weight="1"
             android:layout_height="match_parent"
-            android:scrollbarThumbHorizontal="@color/toolbar_scrollbar"
+            android:scrollbars="none"
             android:visibility="gone">
             <LinearLayout
                 android:id="@+id/toolbar"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="match_parent"
+                android:paddingHorizontal="@dimen/config_toolbar_key_inset"
                 android:orientation="horizontal"
                 style="?attr/suggestionWordStyle">
             </LinearLayout>
@@ -59,6 +60,7 @@
         <LinearLayout
             android:id="@+id/pinned_keys"
             android:orientation="horizontal"
+            android:paddingHorizontal="@dimen/config_toolbar_key_inset"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:minWidth="0dp"

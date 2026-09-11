@@ -54,6 +54,7 @@ import helium314.keyboard.latin.utils.CloseIcon
 import helium314.keyboard.latin.utils.SearchIcon
 import helium314.keyboard.settings.preferences.PreferenceCategory
 import helium314.keyboard.settings.preferences.PreferenceGroup
+import helium314.keyboard.settings.preferences.PreferenceGroupContent
 
 /** One card's worth of a settings screen: the entries between two category headers. */
 private class Section(@StringRes val title: Int?, val keys: List<Any?>)
@@ -87,7 +88,7 @@ private fun sectionsOf(settings: List<Any?>): List<Section> {
  * inline instead of behind a door.
  */
 @Composable
-fun SettingsSections(settings: List<Any?>) {
+fun SettingsSections(settings: List<Any?>, inOwnGroup: Boolean = true) {
     sectionsOf(settings).forEach { section ->
         // screens null out prefs that don't apply, so a whole
         // section can be hidden: drop its header too, rather than
@@ -95,7 +96,7 @@ fun SettingsSections(settings: List<Any?>) {
         if (section.keys.any { it != null }) {
             if (section.title != null)
                 PreferenceCategory(stringResource(section.title))
-            PreferenceGroup {
+            val rows: @Composable ColumnScope.() -> Unit = {
                 section.keys.forEach {
                     // this only animates appearing prefs
                     // a solution would be using a list(visible to key)
@@ -105,6 +106,7 @@ fun SettingsSections(settings: List<Any?>) {
                     }
                 }
             }
+            if (inOwnGroup) PreferenceGroup(content = rows) else PreferenceGroupContent(content = rows)
         }
     }
 }

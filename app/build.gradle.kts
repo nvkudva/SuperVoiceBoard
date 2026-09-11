@@ -33,7 +33,7 @@ android {
 
     defaultConfig {
         applicationId = "com.supervoiceboard.app" // WaveKey: rebrand; namespace stays helium314.keyboard.* for upstream rebaseability
-        minSdk = 23
+        minSdk = 24
         targetSdk = 36
         // WaveKey's own numbering, not HeliBoard's. The fork carries upstream
         // 4.1 as its base (see README), but what a user installs and what the
@@ -181,10 +181,9 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
-        // The desugar_jdk_libs dependency below does nothing without this flag,
-        // and the app calls java.lang.Iterable#forEach and friends — API 24
-        // methods. Off, those are NoSuchMethodError on every device below 24,
-        // which is a crash in code that compiled and shipped clean.
+        // Kept on under minSdk 24 for the java.time and stream APIs that are
+        // still above the floor, and because turning it off is a silent change
+        // in what compiles rather than a loud one.
         isCoreLibraryDesugaringEnabled = true
     }
 

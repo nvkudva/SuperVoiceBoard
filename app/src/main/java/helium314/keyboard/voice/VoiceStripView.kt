@@ -26,6 +26,7 @@ import helium314.keyboard.latin.settings.Settings
 import helium314.keyboard.latin.utils.prefs
 import kotlin.math.max
 import kotlin.math.min
+import kotlin.math.sqrt
 
 /**
  * The strip while dictation is running.
@@ -173,8 +174,16 @@ class VoiceStripView(context: Context, attrs: AttributeSet?) : LinearLayout(cont
 
     /** Called on the audio callback's cadence; smoothed here rather than there. */
     fun onAmplitude(rms: Float) {
-        val target = min(1f, max(0f, rms))
-        level += (target - level) * SMOOTHING
+        // Speech RMS lives near the bottom of 0..1 - an ordinary sentence sits
+        // around 0.1 to 0.3 - so used raw it moves the bar by a few pixels and
+        // reads as dead. Gain then square root spends most of the travel where
+        // the voice actually is.
+        val target = min(1f, sqrt(min(1f, max(0f, rms) * LEVEL_GAIN)))
+        // Rises fast and falls slow, which is how a meter looks alive: catching
+        // the attack of a word matters, and a decay that snaps back to nothing
+        // between syllables reads as flicker.
+        val rate = if (target > level) ATTACK else RELEASE
+        level += (target - level) * rate
         invalidate()
     }
 
@@ -207,8 +216,10 @@ class VoiceStripView(context: Context, attrs: AttributeSet?) : LinearLayout(cont
         val h = SuggestionStripView.RAIL_DP * resources.displayMetrics.density
         val half = width / 2f
         // Never fully collapsed: silence should read as a quiet line, not as a
-        // keyboard that stopped listening.
-        val span = half * (0.34f + 0.66f * level)
+        // keyboard that stopped listening. The resting stub is short on purpose
+        // - the bar earns its width from the voice, so the difference between
+        // quiet and speaking is most of the strip rather than a third of it.
+        val span = half * (REST_SPAN + (1f - REST_SPAN) * level)
         levelPaint.alpha = 255
         canvas.drawRect(half - span, 0f, half + span, h, levelPaint)
     }
@@ -218,7 +229,14 @@ class VoiceStripView(context: Context, attrs: AttributeSet?) : LinearLayout(cont
         const val SHOW_MINIMIZE_KEY = "voice_show_minimize_key"
         const val DEFAULT_SHOW_MINIMIZE_KEY = false
 
-        private const val SMOOTHING = 0.35f
+        /** How much of the strip silence keeps. */
+        private const val REST_SPAN = 0.06f
+
+        /** Lifts speech-level RMS into the top of the range before the curve. */
+        private const val LEVEL_GAIN = 4f
+
+        private const val ATTACK = 0.55f
+        private const val RELEASE = 0.12f
         private const val BAR_INSET_PX = 4f
     }
 }

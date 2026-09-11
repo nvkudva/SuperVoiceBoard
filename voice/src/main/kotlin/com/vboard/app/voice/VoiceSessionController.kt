@@ -1026,7 +1026,11 @@ object VoiceEngines {
     @Synchronized
     fun releaseRefiner() {
         if (claims.get() > 0) {
+            // Refusing is not the same as never releasing: re-arm, or the claim
+            // that was in flight at the deadline keeps the model resident for
+            // the life of the process.
             Log.w(TAG, "refiner release refused: engines in use")
+            scheduleIdleRelease()
             return
         }
         refiner?.let { runCatching { it.disconnect() } }
@@ -1037,6 +1041,7 @@ object VoiceEngines {
     fun releaseAll() {
         if (claims.get() > 0) {
             Log.w(TAG, "engine release refused: engines in use")
+            scheduleIdleRelease()
             return
         }
         runCatching { finalPass?.release() }

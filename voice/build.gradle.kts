@@ -34,6 +34,13 @@ android {
         getByName("main") {
             kotlin.srcDir("src/main/kotlin")
         }
+        getByName("test") {
+            kotlin.srcDir("src/test/kotlin")
+        }
+    }
+
+    testOptions {
+        unitTests.isReturnDefaultValues = true
     }
 }
 
@@ -51,4 +58,15 @@ dependencies {
     implementation(libs.sherpa.onnx)
     // tar.bz2 extraction for downloaded ASR model archives.
     implementation(libs.commons.compress)
+}
+
+dependencies {
+    testImplementation("org.junit.jupiter:junit-jupiter:5.11.3")
+    testImplementation(kotlin("test"))
+    testImplementation(libs.coroutines.test)
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+}
+
+tasks.withType<Test> {
+    useJUnitPlatform()
 }

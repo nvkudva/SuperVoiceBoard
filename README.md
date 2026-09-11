@@ -194,7 +194,9 @@ Known gaps, from a code review of `voice/`, `llm/` and the voice code in `app/`
   a file the LLM runtime then executes.
 - Late refinement can delete characters typed after a commit — `replaceUtterance` does not
   check what it is about to remove.
-- `voice/` and `llm/` have no unit tests, and hold all of the fork's concurrency.
+- `llm/` has no unit tests, and `voice/` — which holds most of the fork's concurrency —
+  is only starting to get them: the root rules, the level meter, the silence timeout and
+  idle release are covered; the session controller is not.
 - A timed-out `bindService` leaves the binding in place, pinning the `:llm` process.
 - No coroutine exception handler on the IME-process scopes.
 

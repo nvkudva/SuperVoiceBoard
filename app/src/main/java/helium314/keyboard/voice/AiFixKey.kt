@@ -13,15 +13,14 @@ import com.vboard.app.voice.VoiceRuntime
 import com.vboard.core.correct.FixButtonState
 import com.vboard.core.correct.FixEdit
 import com.vboard.core.text.FieldKind
-import helium314.keyboard.keyboard.KeyboardSwitcher
 import helium314.keyboard.latin.LatinIME
-import helium314.keyboard.latin.common.ColorType
-import helium314.keyboard.latin.settings.Settings
+import helium314.keyboard.latin.suggestions.SuggestionStripView
 import helium314.keyboard.latin.R
 import helium314.keyboard.latin.utils.ToolbarKey
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
 
 /**
  * The AI fix key: one toolbar key that fixes the field, then offers an undo.
@@ -64,7 +63,10 @@ class AiFixKey(
 
     fun onFinishInputView() = controller.onFinishInputView()
 
-    fun destroy() = controller.destroy()
+    fun destroy() {
+        controller.destroy()
+        scope.cancel()
+    }
 
     // ------------------------------------------------- AiFixController.Host
 
@@ -91,38 +93,49 @@ class AiFixKey(
                 ?.let { ime.showCorrectionGhost(it.beforeText(), it.afterText()) }
         }
         buttonState = state
-        val colors = Settings.getValues().mColors
-        // Running and "you can still undo this" are the two states worth seeing
-        // from across the room, so the key fills with the accent instead of
-        // brightening its glyph by a few percent.
-        val lit = state == FixButtonState.RUNNING || state == FixButtonState.UNDO
         forEachKeyView { button ->
             button.contentDescription = contentDescription
             button.isEnabled = state != FixButtonState.DISABLED
             button.alpha = if (state == FixButtonState.DISABLED) DISABLED_ALPHA else 1f
-            button.isActivated = lit
             // Once a fix has landed the key is the way back out of it, so it
             // says undo rather than offering to fix the same text again.
             button.setImageResource(
                 if (state == FixButtonState.UNDO) R.drawable.ic_ai_fix_undo
                 else R.drawable.ic_ai_fix
             )
-            if (lit) {
-                button.setBackgroundResource(R.drawable.toolbar_key_background_lit)
-                colors.setBackground(button, ColorType.ACTION_KEY_BACKGROUND)
-                colors.setColor(button, ColorType.ACTION_KEY_ICON)
-            } else {
-                button.setBackgroundResource(R.drawable.toolbar_key_background)
-                colors.setBackground(button, ColorType.FUNCTIONAL_KEY_BACKGROUND)
-                colors.setColor(button, ColorType.TOOL_BAR_KEY)
+            // The same spectrum tile the mic wears: the two keys the fork adds
+            // to the strip are the two that are not the keyboard's own, and they
+            // say so together. State is left to the glyph and the alpha.
+            button.setBackgroundResource(R.drawable.spectrum_tile)
+            button.setColorFilter(SuggestionStripView.SPECTRUM_GLYPH)
+            // ...and while the fix is being written, a light travels round the
+            // edge. A fill that is already saturated cannot get brighter, so the
+            // working state has to happen at the border.
+            if (state == FixButtonState.RUNNING) {
+                val res = button.resources
+                val border = RunningBorderDrawable(
+                    cornerRadius = 10f * res.displayMetrics.density,
+                    strokeWidth = 2f * res.displayMetrics.density,
+                    inset = res.getDimensionPixelSize(R.dimen.config_toolbar_key_inset).toFloat(),
+                    colors = SuggestionStripView.SPECTRUM,
+                )
+                button.background = android.graphics.drawable.LayerDrawable(
+                    arrayOf(button.background, border),
+                ).apply {
+                    // Nested padding would inset the ring by the tile's own
+                    // inset a second time, shrinking it down onto the glyph.
+                    paddingMode = android.graphics.drawable.LayerDrawable.PADDING_MODE_STACK
+                }
+                border.start()
             }
         }
     }
 
     override fun showFixMessage(text: String) {
-        // HeliBoard already has a place for transient keyboard-level messages,
-        // and it is the one users of this keyboard are used to.
-        KeyboardSwitcher.getInstance().showToast(text, true)
+        // WaveKey: the key says what it is doing — lit, spinning, or showing the
+        // undo glyph — and a toast over the keyboard on top of that is noise.
+        // The message still reaches screen readers through the description.
+        forEachKeyView { it.announceForAccessibility(text) }
     }
 
     override fun clearFixMessage() {

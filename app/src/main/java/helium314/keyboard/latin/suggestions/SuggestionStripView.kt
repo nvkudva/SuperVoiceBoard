@@ -210,6 +210,10 @@ class SuggestionStripView(context: Context, attrs: AttributeSet?, defStyle: Int)
         setupKey(aiFixKey, colors)
         // setupKey stretches scrolling toolbar keys; this one holds a fixed slot.
         (aiFixKey.layoutParams as LinearLayout.LayoutParams).weight = 0f
+        // The fork's two keys wear the spectrum tile; see AiFixKey for the rest
+        // of this key's states.
+        aiFixKey.setBackgroundResource(R.drawable.spectrum_tile)
+        aiFixKey.setColorFilter(SPECTRUM_GLYPH)
 
         // WaveKey: mic key styling, matching the toolbar keys around it
         micKey.scaleType = android.widget.ImageView.ScaleType.CENTER

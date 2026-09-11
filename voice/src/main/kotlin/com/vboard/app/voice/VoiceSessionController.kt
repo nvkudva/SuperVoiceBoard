@@ -280,6 +280,12 @@ class VoiceSessionController(
         // recording yet: a cold press takes seconds, and the old bar spent them
         // claiming to listen.
         if (!VoiceEngines.isLoaded) host.showPreparing()
+        // VB-131: the microphone opens now, not when the models land. A cold
+        // press used to spend its first seconds with no record open at all, so
+        // whatever was said into it was never captured, only missed. The reader
+        // fills the utterance buffer while the load runs; the decode side stays
+        // shut until [beginListening].
+        openMic()
         prepareJob = scope.launch {
             val outcome = withContext(Dispatchers.IO) {
                 try {
@@ -311,19 +317,28 @@ class VoiceSessionController(
                     }
                     dispatch(Event.ModelsReady)
                 }
-                VoiceEngines.LoadResult.MISSING -> dispatch(Event.ModelsMissing)
-                VoiceEngines.LoadResult.BROKEN -> dispatch(Event.ModelsUnusable)
+                // The error states do not emit StopAudio (nothing used to be
+                // recording this early), so the mic opened above is closed here.
+                VoiceEngines.LoadResult.MISSING -> {
+                    stopAudio()
+                    dispatch(Event.ModelsMissing)
+                }
+                VoiceEngines.LoadResult.BROKEN -> {
+                    stopAudio()
+                    dispatch(Event.ModelsUnusable)
+                }
             }
         }
     }
 
     // ------------------------------------------------------------ audio loop
 
-    private fun startAudio() {
-        if (VoiceEngines.finalPass == null) {
-            dispatch(Event.ModelsMissing)
-            return
-        }
+    /**
+     * Opens the record and starts the reader. Called before the models are
+     * loaded, so it must not touch the engines: everything read here lands in
+     * the pipeline's utterance buffer and waits for [beginListening].
+     */
+    private fun openMic() {
         val pipe = AudioPipeline()
         pipeline = pipe
         val now = System.currentTimeMillis()
@@ -381,6 +396,27 @@ class VoiceSessionController(
             }
         }
 
+    }
+
+    /**
+     * The models are loaded and the mic has been live since [openMic]. Start the
+     * tick that endpoints, times out and reports, i.e. everything that decides
+     * what to do with audio rather than merely capturing it.
+     */
+    private fun beginListening() {
+        if (VoiceEngines.finalPass == null) {
+            stopAudio()
+            dispatch(Event.ModelsMissing)
+            return
+        }
+        // A session that somehow reached here without a record (no prepare, or a
+        // mic that failed and was torn down) still needs one.
+        if (audioJob == null) openMic()
+        val pipe = pipeline ?: return
+        // The silence clock runs from here, not from the mic press: a slow load
+        // must not spend the user's timeout for them. Speech heard during the
+        // load keeps its timestamp, so it endpoints as soon as it should.
+        if (!speechSinceEndpoint) lastSpeechAt = System.currentTimeMillis()
         monitorJob = scope.launch {
             var tick = 0
             while (isActive) {
@@ -780,7 +816,7 @@ class VoiceSessionController(
             }
             Effect.StartAudio -> {
                 host.showListening()
-                startAudio()
+                beginListening()
             }
             Effect.StopAudio -> stopAudio()
             is Effect.UpdatePartial -> host.updatePartial(effect.text)

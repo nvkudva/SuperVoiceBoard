@@ -152,7 +152,7 @@ class ModelCatalogTest {
         // Sizes measured from the upstream release assets; the installer re-checks with
         // the server, so drift here only affects progress and the storage pre-check.
         assertEquals(482_468_385L, ModelCatalog.byId("parakeet-tdt-0.6b-v2")!!.totalBytes)
-        assertEquals(498_000_000L, ModelCatalog.byId("qwen3-06b-refiner")!!.totalBytes)
+        assertEquals(497_664_000L, ModelCatalog.byId("qwen3-06b-refiner")!!.totalBytes)
     }
 
     @Test

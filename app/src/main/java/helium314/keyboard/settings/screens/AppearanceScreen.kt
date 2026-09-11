@@ -36,6 +36,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -227,9 +228,13 @@ private enum class Orientation(val landscape: Boolean, val folded: Boolean) {
 private fun SizeAndSpacing() {
     val ctx = LocalContext.current
     val prefs = ctx.prefs()
+    // LocalConfiguration, not ctx.resources.configuration: the context's copy
+    // does not recompose, so a rotation left this screen editing the sizes of
+    // the orientation the user had just left.
+    val configuration = LocalConfiguration.current
     val orientations = Orientation.entries.filter { FoldableUtils.isFoldable || !it.folded }
     val here = Orientation.entries.first {
-        it.landscape == (ctx.resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) &&
+        it.landscape == (configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) &&
                 it.folded == (FoldableUtils.isFoldable && FoldableUtils.isFolded)
     }
     var orientation by rememberSaveable { mutableStateOf(if (here in orientations) here else Orientation.PORTRAIT) }

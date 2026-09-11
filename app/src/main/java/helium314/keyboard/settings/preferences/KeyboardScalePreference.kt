@@ -29,6 +29,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -66,7 +67,8 @@ fun KeyboardScalePreference(
     // a size was to open its dialog (docs/settings-ia.md). One number fits.
     val ctx = LocalContext.current
     val prefs = ctx.prefs()
-    val landscape = ctx.resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+    // See AppearanceScreen: the context's configuration does not recompose.
+    val landscape = LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
     val index = findIndexOfDefaultSetting(landscape, FoldableUtils.isFolded)
     val current = prefs.getFloat(
         createPrefKeyForBooleanSettings(baseKey, index, dimensions.size),
@@ -109,7 +111,7 @@ private fun KeyboardScaleDialog(
     val currentKey = createPrefKeyForBooleanSettings(
         baseKey,
         findIndexOfDefaultSetting(
-            LocalContext.current.resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE,
+            LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE,
             FoldableUtils.isFolded,
         ),
         dimensions.size,

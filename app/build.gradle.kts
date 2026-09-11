@@ -33,7 +33,7 @@ android {
 
     defaultConfig {
         applicationId = "com.supervoiceboard.app" // WaveKey: rebrand; namespace stays helium314.keyboard.* for upstream rebaseability
-        minSdk = 21
+        minSdk = 23
         targetSdk = 36
         versionCode = 4101
         versionName = "4.1"
@@ -178,6 +178,11 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
+        // The desugar_jdk_libs dependency below does nothing without this flag,
+        // and the app calls java.lang.Iterable#forEach and friends — API 24
+        // methods. Off, those are NoSuchMethodError on every device below 24,
+        // which is a crash in code that compiled and shipped clean.
+        isCoreLibraryDesugaringEnabled = true
     }
 
     kotlin {

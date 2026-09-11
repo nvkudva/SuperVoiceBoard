@@ -174,16 +174,14 @@ class QaRegressionPinTest {
         // The ASR pack — the one that actually failed the download — carries a
         // measured size.
         assertTrue(measured.any { it.startsWith("parakeet-tdt-0.6b-v2/") })
-        // The refiner pack does not: its size is still a round estimate and its
-        // sha256 is still empty. VB-QA-10's fix (gate on the server's
-        // contentLength) makes that survivable rather than fatal, and the empty
-        // digest is already listed as a known risk in the report — pinned here so
-        // "sizes are now measured from the upstream assets" is not read as
-        // covering every pack.
-        assertEquals(listOf("qwen3-06b-refiner/qwen3-0.6b-mixed-int4.litertlm"), estimated)
+        // And so does the refiner now: its size is measured from the pinned
+        // revision, and every file in the catalog carries a digest. The pin runs
+        // the other way round from here — a file that arrives without one is the
+        // regression.
+        assertEquals(emptyList(), estimated, "these sizes are round estimates")
         assertTrue(
-            ModelCatalog.packs.flatMap { it.files }.any { it.sha256.isEmpty() },
-            "all digests are pinned now - update this pin and the report's known-risks section",
+            ModelCatalog.packs.flatMap { it.files }.all { it.sha256.isNotEmpty() },
+            "a catalog file has no digest: the installer would skip verification",
         )
     }
 

@@ -114,7 +114,11 @@ object ModelCatalog {
      * `ModelCatalogTest` fails the build if an unpinned pack is ever marked required, so the
      * gap can never reach a user on the critical path.
      */
-    private const val REFINER_REVISION = "main"
+    /**
+     * An immutable commit, not `main`: a branch ref is a file that can change
+     * under a released build, and the installer executes what it downloads.
+     */
+    private const val REFINER_REVISION = "8414150f2e9dcc82449bcc9c5abc404b399a4d06"
 
     private const val REFINER_BASE =
         "https://huggingface.co/litert-community/Qwen3-0.6B/resolve"
@@ -170,8 +174,8 @@ object ModelCatalog {
                     // it. Empty means "skip verification" (see ModelFileSpec); a fabricated
                     // hash would fail every install instead of none. Pair it with a pinned
                     // REFINER_REVISION in the same change.
-                    sha256 = "",
-                    sizeBytes = 498_000_000L, // estimate; the installer uses the server's length
+                    sha256 = "b1baab462f6be49d70eada79d715c2c52cd9ece0cad00bddf6a2c097d23498e9",
+                    sizeBytes = 497_664_000L, // measured from the pinned revision
                 ),
             ),
             licenseNote = "Qwen3, Apache-2.0 (LiteRT community build)",

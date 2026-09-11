@@ -30,14 +30,11 @@ object EditorInfoCompatUtils {
     }
 
     fun debugLog(editorInfo: EditorInfo, tag: String) {
-        val format = HexFormat {
-            upperCase = true
-            number {
-                prefix = "0x"
-                minLength = 8
-            }
-        }
-        Log.d(tag, "editorInfo: inputType: ${editorInfo.inputType.toHexString(format)}, imeOptions: ${editorInfo.imeOptions.toHexString(format)}")
+        // Kotlin's HexFormat compiles down to java.util.HexFormat, which is API
+        // 34. A debug log is not worth a NoSuchMethodError on every phone older
+        // than that, and "%#010X" says the same thing.
+        fun hex(value: Int) = String.format("%#010X", value)
+        Log.d(tag, "editorInfo: inputType: ${hex(editorInfo.inputType)}, imeOptions: ${hex(editorInfo.imeOptions)}")
         val allCaps = (editorInfo.inputType and InputType.TYPE_TEXT_FLAG_CAP_CHARACTERS) != 0
         val sentenceCaps = (editorInfo.inputType and InputType.TYPE_TEXT_FLAG_CAP_SENTENCES) != 0
         val wordCaps = (editorInfo.inputType and InputType.TYPE_TEXT_FLAG_CAP_WORDS) != 0

@@ -14,7 +14,7 @@ permission in the keyboard process at all.
 [![Website](https://img.shields.io/badge/website-live-A855F7)](https://nvkudva.github.io/WaveKey/)
 [![Price](https://img.shields.io/badge/price-free%20forever-22D3EE)](#free-and-free-of-a-meter)
 [![License](https://img.shields.io/badge/license-GPL--3.0--only-blue)](LICENSE)
-[![Android](https://img.shields.io/badge/Android-5.0%2B-3DDC84)](#requirements)
+[![Android](https://img.shields.io/badge/Android-6.0%2B-3DDC84)](#requirements)
 [![ASR](https://img.shields.io/badge/ASR-Parakeet%20TDT%200.6B-A855F7)](#the-two-models)
 [![LLM](https://img.shields.io/badge/LLM-Qwen3%200.6B-22D3EE)](#the-two-models)
 [![Offline](https://img.shields.io/badge/network-never-FB7185)](#privacy-is-the-architecture)
@@ -129,7 +129,7 @@ and the utterance buffer is cleared when the session ends.
 
 ## Requirements
 
-- **Android 5.0** (API 21) to type and dictate. The LLM refiner needs **Android 7.0**
+- **Android 6.0** (API 23) to type and dictate. The LLM refiner needs **Android 7.0**
   (API 24) and is skipped at runtime below that.
 - A microphone. Dictation adds `RECORD_AUDIO` to what HeliBoard already asks for.
 - **~1 GB free** for the required speech pack, ~1 GB more if you add the refiner.

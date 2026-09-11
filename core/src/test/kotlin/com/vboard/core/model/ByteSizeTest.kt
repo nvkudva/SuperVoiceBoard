@@ -37,8 +37,8 @@ class ByteSizeTest {
     fun `shipped catalog splits into one speech pack and an optional refiner`() {
         val sizes = DownloadSizes.of()
         assertEquals(482_468_385L, sizes.requiredBytes)
-        assertEquals(498_000_000L, sizes.optionalBytes)
-        assertEquals(980_468_385L, sizes.totalBytes)
+        assertEquals(497_664_000L, sizes.optionalBytes)
+        assertEquals(980_132_385L, sizes.totalBytes)
 
         assertEquals("482 MB", sizes.requiredText)
         assertEquals("980 MB", sizes.totalText)
@@ -66,7 +66,7 @@ class ByteSizeTest {
     fun `flipping a pack between required and optional moves its bytes across the split`() {
         val allRequired = ModelCatalog.packs.map { it.copy(required = true) }
         val sizes = DownloadSizes.of(allRequired)
-        assertEquals(980_468_385L, sizes.requiredBytes)
+        assertEquals(980_132_385L, sizes.requiredBytes)
         assertEquals(0L, sizes.optionalBytes)
     }
 }

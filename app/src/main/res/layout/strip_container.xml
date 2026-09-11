@@ -44,6 +44,7 @@
              first key furthest from the thumb that had just opened the strip. -->
         <LinearLayout
             android:id="@+id/clipboard_strip"
+            android:orientation="horizontal"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:paddingHorizontal="@dimen/config_toolbar_key_inset"

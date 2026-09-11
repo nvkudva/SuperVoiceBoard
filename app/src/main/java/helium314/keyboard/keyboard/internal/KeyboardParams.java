@@ -225,12 +225,13 @@ public class KeyboardParams {
             mBottomPadding = (int) (keyboardAttr.getFraction(
                     R.styleable.Keyboard_keyboardBottomPadding, height, height, 0)
                     * sv.mBottomPaddingScale);
-            mLeftPadding = (int) (keyboardAttr.getFraction(
+            final int wideGap = ResourceUtils.getWideScreenSideGap(context, width);
+            mLeftPadding = Math.max(wideGap, (int) (keyboardAttr.getFraction(
                     R.styleable.Keyboard_keyboardLeftPadding, width, width, 0)
-                    * sv.mSidePaddingScale);
-            mRightPadding = (int) (keyboardAttr.getFraction(
+                    * sv.mSidePaddingScale));
+            mRightPadding = Math.max(wideGap, (int) (keyboardAttr.getFraction(
                     R.styleable.Keyboard_keyboardRightPadding, width, width, 0)
-                    * sv.mSidePaddingScale);
+                    * sv.mSidePaddingScale));
 
             mBaseWidth = mOccupiedWidth - mLeftPadding - mRightPadding;
             final float defaultKeyWidthFactor = context.getResources().getInteger(R.integer.config_screen_metrics) > 2 ? 0.9f : 1f;

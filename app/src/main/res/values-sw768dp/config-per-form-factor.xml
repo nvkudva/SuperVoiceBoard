@@ -14,4 +14,5 @@
          false -->
     <bool name="config_show_popup_keys_keyboard_at_touched_point">true</bool>
     <bool name="config_fullscreen_mode_allowed">false</bool>
+    <fraction name="config_keyboard_wide_side_gap">3.5%p</fraction>
 </resources>

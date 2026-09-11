@@ -43,6 +43,16 @@ public final class ResourceUtils {
         return defaultKeyboardWidth;
     }
 
+    /**
+     * WaveKey: the gap to leave at each side of the keyboard. Zero on a phone,
+     * and a small fraction of the width from sw600dp up, where a keyboard that
+     * runs edge to edge reads as a slab rather than as keys.
+     */
+    public static int getWideScreenSideGap(final Context ctx, final int keyboardWidth) {
+        return (int) ctx.getResources().getFraction(
+                R.fraction.config_keyboard_wide_side_gap, keyboardWidth, keyboardWidth);
+    }
+
     public static int getDefaultKeyboardWidth(final Context ctx) {
         if (Build.VERSION.SDK_INT < 35) {
             final DisplayMetrics dm = ctx.getResources().getDisplayMetrics();

@@ -50,6 +50,7 @@ import helium314.keyboard.latin.define.DebugFlags
 import helium314.keyboard.latin.settings.DebugSettings
 import helium314.keyboard.latin.settings.Defaults
 import helium314.keyboard.latin.settings.Settings
+import helium314.keyboard.latin.utils.ResourceUtils
 import helium314.keyboard.latin.utils.ToolbarKey
 import helium314.keyboard.latin.utils.ToolbarMode
 import helium314.keyboard.latin.utils.addPinnedKey
@@ -180,10 +181,14 @@ class SuggestionStripView(context: Context, attrs: AttributeSet?, defStyle: Int)
         // WaveKey: the spectrum rail runs along the top edge, so everything else
         // starts below it. The keys keep an even margin inside the box that is
         // left, which is why the box stays square and the strip grew instead.
+        // WaveKey: and on a wide screen the strip keeps the same side gap the
+        // keyboard does, so the toolbar keys line up with the key columns.
+        val sideGap = ResourceUtils.getWideScreenSideGap(
+            context, ResourceUtils.getKeyboardWidth(context, Settings.getValues()))
         setPadding(
-            paddingLeft,
+            paddingLeft + sideGap,
             resources.getDimensionPixelSize(R.dimen.config_toolbar_rail_gap),
-            paddingRight,
+            paddingRight + sideGap,
             paddingBottom,
         )
 

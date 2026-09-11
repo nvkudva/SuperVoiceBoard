@@ -71,10 +71,15 @@ class VoiceStripView(context: Context, attrs: AttributeSet?) : LinearLayout(cont
     init {
         // WaveKey: clear the spectrum meter at the top edge, matching the
         // suggestion strip so nothing shifts when the two swap.
+        val sideGap = helium314.keyboard.latin.utils.ResourceUtils.getWideScreenSideGap(
+            context,
+            helium314.keyboard.latin.utils.ResourceUtils.getKeyboardWidth(
+                context, helium314.keyboard.latin.settings.Settings.getValues()),
+        )
         setPadding(
-            paddingLeft,
+            paddingLeft + sideGap,
             resources.getDimensionPixelSize(helium314.keyboard.latin.R.dimen.config_toolbar_rail_gap),
-            paddingRight,
+            paddingRight + sideGap,
             paddingBottom,
         )
         orientation = HORIZONTAL

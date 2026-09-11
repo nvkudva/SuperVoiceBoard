@@ -186,12 +186,13 @@ class ClipboardHistoryView @JvmOverloads constructor(
             // set side padding
             val keyboardAttr = context.obtainStyledAttributes(
                 null, R.styleable.Keyboard, R.attr.keyboardStyle, R.style.Keyboard)
-            val leftPadding = (keyboardAttr.getFraction(R.styleable.Keyboard_keyboardLeftPadding,
+            val wideGap = ResourceUtils.getWideScreenSideGap(context, keyboardWidth)
+            val leftPadding = maxOf(wideGap, (keyboardAttr.getFraction(R.styleable.Keyboard_keyboardLeftPadding,
                 keyboardWidth, keyboardWidth, 0f)
-                    * settings.current.mSidePaddingScale).toInt()
-            val rightPadding =  (keyboardAttr.getFraction(R.styleable.Keyboard_keyboardRightPadding,
+                    * settings.current.mSidePaddingScale).toInt())
+            val rightPadding =  maxOf(wideGap, (keyboardAttr.getFraction(R.styleable.Keyboard_keyboardRightPadding,
                 keyboardWidth, keyboardWidth, 0f)
-                    * settings.current.mSidePaddingScale).toInt()
+                    * settings.current.mSidePaddingScale).toInt())
             keyboardAttr.recycle()
             setPadding(leftPadding, paddingTop, rightPadding, paddingBottom)
         }

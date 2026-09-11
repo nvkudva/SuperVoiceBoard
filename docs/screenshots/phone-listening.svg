@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 800" width="360" height="800" font-family="Inter,-apple-system,Segoe UI,Roboto,sans-serif">
+<defs>
+  <linearGradient id="spectrum" x1="0" x2="1"><stop offset="0" stop-color="#FB7185"/><stop offset=".52" stop-color="#A855F7"/><stop offset="1" stop-color="#22D3EE"/></linearGradient>
+  <linearGradient id="body" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#2a3060"/><stop offset="1" stop-color="#0c0f26"/></linearGradient>
+  <linearGradient id="me" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#8B5CF6"/><stop offset="1" stop-color="#7C3AED"/></linearGradient>
+  <clipPath id="screen"><rect x="9" y="9" width="342" height="782" rx="34"/></clipPath>
+</defs>
+<rect width="360" height="800" rx="42" fill="url(#body)"/>
+<rect x="1" y="1" width="358" height="798" rx="41" fill="none" stroke="#ffffff" stroke-opacity=".16"/>
+<rect x="9" y="9" width="342" height="782" rx="34" fill="#05070f"/>
+<g clip-path="url(#screen)">
+<rect x="9" y="9" width="342" height="66" fill="#0b0f28"/>
+<line x1="9" y1="75" x2="351" y2="75" stroke="#ffffff" stroke-opacity=".06"/>
+<text x="24" y="57" fill="#8B8BB5" font-size="17">&#8249;</text>
+<circle cx="52" cy="51" r="13" fill="url(#spectrum)"/>
+<text x="52" y="55.5" fill="#0A0D22" font-size="11" font-weight="800" text-anchor="middle">SK</text>
+<text x="73" y="48" fill="#EDEAFB" font-size="14" font-weight="650">Sam</text>
+<text x="73" y="61" fill="#7DDCA4" font-size="10.5">online</text>
+<text x="330" y="56" fill="#8B8BB5" font-size="14" text-anchor="middle" letter-spacing="2">&#8226;&#8226;&#8226;</text>
+<circle cx="180.0" cy="25" r="4.5" fill="#04060d" stroke="#ffffff" stroke-opacity=".1"/>
+<text x="180" y="372" fill="#6F6F9B" font-size="10" text-anchor="middle">Today 6:41 PM</text>
+<path d="M37,386 h88 a15,15 0 0 1 15,15 v2 a15,15 0 0 1 -15,15 h-98 a5,5 0 0 1 -5,-5 v-22 a15,15 0 0 1 15,-15 z" fill="#1a2049"/><text x="35" y="406.5" fill="#DAD8F0" font-size="13">still on for 7?</text>
+<path d="M173,426 h160 a5,5 0 0 1 5,5 v22 a5,5 0 0 1 -5,5 h-160 a15,15 0 0 1 -15,-15 v-2 a15,15 0 0 1 15,-15 z" fill="url(#me)"/><text x="171" y="446.5" fill="#ffffff" font-size="13">yep — table's booked</text>
+<path d="M37,466 h184 a15,15 0 0 1 15,15 v2 a15,15 0 0 1 -15,15 h-194 a5,5 0 0 1 -5,-5 v-22 a15,15 0 0 1 15,-15 z" fill="#1a2049"/><text x="35" y="486.5" fill="#DAD8F0" font-size="13">you driving or shall I?</text>
+<line x1="9" y1="516" x2="351" y2="516" stroke="#ffffff" stroke-opacity=".06"/>
+<rect x="22" y="526" width="278" height="38" rx="19" fill="#11163a" stroke="#ffffff" stroke-opacity=".08"/>
+<text x="36" y="550" fill="#FCA5A5" font-size="12.5">um so im running late be there in</text>
+<circle cx="325" cy="545" r="16" fill="url(#spectrum)" opacity="0.35"/>
+<text x="325" y="550" fill="#0A0D22" font-size="14" font-weight="800" text-anchor="middle">&#8593;</text>
+<rect x="9" y="574" width="342" height="217" fill="#0d1230"/>
+<rect x="126" y="581" width="108" height="3" rx="1.5" fill="url(#spectrum)"/>
+<rect x="17" y="592" width="32" height="32" rx="9" fill="#171d45"/><text x="33.0" y="613.4" fill="#B9B7DE" font-size="15" font-weight="500" text-anchor="middle">‹</text>
+<text x="180" y="613" fill="#CFCDEB" font-size="14" text-anchor="middle">Listening…</text>
+<rect x="311" y="592" width="32" height="32" rx="9" fill="url(#spectrum)"/><text x="327.0" y="613.04" fill="#0A0D22" font-size="14" font-weight="800" text-anchor="middle">✕</text>
+<rect x="17" y="633" width="28.1" height="40" rx="8" fill="#171d45"/><text x="31.05" y="658.04" fill="#CFCDEB" font-size="14" font-weight="500" text-anchor="middle">q</text>
+<rect x="50.1" y="633" width="28.1" height="40" rx="8" fill="#171d45"/><text x="64.15" y="658.04" fill="#CFCDEB" font-size="14" font-weight="500" text-anchor="middle">w</text>
+<rect x="83.2" y="633" width="28.1" height="40" rx="8" fill="#171d45"/><text x="97.25" y="658.04" fill="#CFCDEB" font-size="14" font-weight="500" text-anchor="middle">e</text>
+<rect x="116.30000000000001" y="633" width="28.1" height="40" rx="8" fill="#171d45"/><text x="130.35000000000002" y="658.04" fill="#CFCDEB" font-size="14" font-weight="500" text-anchor="middle">r</text>
+<rect x="149.4" y="633" width="28.1" height="40" rx="8" fill="#171d45"/><text x="163.45000000000002" y="658.04" fill="#CFCDEB" font-size="14" font-weight="500" text-anchor="middle">t</text>
+<rect x="182.5" y="633" width="28.1" height="40" rx="8" fill="#171d45"/><text x="196.55" y="658.04" fill="#CFCDEB" font-size="14" font-weight="500" text-anchor="middle">y</text>
+<rect x="215.6" y="633" width="28.1" height="40" rx="8" fill="#171d45"/><text x="229.65" y="658.04" fill="#CFCDEB" font-size="14" font-weight="500" text-anchor="middle">u</text>
+<rect x="248.7" y="633" width="28.1" height="40" rx="8" fill="#171d45"/><text x="262.75" y="658.04" fill="#CFCDEB" font-size="14" font-weight="500" text-anchor="middle">i</text>
+<rect x="281.8" y="633" width="28.1" height="40" rx="8" fill="#171d45"/><text x="295.85" y="658.04" fill="#CFCDEB" font-size="14" font-weight="500" text-anchor="middle">o</text>
+<rect x="314.90000000000003" y="633" width="28.1" height="40" rx="8" fill="#171d45"/><text x="328.95000000000005" y="658.04" fill="#CFCDEB" font-size="14" font-weight="500" text-anchor="middle">p</text>
+<rect x="33.55" y="679" width="28.1" height="40" rx="8" fill="#171d45"/><text x="47.599999999999994" y="704.04" fill="#CFCDEB" font-size="14" font-weight="500" text-anchor="middle">a</text>
+<rect x="66.65" y="679" width="28.1" height="40" rx="8" fill="#171d45"/><text x="80.7" y="704.04" fill="#CFCDEB" font-size="14" font-weight="500" text-anchor="middle">s</text>
+<rect x="99.75" y="679" width="28.1" height="40" rx="8" fill="#171d45"/><text x="113.8" y="704.04" fill="#CFCDEB" font-size="14" font-weight="500" text-anchor="middle">d</text>
+<rect x="132.85" y="679" width="28.1" height="40" rx="8" fill="#171d45"/><text x="146.9" y="704.04" fill="#CFCDEB" font-size="14" font-weight="500" text-anchor="middle">f</text>
+<rect x="165.95" y="679" width="28.1" height="40" rx="8" fill="#171d45"/><text x="180.0" y="704.04" fill="#CFCDEB" font-size="14" font-weight="500" text-anchor="middle">g</text>
+<rect x="199.04999999999998" y="679" width="28.1" height="40" rx="8" fill="#171d45"/><text x="213.1" y="704.04" fill="#CFCDEB" font-size="14" font-weight="500" text-anchor="middle">h</text>
+<rect x="232.14999999999998" y="679" width="28.1" height="40" rx="8" fill="#171d45"/><text x="246.2" y="704.04" fill="#CFCDEB" font-size="14" font-weight="500" text-anchor="middle">j</text>
+<rect x="265.25" y="679" width="28.1" height="40" rx="8" fill="#171d45"/><text x="279.3" y="704.04" fill="#CFCDEB" font-size="14" font-weight="500" text-anchor="middle">k</text>
+<rect x="298.35" y="679" width="28.1" height="40" rx="8" fill="#171d45"/><text x="312.40000000000003" y="704.04" fill="#CFCDEB" font-size="14" font-weight="500" text-anchor="middle">l</text>
+<rect x="17" y="725" width="31.77777777777778" height="40" rx="8" fill="#171d45"/><text x="32.888888888888886" y="750.04" fill="#CFCDEB" font-size="14" font-weight="500" text-anchor="middle">⇧</text>
+<rect x="53.77777777777778" y="725" width="31.77777777777778" height="40" rx="8" fill="#171d45"/><text x="69.66666666666667" y="750.04" fill="#CFCDEB" font-size="14" font-weight="500" text-anchor="middle">z</text>
+<rect x="90.55555555555556" y="725" width="31.77777777777778" height="40" rx="8" fill="#171d45"/><text x="106.44444444444444" y="750.04" fill="#CFCDEB" font-size="14" font-weight="500" text-anchor="middle">x</text>
+<rect x="127.33333333333334" y="725" width="31.77777777777778" height="40" rx="8" fill="#171d45"/><text x="143.22222222222223" y="750.04" fill="#CFCDEB" font-size="14" font-weight="500" text-anchor="middle">c</text>
+<rect x="164.11111111111111" y="725" width="31.77777777777778" height="40" rx="8" fill="#171d45"/><text x="180.0" y="750.04" fill="#CFCDEB" font-size="14" font-weight="500" text-anchor="middle">v</text>
+<rect x="200.88888888888889" y="725" width="31.77777777777778" height="40" rx="8" fill="#171d45"/><text x="216.77777777777777" y="750.04" fill="#CFCDEB" font-size="14" font-weight="500" text-anchor="middle">b</text>
+<rect x="237.66666666666666" y="725" width="31.77777777777778" height="40" rx="8" fill="#171d45"/><text x="253.55555555555554" y="750.04" fill="#CFCDEB" font-size="14" font-weight="500" text-anchor="middle">n</text>
+<rect x="274.44444444444446" y="725" width="31.77777777777778" height="40" rx="8" fill="#171d45"/><text x="290.33333333333337" y="750.04" fill="#CFCDEB" font-size="14" font-weight="500" text-anchor="middle">m</text>
+<rect x="311.22222222222223" y="725" width="31.77777777777778" height="40" rx="8" fill="#171d45"/><text x="327.11111111111114" y="750.04" fill="#CFCDEB" font-size="14" font-weight="500" text-anchor="middle">⌫</text>
+<rect x="17" y="771" width="44" height="40" rx="8" fill="#171d45"/><text x="39.0" y="795.32" fill="#CFCDEB" font-size="12" font-weight="500" text-anchor="middle">?123</text>
+<rect x="66" y="771" width="34" height="40" rx="8" fill="#171d45"/><text x="83.0" y="796.04" fill="#CFCDEB" font-size="14" font-weight="500" text-anchor="middle">,</text>
+<rect x="105" y="771" width="34" height="40" rx="8" fill="#171d45"/><text x="122.0" y="796.04" fill="#CFCDEB" font-size="14" font-weight="500" text-anchor="middle">☺</text>
+<rect x="144" y="771" width="124" height="40" rx="8" fill="#1b2150"/><text x="206.0" y="795.68" fill="#8C8AB8" font-size="13" font-weight="500" text-anchor="middle">space</text>
+<rect x="273" y="771" width="30" height="40" rx="8" fill="#171d45"/><text x="288.0" y="796.04" fill="#CFCDEB" font-size="14" font-weight="500" text-anchor="middle">.</text>
+<rect x="308" y="771" width="35" height="40" rx="8" fill="url(#me)"/><text x="325.5" y="796.4" fill="#ffffff" font-size="15" font-weight="600" text-anchor="middle">↵</text>
+</g></svg>

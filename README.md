@@ -39,9 +39,23 @@ permission in the keyboard process at all.
 
 ## See it
 
-The product page runs the whole flow as an animation — the strip swapping to the voice
-bar, the level rail moving with the voice, and the AI fix key spinning its border before
-the sentence resolves:
+<div align="center">
+<table>
+<tr>
+<td align="center" width="25%"><img src="docs/screenshots/typing.png" alt="Typing with the suggestion strip, the spectrum rail, and the AI fix and mic keys"><br><b>Typing</b><br><sub>Suggestions, the rail, and the two spectrum keys</sub></td>
+<td align="center" width="25%"><img src="docs/screenshots/ai-fix.png" alt="After a fix: the sentence is capitalised and punctuated, and the key offers undo"><br><b>After a fix</b><br><sub>The key becomes the way back out of it</sub></td>
+<td align="center" width="25%"><img src="docs/screenshots/toolbar.png" alt="The expanded toolbar: clipboard, settings, undo, redo, select, copy"><br><b>Toolbar</b><br><sub>Expanded, with the mic pinned at the end</sub></td>
+<td align="center" width="25%"><img src="docs/screenshots/settings.png" alt="WaveKey settings: typing, voice typing, appearance and clipboard"><br><b>Settings</b><br><sub>Where the models are downloaded</sub></td>
+</tr>
+</table>
+
+<img src="docs/screenshots/phone-listening.svg" alt="WaveKey listening: the strip has become the voice bar, with the level meter above it" width="270">
+<img src="docs/screenshots/phone-fixed.svg" alt="The dictated sentence, cleaned up and ready to send" width="270">
+
+</div>
+
+The whole flow — the strip swapping to the voice bar, the level rail moving with the
+voice, the AI fix key spinning its border — runs as an animation on the product page:
 
 ### 👉 [nvkudva.github.io/WaveKey](https://nvkudva.github.io/WaveKey/)
 

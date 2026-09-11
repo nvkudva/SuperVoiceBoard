@@ -13,6 +13,8 @@ import helium314.keyboard.latin.LatinIME
 import helium314.keyboard.latin.utils.Log
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
@@ -34,11 +36,21 @@ import kotlinx.coroutines.withTimeoutOrNull
 class RescoreController(
     private val ime: LatinIME,
     private val runtime: VoiceRuntime,
-    private val scope: CoroutineScope,
 ) {
+
+    /**
+     * Owned by this controller, and therefore by the IME instance: a rescore in
+     * flight must not outlive the editor it would commit into.
+     */
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
 
     @Volatile
     private var running = false
+
+    /** The IME is going away; nothing in flight may touch it again. */
+    fun destroy() {
+        scope.cancel()
+    }
 
     /**
      * A sentence just ended. Runs in the background; the caller is on the input

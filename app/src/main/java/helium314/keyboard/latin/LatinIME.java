@@ -718,6 +718,10 @@ public class LatinIME extends InputMethodService implements
         // WaveKey: releases the microphone and the ASR engines.
         if (mVoiceController != null) mVoiceController.onDestroy();
         if (mAiFixKey != null) mAiFixKey.destroy();
+        if (mRescoreController != null) {
+            mRescoreController.destroy();
+            mRescoreController = null;
+        }
         mClipboardHistoryManager.onDestroy();
         mDictionaryFacilitator.closeDictionaries();
         mSettings.onDestroy();
@@ -906,8 +910,7 @@ public class LatinIME extends InputMethodService implements
         if (mRescoreController == null) {
             final com.vboard.app.voice.VoiceRuntime runtime =
                     ((com.vboard.app.voice.VoiceRuntimeHost) getApplicationContext()).getVoiceRuntime();
-            mRescoreController = new helium314.keyboard.correct.RescoreController(
-                    this, runtime, runtime.getAppScope());
+            mRescoreController = new helium314.keyboard.correct.RescoreController(this, runtime);
         }
         mRescoreController.onSentenceComplete(sentence);
     }
@@ -943,6 +946,14 @@ public class LatinIME extends InputMethodService implements
      * WaveKey (W7.3): the running keyboard's measurement aggregates, for
      * the settings screen. Null when no keyboard is running or nothing has been
      * dictated; the numbers live in the IME process and die with it.
+
+    /**
+     * WaveKey: dictated text landed in the field. The AI fix key treats it the
+     * same as typing — if its run is on, the new sentence gets fixed too.
+     */
+    public void onDictationCommitted() {
+        if (mAiFixKey != null) mAiFixKey.onUserEdit();
+    }
 
     /** WaveKey: the AI fix key's controller, created on first use. */
     private helium314.keyboard.voice.AiFixKey aiFixKey() {

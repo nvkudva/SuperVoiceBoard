@@ -456,6 +456,7 @@ class VoiceController(
         val joined = CommitPlanner.joinForInsertion(precedingText(), text)
         ic.commitText(joined, 1)
         commits[index] = joined
+        ime.onDictationCommitted()
         // W7.3: the verdict is not known yet — the user may still edit this.
         settleTelemetry()
         pendingElapsedMs = SystemClock.elapsedRealtime() - sessionStartedAt

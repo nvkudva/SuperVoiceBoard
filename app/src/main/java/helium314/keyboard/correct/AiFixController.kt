@@ -83,19 +83,29 @@ class AiFixController(
     private var lastWriteAt = 0L
 
     /**
-     * WaveKey: once a fix has landed, the key keeps fixing.
+     * WaveKey: the key is a switch, not a one-shot.
      *
-     * Pressing it once is the user saying "keep this readable", not "fix these
-     * particular words" — so after the first fix every further pause in typing
-     * runs another one, until the field is empty or the user moves to another.
-     * It is deliberately not a toggle: the key still fixes on the first press
-     * and still undoes on the second, and this rides along behind that.
+     * Pressing it is the user saying "keep this readable" — so it stays on,
+     * fixing at every pause in typing or dictation, until they press it again.
+     * An empty field does not end the run: being armed before anything is
+     * written is the normal way to start one. The second press switches it off
+     * and offers the undo for the last fix it made.
      */
     private var autoFix = false
     private var autoJob: Job? = null
 
     /** What the field held after the last fix, so an unchanged field is left alone. */
     private var lastFixedText: String? = null
+
+    /** The last fix of the current run, so stopping can re-offer its undo. */
+    private var lastFix: LastFix? = null
+
+    private class LastFix(
+        val original: String,
+        val selectionStart: Int,
+        val selectionEnd: Int,
+        val applied: String,
+    )
 
     /** What the last fix changed, attributed by tier. See [editorialEdits]. */
     private var lastEdits: List<FixEdit> = emptyList()
@@ -123,6 +133,7 @@ class AiFixController(
         fieldToken++
         autoFix = false
         lastFixedText = null
+        lastFix = null
         autoJob?.cancel()
         cancelRun()
         undo.clear()
@@ -167,8 +178,7 @@ class AiFixController(
             if (token != fieldToken || !autoFix || running) return@launch
             val text = host.inputConnection()?.let { readField(it) }?.text
             if (text.isNullOrBlank()) {
-                // The field was cleared: the run is over until the key is pressed again.
-                autoFix = false
+                // Nothing to keep readable yet; the run stays on and waits.
                 lastFixedText = null
                 return@launch
             }
@@ -211,9 +221,44 @@ class AiFixController(
 
     // ------------------------------------------------------------------ actions
 
-    /** The AI-fix key was pressed: fix, or undo the last fix if one is armed. */
+    /**
+     * The AI-fix key was pressed.
+     *
+     * On while off, off while on, and once off the undo for the last fix of that
+     * run is what the key offers — so the press that stops it never also throws
+     * away the chance to take it back.
+     */
     fun onFixKeyPressed() {
-        if (undo.peek(now(), fieldToken) != null) performUndo() else performFix()
+        when {
+            autoFix -> stopAutoFix()
+            undo.peek(now(), fieldToken) != null -> performUndo()
+            else -> {
+                autoFix = true
+                refresh()
+                performFix()
+            }
+        }
+    }
+
+    /** Switch the run off and hand back the undo for its last fix. */
+    private fun stopAutoFix() {
+        autoFix = false
+        autoJob?.cancel()
+        val last = lastFix
+        if (last != null && undo.peek(now(), fieldToken) == null) {
+            // The window ran out somewhere in the middle of a long run. The user
+            // has only now asked for the key back, so the offer starts here.
+            undo.record(
+                original = last.original,
+                selectionStart = last.selectionStart,
+                selectionEnd = last.selectionEnd,
+                applied = last.applied,
+                fieldToken = fieldToken,
+                nowMs = now(),
+            )
+        }
+        if (undo.peek(now(), fieldToken) != null) armUndoTimer()
+        refresh()
     }
 
     private fun performFix() {
@@ -318,8 +363,13 @@ class AiFixController(
             say(R.string.ai_fix_unavailable)
             return
         }
-        autoFix = true
         lastFixedText = corrected
+        lastFix = LastFix(
+            original = snapshot.text,
+            selectionStart = snapshot.selectionStart,
+            selectionEnd = snapshot.selectionEnd,
+            applied = corrected,
+        )
         undo.record(
             original = snapshot.text,
             selectionStart = snapshot.selectionStart,
@@ -499,7 +549,9 @@ class AiFixController(
     private fun currentState(): FixButtonState = undo.buttonState(
         nowMs = now(),
         fieldToken = fieldToken,
-        running = running,
+        // An armed run wears the same state as a fix in flight: the key is lit
+        // and the border is travelling for as long as it is switched on.
+        running = running || autoFix,
         enabled = fixer.isEnabledFor(host.fieldKind()),
     )
 
@@ -557,7 +609,10 @@ class AiFixController(
         // the visible result is a weaker fix than the key promised.
         val message = when (result.smart) {
             SmartTier.NOT_INSTALLED, SmartTier.OFF -> R.string.ai_fix_rules_only_missing
-            SmartTier.UNAVAILABLE, SmartTier.REJECTED -> R.string.ai_fix_rules_only_failed
+            // REJECTED is not a failure: the model ran and the guard threw its
+            // answer away, which means the rules-only text is the considered
+            // result, not a degraded one. Saying it "couldn't run" is a lie.
+            SmartTier.UNAVAILABLE -> R.string.ai_fix_rules_only_failed
             SmartTier.TIMED_OUT -> R.string.ai_fix_rules_only_slow
             SmartTier.TOO_LONG -> R.string.ai_fix_rules_only_long
             else -> return

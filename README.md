@@ -129,14 +129,19 @@ and the utterance buffer is cleared when the session ends.
 
 ## Requirements
 
-- **Android 7.0** (API 24). That is the floor the models themselves impose: LiteRT-LM,
-  which runs the refiner, declares `minSdkVersion 24`. Below it there is no on-device
-  AI to offer, so the keyboard does not pretend otherwise by installing.
-- A microphone. Dictation adds `RECORD_AUDIO` to what HeliBoard already asks for.
-- **~1 GB free** for the required speech pack, ~1 GB more if you add the refiner.
-- Internet **once**, for the model download, from the settings process only.
-- To build: JDK 17+, Android SDK 36. Gradle 8.14 wrapper and a 4 GB build heap are
-  configured in the repo.
+| | |
+|---|---|
+| **Android 7.0** (API 24) or newer | The floor the models impose: LiteRT-LM, which runs the refiner, declares `minSdkVersion 24`. Below it there is no on-device AI to offer, so the keyboard does not install and pretend otherwise. |
+| **A 64-bit ARM phone** (`arm64-v8a`) | Every phone since about 2016. The refiner checks for a 64-bit ABI at runtime and stays off without one; the published APK is arm64 only. |
+| **A microphone** | Dictation adds `RECORD_AUDIO` to the permissions HeliBoard already asks for. |
+| **~1 GB free**, ~2 GB with the refiner | 482 MB for the speech pack and 498 MB for the LLM, plus room to unpack. |
+| **Internet once** | For the model download, from the settings process only. The keyboard process has no network component at all. |
+
+Nothing else: no account, no API key, no paid service, and no network after the models
+land.
+
+**To build:** JDK 17+, Android SDK 36. The Gradle 8.14 wrapper and a 4 GB build heap are
+configured in the repo.
 
 ## Run it
 

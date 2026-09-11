@@ -9,7 +9,10 @@ with two AI models running **entirely on the device**. **Free, with no subscript
 and no minute counter.** No account, no API key, no server, and no network
 permission in the keyboard process at all.
 
-<img src="docs/screenshots/wavekey.jpg" alt="WaveKey mid-dictation: the strip has become the voice bar and says Cleaning up, with the dictated question already in the field" width="330">
+<img src="docs/screenshots/wavekey-demo.gif" alt="WaveKey in use: the strip becomes the voice bar, the rail moves with the voice, and the dictated sentence is cleaned up" width="300">
+<img src="docs/screenshots/wavekey.jpg" alt="WaveKey mid-dictation on a real phone: the strip has become the voice bar and says Cleaning up, with the dictated question already in the field" width="300">
+
+<sub>The flow, and the same thing on a real phone.</sub>
 
 ### [**See it in motion → nvkudva.github.io/WaveKey**](https://nvkudva.github.io/WaveKey/)
 

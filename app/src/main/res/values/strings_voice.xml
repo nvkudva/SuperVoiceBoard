@@ -16,7 +16,7 @@
     <!-- WaveKey: the voice strip (W3.4) -->
     <string name="voice_listening">Listening…</string>
     <string name="voice_preparing">Getting ready…</string>
-    <string name="voice_finalizing">Finishing…</string>
+    <string name="voice_finalizing">Translating…</string>
     <string name="voice_cleaning">Cleaning up…</string>
     <string name="voice_cancel">Stop dictating</string>
     <string name="voice_done">Done dictating</string>

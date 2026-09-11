@@ -1,95 +1,164 @@
+<div align="center">
+
 # WaveKey
 
-An Android keyboard with on-device English dictation, transcript cleanup and text
-rewriting, for people who do not want their speech leaving the phone.
+### Your voice never leaves the phone.
 
-It is a fork of [HeliBoard](https://github.com/Helium314/HeliBoard) 4.1 (base commit
-`9f5bb63`). Typing — layouts, glide typing, dictionaries, themes, clipboard — is
-HeliBoard's, unchanged. This repo adds the voice layer.
+An Android keyboard that transcribes speech, cleans it up and rewrites it —
+with two AI models running **entirely on the device**. No account, no API key,
+no server, no network permission in the keyboard process at all.
+
+### [**See it in motion → nvkudva.github.io/SuperVoiceBoard**](https://nvkudva.github.io/SuperVoiceBoard/)
+
+[![Website](https://img.shields.io/badge/website-live-A855F7)](https://nvkudva.github.io/SuperVoiceBoard/)
+[![License](https://img.shields.io/badge/license-GPL--3.0--only-blue)](LICENSE)
+[![Android](https://img.shields.io/badge/Android-5.0%2B-3DDC84)](#requirements)
+[![ASR](https://img.shields.io/badge/ASR-Parakeet%20TDT%200.6B-A855F7)](#the-two-models)
+[![LLM](https://img.shields.io/badge/LLM-Qwen3%200.6B-22D3EE)](#the-two-models)
+[![Offline](https://img.shields.io/badge/network-never-FB7185)](#privacy-is-the-architecture)
+
+</div>
+
+---
+
+## What it does
+
+| | |
+|---|---|
+| 🎙️ **Dictate and edit at the same time** | The mic stays live while text lands. A pause ends the *sentence*, not the session — so you can speak, watch it commit, fix a word with your thumb, and keep speaking. |
+| 🧠 **Two models, both on-device** | **Parakeet TDT 0.6B** turns speech into words. **Qwen 3 0.6B** turns those words into writing. Neither one leaves the phone. |
+| ✨ **AI fix, always within reach** | One key runs the deterministic rules and then the LLM over what you just wrote — spelling, spacing, casing, clumsy phrasing. Press it again to undo. |
+| ⌨️ **Continuous fixing as you type** | Finished sentences are quietly rescored against the words the decoder ranked second, and the swap is shown to you rather than slipped past you. |
+| 🔒 **Private by construction** | The keyboard process has no `INTERNET` component. A build-time test fails if one ever appears. |
+| 📋 **A clipboard that reads like a list** | Typed clips — link, image, phone, text — each with a glyph, a size or a host, and how long it has left. |
+
+---
+
+## See it
+
+The product page runs the whole flow as an animation — the strip swapping to the voice
+bar, the level rail moving with the voice, and the AI fix key spinning its border before
+the sentence resolves:
+
+### 👉 [nvkudva.github.io/SuperVoiceBoard](https://nvkudva.github.io/SuperVoiceBoard/)
+
+---
+
+## The two models
+
+Both are downloaded once, from settings, and then never contacted again.
+
+| | Parakeet TDT 0.6B v2 | Qwen 3 0.6B |
+|---|---|---|
+| **Job** | Speech → text | Text → better text |
+| **Runtime** | sherpa-onnx (ONNX, int8) | LiteRT-LM (mixed int4) |
+| **Download** | ~482 MB, required | ~498 MB, optional |
+| **Process** | the keyboard | a separate `:llm` process |
+| **Licence** | CC-BY-4.0 | Apache-2.0 |
+
+Parakeet transcribes each utterance once, when you stop speaking — one accurate
+pass instead of a stream of guesses that rewrite themselves. Qwen runs behind an
+AIDL interface in its own process, so a native out-of-memory takes the refiner
+down and leaves your keyboard standing.
+
+The refiner is **optional**. Without it you still get dictation and the whole
+deterministic rules tier; the keyboard tells you plainly when the smart pass
+could not run rather than pretending it did.
+
+---
+
+## Privacy is the architecture
+
+Not a policy — a process split the build enforces.
+
+```
+┌──────────────┐   ┌──────────────┐   ┌──────────────┐
+│   keyboard   │   │     :llm     │   │     :ui      │
+│  IME + ASR   │   │  Qwen 3 0.6B │   │   settings   │
+│              │   │              │   │  + downloads │
+│  no network  │   │  no network  │   │   INTERNET   │
+└──────────────┘   └──────────────┘   └──────────────┘
+```
+
+`ManifestProcessSplitTest` fails the build if a component holding `INTERNET`
+ever moves out of `:ui`. Audio is never written to disk, never sent anywhere,
+and the utterance buffer is cleared when the session ends.
+
+---
 
 ## Requirements
 
-- Android 5.0 (API 21) or newer to type and dictate. The LLM refiner needs Android 7.0
-  (API 24) or newer and is skipped at runtime below that.
-- A device microphone. Dictation adds `RECORD_AUDIO` to the permissions HeliBoard
-  already requests.
-- Internet on first run, for model download only. `INTERNET` is held by the `:ui`
-  process; the keyboard process has no network component.
-- Roughly 2 GB of free storage. The two required ASR packs download as 128 MB and
-  482 MB archives and expand on install; the optional refiner is about 550 MB.
-- To build: JDK 17 or newer (CI builds on 17 and 21), Android SDK 36. The Gradle 8.14
-  wrapper and a 4 GB build heap are configured in the repo.
-- No account, API key or paid service at any point.
+- **Android 5.0** (API 21) to type and dictate. The LLM refiner needs **Android 7.0**
+  (API 24) and is skipped at runtime below that.
+- A microphone. Dictation adds `RECORD_AUDIO` to what HeliBoard already asks for.
+- **~1 GB free** for the required speech pack, ~1 GB more if you add the refiner.
+- Internet **once**, for the model download, from the settings process only.
+- To build: JDK 17+, Android SDK 36. Gradle 8.14 wrapper and a 4 GB build heap are
+  configured in the repo.
 
 ## Run it
 
 ```bash
-git clone https://github.com/nvkudva/WaveKey.git
-cd WaveKey
+git clone https://github.com/nvkudva/SuperVoiceBoard.git
+cd SuperVoiceBoard
 ./gradlew :app:assembleDebug
 # ABI splits produce one APK per architecture; install the one matching your device
 adb install app/build/outputs/apk/debug/<arm64-v8a or x86_64 APK>
 ```
 
-"WaveKey" then appears in Android's keyboard list. Enable it, switch to it, and
-open its settings to download the voice models — the microphone key does nothing until
-the two required packs are installed.
+"WaveKey" then appears in Android's keyboard list. Enable it, switch to it, and open
+its settings to download the speech model — the microphone key does nothing until the
+required pack is installed.
 
-## Configuration
+### Release signing
 
 There is no runtime configuration. Two environment variables affect release builds only,
-and only when a keystore exists at `~/.supervoiceboard/release.jks`. Without that file
-the release build still succeeds and comes out unsigned.
+and only when a keystore exists at `~/.supervoiceboard/release.jks`. Without that file the
+release build still succeeds and comes out unsigned.
 
 | Variable | Required | What it is |
 |---|---|---|
 | `SVB_STORE_PASSWORD` | No | Keystore password for release signing |
 | `SVB_KEY_PASSWORD` | No | Key password for the `supervoiceboard` alias |
 
-## How it works
+---
 
-- `core/` is pure Kotlin JVM with no Android dependency. It holds the decisions:
-  `DictationStateMachine`, `TranscriptCleaner`, `TextFixer`, `PackInstaller`. Roughly two
-  thirds of the module by line count is tests.
-- `voice/` is the Android half. `VoiceSessionController` executes the state machine's
-  effects against `AudioCapture` and the sherpa-onnx recognizers — a streaming Zipformer
-  for live text, a Parakeet TDT pass for the final transcript. It references no HeliBoard
-  class, so it could be mounted in a different IME.
-- `llm/` runs a Qwen2.5-0.5B model under MediaPipe in a separate `:llm` process behind
-  `ILlmRefiner.aidl`, so a native OOM kills that process and not the keyboard.
-- `app/` binds it to HeliBoard: `VoiceController` is the only class that writes to the
-  `InputConnection`, and `AiFixKey` mounts the "AI fix" toolbar key.
-- The three-process split (IME / `:ui` for anything networked / `:llm`) is asserted at
-  build time by `app/src/test/java/com/supervoiceboard/ManifestProcessSplitTest.kt`,
-  which fails if a network component ever leaves `:ui`.
+## How it is built
+
+WaveKey is a fork of [HeliBoard](https://github.com/Helium314/HeliBoard) 4.1 (base commit
+`9f5bb63`). Typing — layouts, glide typing, dictionaries, themes — is HeliBoard's,
+unchanged. This repo adds the voice and AI layer.
+
+| Module | What lives there |
+|---|---|
+| `core/` | Pure Kotlin JVM, no Android. The decisions: `DictationStateMachine`, `TranscriptCleaner`, `TextFixer`, `PackInstaller`. About two thirds of the module by line count is tests. |
+| `voice/` | The Android half. `VoiceSessionController` runs the state machine's effects against `AudioCapture` and the Parakeet recognizer. It references no HeliBoard class, so it could be mounted in another IME. |
+| `llm/` | Qwen 3 under LiteRT-LM in the `:llm` process, behind `ILlmRefiner.aidl`. |
+| `app/` | The binding. `VoiceController` is the only class that writes to the `InputConnection`; `AiFixKey` mounts the AI fix key. |
 
 Issues about the voice layer belong on this repo's tracker; issues about typing belong
 upstream.
 
 ## Status
 
-Working today: dictation into the suggestion strip, on-device cleanup, the AI fix key,
-and model download and install from settings. CI runs `core` and app unit tests, a debug
+Working today: dictation, on-device cleanup, the AI fix key, sentence rescoring, and
+model download and install from settings. CI runs `core` and app unit tests, a debug
 assemble, Android lint, and an emulator UI QA suite.
 
-Known gaps, from a code review of `voice/`, `llm/` and the voice code in `app/` dated
-2026-09-07 (`REVIEW.md`):
+Known gaps, from a code review of `voice/`, `llm/` and the voice code in `app/`
+(`REVIEW.md`):
 
 - The refiner model is fetched from a mutable Hugging Face `main` ref with `sha256 = ""`,
   which the installer treats as "skip verification". TLS is the only integrity control on
-  a file that MediaPipe then executes.
-- Late refinement can delete characters the user typed after a commit —
-  `VoiceController.replaceUtterance` does not check what it is about to remove.
-- `voice/` and `llm/` have no unit tests; neither module declares a test dependency. They
-  are 3.8k lines and hold all of the fork's concurrency.
-- A timed-out `bindService` in `LlmRefinerClient` leaves the binding in place, pinning the
-  `:llm` process and its model.
-- No coroutine exception handler on the IME-process scopes: an uncaught throw in a
-  finalize, refine or fix coroutine reaches the default handler and kills the keyboard.
+  a file the LLM runtime then executes.
+- Late refinement can delete characters typed after a commit — `replaceUtterance` does not
+  check what it is about to remove.
+- `voice/` and `llm/` have no unit tests, and hold all of the fork's concurrency.
+- A timed-out `bindService` leaves the binding in place, pinning the `:llm` process.
+- No coroutine exception handler on the IME-process scopes.
 
-Nothing about speed, accuracy or battery has been measured. Dictation is English only.
-There is no screenshot of the voice strip in the repo and no published build — debug
-APKs come from CI artifacts.
+Nothing about speed, accuracy or battery has been measured. Dictation is English only,
+and there is no published build — debug APKs come from CI artifacts.
 
 ## License
 

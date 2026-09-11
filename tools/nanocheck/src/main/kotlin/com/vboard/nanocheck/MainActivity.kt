@@ -26,7 +26,17 @@ class MainActivity : ComponentActivity() {
         log("Android ${Build.VERSION.RELEASE}, API ${Build.VERSION.SDK_INT}")
         log("")
 
-        lifecycleScope.launch { check() }
+        val model = intent?.getStringExtra("model")
+        if (model != null) {
+            lifecycleScope.launch {
+                kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+                    runCatching { RefinerProbe.run(model, cacheDir.absolutePath) { log(it) } }
+                        .onFailure { log("probe failed: ${it.javaClass.simpleName}: ${it.message}") }
+                }
+            }
+        } else {
+            lifecycleScope.launch { check() }
+        }
     }
 
     private suspend fun check() {

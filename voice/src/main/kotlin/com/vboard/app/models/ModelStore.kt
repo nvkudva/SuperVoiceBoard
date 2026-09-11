@@ -223,7 +223,7 @@ class ModelStore(context: Context) {
         if (marker.exists()) return target
 
         val archiveSpec = pack.files.firstOrNull { it.archive } ?: run {
-            // Non-archive packs (the LLM .task file) need no extraction.
+            // Non-archive packs (the LLM .litertlm file) need no extraction.
             target.mkdirs()
             writeMarkerDurably(marker)
             return target

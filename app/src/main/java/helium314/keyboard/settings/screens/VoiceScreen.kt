@@ -39,6 +39,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import com.vboard.app.settings.SettingsRepository.Defaults as VoiceDefaults
 import com.vboard.app.settings.SettingsRepository.Keys as VoiceKeys
+import com.vboard.app.llm.refinerAbiSupported
 import com.vboard.app.voice.voiceRuntimeOrNull
 import com.vboard.core.model.ByteSize
 import com.vboard.core.model.ModelCatalog
@@ -85,7 +86,10 @@ fun VoiceScreen(
         VoiceKeys.PROVISIONAL_COMMIT,
         VoiceStripView.SHOW_MINIMIZE_KEY,
     )
-    val correction = listOfNotNull(VoiceKeys.LLM_REFINE)
+    // LiteRT-LM has no 32-bit ARM build, so on those installs the refiner can
+    // never run. Offering a switch that silently does nothing is worse than
+    // offering none.
+    val correction = listOfNotNull(VoiceKeys.LLM_REFINE.takeIf { refinerAbiSupported })
     // Raw transcript overrides every switch below it. It used to sit at the
     // bottom of the screen and delete them, so rows vanished with no visible
     // cause; it leads them now, and they read as unavailable instead.

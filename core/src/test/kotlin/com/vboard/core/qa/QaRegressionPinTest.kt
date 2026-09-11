@@ -180,7 +180,7 @@ class QaRegressionPinTest {
         // digest is already listed as a known risk in the report — pinned here so
         // "sizes are now measured from the upstream assets" is not read as
         // covering every pack.
-        assertEquals(listOf("qwen25-05b-refiner/qwen2.5-0.5b-instruct-q8.task"), estimated)
+        assertEquals(listOf("qwen3-06b-refiner/qwen3-0.6b-mixed-int4.litertlm"), estimated)
         assertTrue(
             ModelCatalog.packs.flatMap { it.files }.any { it.sha256.isEmpty() },
             "all digests are pinned now - update this pin and the report's known-risks section",

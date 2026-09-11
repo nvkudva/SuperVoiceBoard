@@ -26,6 +26,7 @@ android {
 
 dependencies {
     implementation("com.google.mlkit:genai-prompt:1.0.0-beta4")
+    implementation("com.google.ai.edge.litertlm:litertlm-android:0.17.0")
     implementation("androidx.activity:activity-ktx:1.9.3")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.7")
 }

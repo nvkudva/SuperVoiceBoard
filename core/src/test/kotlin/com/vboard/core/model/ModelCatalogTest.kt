@@ -12,7 +12,7 @@ class ModelCatalogTest {
     @Test
     fun `catalog contains exactly the two expected packs`() {
         assertEquals(
-            listOf("parakeet-tdt-0.6b-v2", "qwen25-05b-refiner"),
+            listOf("parakeet-tdt-0.6b-v2", "qwen3-06b-refiner"),
             ModelCatalog.packs.map { it.id },
         )
     }
@@ -29,13 +29,13 @@ class ModelCatalogTest {
     fun `byKind maps each kind to its pack`() {
         assertTrue(ModelCatalog.byKind(ModelKind.STREAMING_ASR).isEmpty())
         assertEquals(listOf("parakeet-tdt-0.6b-v2"), ModelCatalog.byKind(ModelKind.FINAL_ASR).map { it.id })
-        assertEquals(listOf("qwen25-05b-refiner"), ModelCatalog.byKind(ModelKind.REFINER_LLM).map { it.id })
+        assertEquals(listOf("qwen3-06b-refiner"), ModelCatalog.byKind(ModelKind.REFINER_LLM).map { it.id })
     }
 
     @Test
     fun `required and archive flags match spec`() {
         val parakeet = ModelCatalog.byId("parakeet-tdt-0.6b-v2")!!
-        val refiner = ModelCatalog.byId("qwen25-05b-refiner")!!
+        val refiner = ModelCatalog.byId("qwen3-06b-refiner")!!
 
         // Parakeet is the only on-device recognizer, so it is what the mic needs.
         // Only the refiner - which rewrites already-committed text - is opt-in.
@@ -48,7 +48,7 @@ class ModelCatalogTest {
 
         assertEquals(ModelKind.FINAL_ASR, parakeet.kind)
         assertEquals("Parakeet (on-device AI)", parakeet.displayName)
-        assertEquals("Qwen2.5, Apache-2.0 (LiteRT community build)", refiner.licenseNote)
+        assertEquals("Qwen3, Apache-2.0 (LiteRT community build)", refiner.licenseNote)
     }
 
     @Test
@@ -152,7 +152,7 @@ class ModelCatalogTest {
         // Sizes measured from the upstream release assets; the installer re-checks with
         // the server, so drift here only affects progress and the storage pre-check.
         assertEquals(482_468_385L, ModelCatalog.byId("parakeet-tdt-0.6b-v2")!!.totalBytes)
-        assertEquals(547_000_000L, ModelCatalog.byId("qwen25-05b-refiner")!!.totalBytes)
+        assertEquals(498_000_000L, ModelCatalog.byId("qwen3-06b-refiner")!!.totalBytes)
     }
 
     @Test
@@ -188,8 +188,8 @@ class ModelCatalogTest {
         val parakeet = ModelCatalog.byId("parakeet-tdt-0.6b-v2")!!
         assertEquals(parakeet.totalBytes * 5 / 2, parakeet.installFootprintBytes)
 
-        // The LLM .task is downloaded as-is, so its footprint is just its size.
-        val refiner = ModelCatalog.byId("qwen25-05b-refiner")!!
+        // The LLM bundle is downloaded as-is, so its footprint is just its size.
+        val refiner = ModelCatalog.byId("qwen3-06b-refiner")!!
         assertEquals(refiner.totalBytes, refiner.installFootprintBytes)
     }
 

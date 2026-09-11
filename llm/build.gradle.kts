@@ -40,6 +40,8 @@ android {
 dependencies {
     implementation(project(":core"))
     implementation(libs.coroutines.android)
-    // On-device LLM refinement (MediaPipe LLM Inference).
-    implementation(libs.mediapipe.tasks.genai)
+    // On-device LLM refinement (LiteRT-LM, the successor to MediaPipe's
+    // LLM Inference API). Ships arm64-v8a and x86_64 only - see
+    // `refinerAbiSupported` for what that costs on 32-bit installs.
+    implementation(libs.litertlm.android)
 }

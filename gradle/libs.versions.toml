@@ -16,4 +16,4 @@ androidx-lifecycle-service = { module = "androidx.lifecycle:lifecycle-service", 
 androidx-datastore-preferences = { module = "androidx.datastore:datastore-preferences", version = "1.1.1" }
 sherpa-onnx = { module = "com.github.k2-fsa.sherpa-onnx:sherpa-onnx", version = "v1.13.6" }
 commons-compress = { module = "org.apache.commons:commons-compress", version = "1.27.1" }
-mediapipe-tasks-genai = { module = "com.google.mediapipe:tasks-genai", version = "0.10.24" }
+litertlm-android = { module = "com.google.ai.edge.litertlm:litertlm-android", version = "0.17.0" }

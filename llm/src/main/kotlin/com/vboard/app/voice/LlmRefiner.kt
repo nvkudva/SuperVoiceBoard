@@ -172,13 +172,16 @@ class LlmRefiner(
          * replies instead of transcribing.
          */
         /**
-         * Scored against the shipped model on a desktop (tools/promptlab): this
-         * wording with these examples answers 9 of 14 rule cases, where the
-         * rules alone answered 6. Change it there first.
+         * Scored against the shipped model on a desktop (tools/promptlab), on
+         * three sets: 9 of 14 rule cases where the rules alone answered 6, 35
+         * of 87 sentences corrupted the way a microphone corrupts them where
+         * the old prompt fixed 14, and 5% truncation on real sentences against
+         * the old prompt's 18%. Change it there first.
          */
         private val DICTATION_EXAMPLES = listOf(
-            "um so i want like six of them uh maybe seven" to "I want seven of them.",
+            "um so i want like six of them uh maybe seven" to "I want 7 of them.",
             "the code is eight one two nine three" to "The code is 81293.",
+            "i comitted too branches too the ripo" to "I committed 2 branches to the repo.",
             "are you coming tonight" to "Are you coming tonight?",
             "tell bob actually no tell alice" to "Tell Alice.",
             "write to me at k dot ross at northwind dot co dot uk period" to
@@ -198,12 +201,18 @@ class LlmRefiner(
                 "- When the speaker corrects themselves with \"no wait\", " +
                 "\"I mean\" or \"actually\", keep only what they settled on and " +
                 "drop the marker.\n" +
-                "- Write numbers, money, times and percentages as digits. Digits " +
+                "- Every number becomes digits, however small: three is 3, " +
+                "twenty five is 25. Money, times and percentages too. Digits " +
                 "spoken one by one stay one unbroken number, with no spaces and " +
                 "no hyphens.\n" +
                 "- Write spoken marks and addresses: \"period\" is ., \"comma\" " +
                 "is ,, \"new line\" starts a line, \"at\" is @ and \"dot\" is . " +
                 "inside an address.\n" +
+                "- The words arrived from a microphone, so some are misheard " +
+                "sound-alikes. Put the word the sentence needs: their/there, " +
+                "your/you're, to/too/two, its/it's, of/off, our/are, by/buy, " +
+                "then/than, no/know, right/write. Do the same for a technical " +
+                "word spelled by ear.\n" +
                 "- Change nothing else. Never invent a word the speaker did not " +
                 "say.\n\n" +
                 "Reply with the typed line only. No preamble, no quotes, no " +

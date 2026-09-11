@@ -72,6 +72,7 @@ def main():
         cases = [c for c in cases if c["id"] == args.only]
 
     passed = 0
+    by_rule = {}
     for c in cases:
         try:
             got = ask(args.model, system, c["in"], shots)
@@ -81,6 +82,9 @@ def main():
         missing, leaked = score(c, got)
         ok = not missing and not leaked
         passed += ok
+        for kind in c.get("rule", "?").split("+"):
+            hit, tot = by_rule.get(kind, (0, 0))
+            by_rule[kind] = (hit + ok, tot + 1)
         flat = got.replace("\n", " ⏎ ")
         print(f"{'PASS' if ok else 'FAIL'} {c['id']:<14} {flat[:88]}")
         if not ok:
@@ -90,6 +94,10 @@ def main():
             if leaked:
                 why.append("leaked " + ", ".join(repr(m) for m in leaked))
             print(f"     {c['rule']:<14} {'; '.join(why)}")
+    if len(by_rule) > 1:
+        print("\nby corruption:")
+        for kind, (hit, tot) in sorted(by_rule.items(), key=lambda kv: -kv[1][1]):
+            print(f"  {kind:<26} {hit:>3}/{tot:<3} {hit / tot:.0%}")
     shot_note = f", {len(shots) // 2} example turns" if shots else ""
     print(f"\n{passed}/{len(cases)} passed — {args.prompt_file}{shot_note}")
     return 0 if passed == len(cases) else 1

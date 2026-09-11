@@ -9,9 +9,9 @@ with two AI models running **entirely on the device**. **Free, with no subscript
 and no minute counter.** No account, no API key, no server, and no network
 permission in the keyboard process at all.
 
-### [**See it in motion → nvkudva.github.io/SuperVoiceBoard**](https://nvkudva.github.io/SuperVoiceBoard/)
+### [**See it in motion → nvkudva.github.io/WaveKey**](https://nvkudva.github.io/WaveKey/)
 
-[![Website](https://img.shields.io/badge/website-live-A855F7)](https://nvkudva.github.io/SuperVoiceBoard/)
+[![Website](https://img.shields.io/badge/website-live-A855F7)](https://nvkudva.github.io/WaveKey/)
 [![Price](https://img.shields.io/badge/price-free%20forever-22D3EE)](#free-and-free-of-a-meter)
 [![License](https://img.shields.io/badge/license-GPL--3.0--only-blue)](LICENSE)
 [![Android](https://img.shields.io/badge/Android-5.0%2B-3DDC84)](#requirements)
@@ -43,7 +43,7 @@ The product page runs the whole flow as an animation — the strip swapping to t
 bar, the level rail moving with the voice, and the AI fix key spinning its border before
 the sentence resolves:
 
-### 👉 [nvkudva.github.io/SuperVoiceBoard](https://nvkudva.github.io/SuperVoiceBoard/)
+### 👉 [nvkudva.github.io/WaveKey](https://nvkudva.github.io/WaveKey/)
 
 ---
 
@@ -114,8 +114,8 @@ and the utterance buffer is cleared when the session ends.
 ## Run it
 
 ```bash
-git clone https://github.com/nvkudva/SuperVoiceBoard.git
-cd SuperVoiceBoard
+git clone https://github.com/nvkudva/WaveKey.git
+cd WaveKey
 ./gradlew :app:assembleDebug
 # ABI splits produce one APK per architecture; install the one matching your device
 adb install app/build/outputs/apk/debug/<arm64-v8a or x86_64 APK>

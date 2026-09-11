@@ -122,13 +122,17 @@ class VoiceStripView(context: Context, attrs: AttributeSet?) : LinearLayout(cont
 
     // -------------------------------------------------------------- states
 
-    fun showPreparing() = setState(context.getString(R.string.voice_preparing), showDone = false)
+    fun showPreparing() = setState(context.getString(R.string.voice_preparing), live = false)
 
-    fun showListening() = setState(context.getString(R.string.voice_listening), showDone = true)
+    fun showListening() = setState(context.getString(R.string.voice_listening), live = true)
 
-    fun showFinalizing() = setState(context.getString(R.string.voice_finalizing), showDone = false)
+    // The mic is still live through both of these — a pause finalizes the
+    // sentence just spoken, it does not end the session — so the way out stays
+    // where the user left it. A stop pressed here is deferred until the commit
+    // lands, which is what the state machine already does with it.
+    fun showFinalizing() = setState(context.getString(R.string.voice_finalizing), live = true)
 
-    fun showRefining() = setState(context.getString(R.string.voice_cleaning), showDone = false)
+    fun showRefining() = setState(context.getString(R.string.voice_cleaning), live = true)
 
     /** Partial transcript, shown in place of the status while words are arriving. */
     fun showPartial(text: String) {
@@ -143,19 +147,22 @@ class VoiceStripView(context: Context, attrs: AttributeSet?) : LinearLayout(cont
 
     fun showError(message: String, action: VoiceErrorAction) {
         errorAction = action
-        setState(message, showDone = false)
+        setState(message, live = false)
         // The error is the whole point of the row right now, so it is announced
         // rather than left for the user to notice.
         announceForAccessibility(message)
     }
 
-    private fun setState(status: String, showDone: Boolean) {
+    private fun setState(status: String, live: Boolean) {
         statusText.text = status
-        doneKey.isVisible = showDone
+        // The way out never moves: whatever the row is saying, the key that ends
+        // the session is in the same place. A strip whose controls come and go
+        // makes the user look for them instead of reading the status.
+        doneKey.isVisible = true
         // WaveKey: the minimize key hides the keyboard and keeps listening. It
         // is off by default — it is not a thing most people want mid-sentence,
         // and it could not be removed before because it is not a toolbar key.
-        minimizeKey.isVisible = showDone && context.prefs()
+        minimizeKey.isVisible = live && context.prefs()
             .getBoolean(SHOW_MINIMIZE_KEY, DEFAULT_SHOW_MINIMIZE_KEY)
         rebalance()
         statusText.contentDescription = status

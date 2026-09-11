@@ -5,12 +5,14 @@
 ### Your voice never leaves the phone.
 
 An Android keyboard that transcribes speech, cleans it up and rewrites it —
-with two AI models running **entirely on the device**. No account, no API key,
-no server, no network permission in the keyboard process at all.
+with two AI models running **entirely on the device**. **Free, with no subscription
+and no minute counter.** No account, no API key, no server, and no network
+permission in the keyboard process at all.
 
 ### [**See it in motion → nvkudva.github.io/SuperVoiceBoard**](https://nvkudva.github.io/SuperVoiceBoard/)
 
 [![Website](https://img.shields.io/badge/website-live-A855F7)](https://nvkudva.github.io/SuperVoiceBoard/)
+[![Price](https://img.shields.io/badge/price-free%20forever-22D3EE)](#free-and-free-of-a-meter)
 [![License](https://img.shields.io/badge/license-GPL--3.0--only-blue)](LICENSE)
 [![Android](https://img.shields.io/badge/Android-5.0%2B-3DDC84)](#requirements)
 [![ASR](https://img.shields.io/badge/ASR-Parakeet%20TDT%200.6B-A855F7)](#the-two-models)
@@ -25,6 +27,7 @@ no server, no network permission in the keyboard process at all.
 
 | | |
 |---|---|
+| 💸 **Free, and free of a meter** | No subscription, no trial, no minutes to run out of, no tier that unlocks the better model. There is no server to bill you for. |
 | 🎙️ **Dictate and edit at the same time** | The mic stays live while text lands. A pause ends the *sentence*, not the session — so you can speak, watch it commit, fix a word with your thumb, and keep speaking. |
 | 🧠 **Two models, both on-device** | **Parakeet TDT 0.6B** turns speech into words. **Qwen 3 0.6B** turns those words into writing. Neither one leaves the phone. |
 | ✨ **AI fix, always within reach** | One key runs the deterministic rules and then the LLM over what you just wrote — spelling, spacing, casing, clumsy phrasing. Press it again to undo. |
@@ -41,6 +44,18 @@ bar, the level rail moving with the voice, and the AI fix key spinning its borde
 the sentence resolves:
 
 ### 👉 [nvkudva.github.io/SuperVoiceBoard](https://nvkudva.github.io/SuperVoiceBoard/)
+
+---
+
+## Free, and free of a meter
+
+Dictation services charge monthly because they run your voice through their
+hardware. WaveKey has no hardware to pay for: both models run on your phone, so an
+hour of dictation costs the battery it takes and nothing else. No account, no trial
+that expires, no cap.
+
+It is also free in the other sense — GPL-3.0, so every line between your microphone
+and your text field can be read, audited and forked.
 
 ---
 

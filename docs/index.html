@@ -255,6 +255,8 @@ nav .links a:hover{color:var(--text)}
 }
 .card:hover{transform:translateY(-5px);box-shadow:0 26px 60px -34px rgba(168,85,247,.9)}
 .card:hover::before{opacity:.75}
+.free-card{background:radial-gradient(130% 110% at 0% 0%,rgba(34,211,238,.16),rgba(255,255,255,.012) 60%)}
+.free-card::before{opacity:.35}
 .card .ic{width:42px;height:42px;border-radius:12px;display:grid;place-items:center;background:rgba(168,85,247,.14);border:1px solid var(--line);margin-bottom:18px}
 .card h3{font-size:20px;margin-bottom:9px;letter-spacing:-.02em}
 .card p{color:var(--muted);font-size:15.5px}
@@ -357,7 +359,7 @@ footer a:hover{color:var(--text)}
 <section class="hero">
   <div class="wrap stage">
     <div>
-      <span class="eyebrow">On-device · Android keyboard</span>
+      <span class="eyebrow">Free · On-device · Android keyboard</span>
       <h1>
         <span class="line">Speak.</span>
         <span class="line spectrum-text">It writes.</span>
@@ -365,13 +367,14 @@ footer a:hover{color:var(--text)}
       </h1>
       <p class="lede">
         WaveKey transcribes your voice, cleans it up and rewrites it with two AI models
-        that run <strong>entirely on your phone</strong>. No account. No API key. No server.
-        The keyboard has no network permission at all — and the build fails if anyone adds one.
+        that run <strong>entirely on your phone</strong>. <strong>Free, with no subscription
+        and no minute counter</strong> — there is no server to pay for. No account, no API key,
+        and no network permission in the keyboard at all.
       </p>
       <div class="cta">
         <a class="btn btn-primary" href="https://github.com/nvkudva/WaveKey/releases/latest" id="download">
           <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M4 21h16"/></svg>
-          <span>Download APK<small>Release coming soon</small></span>
+          <span>Download APK<small>Free · release coming soon</small></span>
         </a>
         <a class="btn btn-ghost" href="https://github.com/nvkudva/WaveKey">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5C5.7.5.5 5.7.5 12c0 5.1 3.3 9.4 7.9 10.9.6.1.8-.2.8-.6v-2c-3.2.7-3.9-1.5-3.9-1.5-.5-1.3-1.3-1.7-1.3-1.7-1-.7.1-.7.1-.7 1.1.1 1.7 1.2 1.7 1.2 1 1.8 2.7 1.2 3.4.9.1-.8.4-1.3.7-1.6-2.6-.3-5.3-1.3-5.3-5.7 0-1.3.4-2.3 1.2-3.1-.1-.3-.5-1.5.1-3.1 0 0 1-.3 3.2 1.2a11 11 0 0 1 5.8 0C17.2 4.2 18.2 4.5 18.2 4.5c.6 1.6.2 2.8.1 3.1.8.8 1.2 1.8 1.2 3.1 0 4.4-2.7 5.4-5.3 5.7.4.4.8 1.1.8 2.2v3.3c0 .4.2.7.8.6 4.6-1.5 7.9-5.8 7.9-10.9C23.5 5.7 18.3.5 12 .5z"/></svg>
@@ -379,8 +382,9 @@ footer a:hover{color:var(--text)}
         </a>
       </div>
       <div class="hero-note">
+        <span><i class="dot"></i> Free forever</span>
+        <span><i class="dot"></i> No account</span>
         <span><i class="dot"></i> Android 5.0+</span>
-        <span><i class="dot"></i> English dictation</span>
         <span><i class="dot"></i> GPL-3.0</span>
       </div>
     </div>
@@ -451,6 +455,19 @@ footer a:hover{color:var(--text)}
     </p>
 
     <div class="cards">
+      <div class="card rv free-card">
+        <div class="ic">
+          <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#C4B5FD" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20"/><path d="M17 6.5c0-2-2.2-3-5-3s-5 .9-5 3 2.2 2.8 5 3.5 5 1.4 5 3.5-2.2 3-5 3-5-1-5-3"/></svg>
+        </div>
+        <h3>Free, and free of a meter</h3>
+        <p>
+          No subscription, no trial, no minutes to run out of, no tier that unlocks the good
+          model. There is no server to bill you for — the models are on your phone, so the
+          cost of dictating an hour is the battery it takes. Free software under the GPL, too:
+          <strong>every line that touches your microphone is readable.</strong>
+        </p>
+      </div>
+
       <div class="card wide rv">
         <div class="ic">
           <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#C4B5FD" stroke-width="2" stroke-linecap="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><path d="M12 19v3"/></svg>
@@ -635,18 +652,19 @@ footer a:hover{color:var(--text)}
 <section>
   <div class="wrap">
     <div class="download rv">
-      <h2>Your keyboard should <span class="spectrum-text">work for you</span>,<br>not report on you.</h2>
+      <h2>Free to use. <span class="spectrum-text">Free to read.</span><br>Free of a meter.</h2>
       <p class="lede" style="text-align:center">
-        WaveKey is free software under the GPL. Read every line that touches your microphone.
+        No subscription, no account, no per-minute cap — and the source of every line that
+        touches your microphone, under the GPL.
       </p>
       <div class="cta" style="justify-content:center">
         <a class="btn btn-primary" href="https://github.com/nvkudva/WaveKey/releases/latest">
           <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M4 21h16"/></svg>
-          <span>Download APK<small>Release coming soon</small></span>
+          <span>Download APK<small>Free · release coming soon</small></span>
         </a>
         <a class="btn btn-ghost" href="https://github.com/nvkudva/WaveKey">Read the source</a>
       </div>
-      <div class="pill">⚡ Android 5.0+ · English dictation · ~1 GB of models</div>
+      <div class="pill">✦ Free forever · no subscription · no account · Android 5.0+</div>
     </div>
   </div>
 </section>

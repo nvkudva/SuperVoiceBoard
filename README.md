@@ -45,7 +45,19 @@ permission in the keyboard process at all.
 <td align="center" width="25%"><img src="docs/screenshots/typing.png" alt="Typing with the suggestion strip, the spectrum rail, and the AI fix and mic keys"><br><b>Typing</b><br><sub>Suggestions, the rail, and the two spectrum keys</sub></td>
 <td align="center" width="25%"><img src="docs/screenshots/ai-fix.png" alt="After a fix: the sentence is capitalised and punctuated, and the key offers undo"><br><b>After a fix</b><br><sub>The key becomes the way back out of it</sub></td>
 <td align="center" width="25%"><img src="docs/screenshots/toolbar.png" alt="The expanded toolbar: clipboard, settings, undo, redo, select, copy"><br><b>Toolbar</b><br><sub>Expanded, with the mic pinned at the end</sub></td>
-<td align="center" width="25%"><img src="docs/screenshots/settings.png" alt="WaveKey settings: typing, voice typing, appearance and clipboard"><br><b>Settings</b><br><sub>Where the models are downloaded</sub></td>
+<td align="center" width="25%"><img src="docs/screenshots/settings.png" alt="WaveKey settings: typing, voice typing, appearance and clipboard"><br><b>Settings</b><br><sub>Typing, voice, appearance, clipboard</sub></td>
+</tr>
+<tr>
+<td align="center" colspan="2"><img src="docs/screenshots/models.png" alt="Voice typing settings: the Parakeet speech model and the optional Qwen 3 refiner, with their sizes"><br><b>The models</b><br><sub>Both downloaded here, both optional to keep — and both yours once they land</sub></td>
+<td align="center" colspan="2" valign="middle">
+
+**Parakeet (on-device AI)** — 482 MB, needed for dictation.<br>
+**Qwen 3 0.6B (on-device LLM)** — 498 MB, optional.
+
+Google's recognizer is offered as an alternative, and the screen says what it
+is: *your phone's own recognizer — nothing leaves the device.*
+
+</td>
 </tr>
 </table>
 

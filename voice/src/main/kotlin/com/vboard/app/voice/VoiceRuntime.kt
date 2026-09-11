@@ -8,6 +8,7 @@ import com.vboard.app.models.AndroidFetcher
 import com.vboard.app.models.ModelStore
 import com.vboard.app.settings.SettingsRepository
 import com.vboard.core.model.PackInstaller
+import com.vboard.core.session.RefinementJournal
 import com.vboard.core.session.VoiceMetrics
 import com.vboard.core.text.TranscriptCleaner
 import kotlinx.coroutines.CoroutineScope
@@ -31,6 +32,7 @@ interface VoiceRuntime : RefinerModelHost {
      * IME. Aggregates only, in memory, for as long as the process lives.
      */
     val metrics: VoiceMetrics
+    val refinementJournal: RefinementJournal
     val settings: SettingsRepository
     val modelStore: ModelStore
     val packInstaller: PackInstaller
@@ -84,4 +86,5 @@ class DefaultVoiceRuntime(
     )
     override val cleaner: TranscriptCleaner = TranscriptCleaner()
     override val metrics: VoiceMetrics = VoiceMetrics()
+    override val refinementJournal: RefinementJournal = RefinementJournal()
 }

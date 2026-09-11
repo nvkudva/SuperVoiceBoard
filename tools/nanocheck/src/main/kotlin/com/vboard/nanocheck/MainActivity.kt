@@ -30,7 +30,13 @@ class MainActivity : ComponentActivity() {
         if (model != null) {
             lifecycleScope.launch {
                 kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
-                    runCatching { RefinerProbe.run(model, cacheDir.absolutePath) { log(it) } }
+                    runCatching {
+                        RefinerProbe.run(
+                            model,
+                            cacheDir.absolutePath,
+                            intent?.getStringExtra("backend") == "gpu",
+                        ) { log(it) }
+                    }
                         .onFailure { log("probe failed: ${it.javaClass.simpleName}: ${it.message}") }
                 }
             }

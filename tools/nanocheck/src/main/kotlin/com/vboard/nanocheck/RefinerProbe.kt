@@ -12,18 +12,18 @@ import com.google.ai.edge.litertlm.ThinkingConfig
 /** Mirrors LlmRefiner's engine setup and prompts, against a pushed model file. */
 object RefinerProbe {
 
-    fun run(modelPath: String, cacheDir: String, log: (String) -> Unit) {
+    fun run(modelPath: String, cacheDir: String, gpu: Boolean, log: (String) -> Unit) {
         val t0 = System.currentTimeMillis()
         val engine = Engine(
             EngineConfig(
                 modelPath = modelPath,
-                backend = Backend.CPU(),
+                backend = if (gpu) Backend.GPU() else Backend.CPU(),
                 maxNumTokens = 1024,
                 cacheDir = cacheDir,
             ),
         )
         engine.initialize()
-        log("engine init: ${System.currentTimeMillis() - t0} ms")
+        log("backend=${if (gpu) "GPU" else "CPU"} engine init: ${System.currentTimeMillis() - t0} ms")
 
         engine.use {
             for (sample in SAMPLES) {
@@ -48,6 +48,13 @@ object RefinerProbe {
         "call me at five five five one two three four after 3 pm",
         "what time does the shop close",
         "meeting at 2 no wait make that 3 o'clock tomorrow",
+        "it costs twenty five dollars and fifty cents plus twelve percent tax",
+        "email me at support at wavekey dot com period",
+        "lets meet half past two on the third of march",
+        "i need three things first milk second bread third eggs",
+        "send it to john actually no send it to sarah",
+        "um uh er hmm",
+        "the the meeting meeting is is on friday comma bring your laptop",
     )
 
     private fun Message.plainText(): String =

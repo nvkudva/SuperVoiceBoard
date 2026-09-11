@@ -6,7 +6,10 @@
 // the dictation path cannot disagree about what a switch means.
 package helium314.keyboard.settings.screens
 
+import android.content.ClipData
+import android.content.ClipboardManager
 import android.content.Context
+import android.widget.Toast
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.material3.Card
@@ -89,7 +92,11 @@ fun VoiceScreen(
     // LiteRT-LM has no 32-bit ARM build, so on those installs the refiner can
     // never run. Offering a switch that silently does nothing is worse than
     // offering none.
-    val correction = listOfNotNull(VoiceKeys.LLM_REFINE.takeIf { refinerAbiSupported })
+    val correction = listOfNotNull(
+        VoiceKeys.LLM_REFINE.takeIf { refinerAbiSupported },
+        VoiceKeys.REFINEMENT_JOURNAL.takeIf { refinerAbiSupported },
+        VoiceKeys.REFINEMENT_JOURNAL_COPY.takeIf { refinerAbiSupported },
+    )
     // Raw transcript overrides every switch below it. It used to sit at the
     // bottom of the screen and delete them, so rows vanished with no visible
     // cause; it leads them now, and they read as unavailable instead.
@@ -308,6 +315,57 @@ fun createVoiceSettings(context: Context) = listOf(
     },
     Setting(context, VoiceKeys.LLM_REFINE, R.string.voice_llm_refine, R.string.voice_llm_refine_summary) {
         SwitchPreference(it, VoiceDefaults.LLM_REFINE)
+    },
+    Setting(
+        context,
+        VoiceKeys.REFINEMENT_JOURNAL,
+        R.string.voice_refinement_journal,
+        R.string.voice_refinement_journal_summary,
+    ) { setting ->
+        val ctx = LocalContext.current
+        val journal = voiceRuntimeOrNull(ctx)?.refinementJournal
+        val kept = journal?.size ?: 0
+        SwitchPreference(
+            name = setting.title,
+            key = setting.key,
+            default = VoiceDefaults.REFINEMENT_JOURNAL,
+            description = if (kept == 0) setting.description else ctx.getString(
+                R.string.voice_refinement_journal_kept,
+                kept,
+            ),
+            // Off means gone. A record of what you said is not something to
+            // leave sitting in memory after you have said to stop keeping it.
+            onCheckedChange = { enabled -> if (!enabled) journal?.clear() },
+        )
+    },
+    Setting(
+        context,
+        VoiceKeys.REFINEMENT_JOURNAL_COPY,
+        R.string.voice_refinement_journal_copy,
+        R.string.voice_refinement_journal_copy_summary,
+    ) { setting ->
+        val ctx = LocalContext.current
+        val journal = voiceRuntimeOrNull(ctx)?.refinementJournal
+        val kept = journal?.size ?: 0
+        Preference(
+            name = setting.title,
+            description = if (kept == 0) setting.description else ctx.getString(
+                R.string.voice_refinement_journal_kept,
+                kept,
+            ),
+            onClick = {
+                if (journal != null && kept > 0) {
+                    ctx.getSystemService(ClipboardManager::class.java)?.setPrimaryClip(
+                        ClipData.newPlainText("WaveKey refinements", journal.export()),
+                    )
+                    Toast.makeText(
+                        ctx,
+                        ctx.getString(R.string.voice_refinement_journal_copied, kept),
+                        Toast.LENGTH_SHORT,
+                    ).show()
+                }
+            },
+        )
     },
     Setting(context, VoiceKeys.TELEMETRY, R.string.voice_telemetry, R.string.voice_telemetry_summary) { setting ->
         val ctx = LocalContext.current

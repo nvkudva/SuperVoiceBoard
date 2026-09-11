@@ -6,6 +6,12 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <string name="voice_telemetry">Measure how well dictation works</string>
     <string name="voice_telemetry_summary">Counts how often dictated text is sent without editing, and how long that takes. No text, ever, and nothing leaves this device</string>
+    <string name="voice_refinement_journal">Keep a record of what the AI changed</string>
+    <string name="voice_refinement_journal_summary">Stores each dictated sentence next to what the AI made of it, so the cleanup can be judged on your own speech. This one does keep your words. Nothing leaves this device, and turning it off erases it</string>
+    <string name="voice_refinement_journal_kept">%1$d refinements recorded. Tap and hold to copy them, then turn this off to erase</string>
+    <string name="voice_refinement_journal_copy">Copy the record</string>
+    <string name="voice_refinement_journal_copy_summary">Puts every recorded sentence and its refinement on the clipboard</string>
+    <string name="voice_refinement_journal_copied">Copied %1$d refinements</string>
     <string name="voice_telemetry_measured">%1$d%% of %2$d dictations sent unedited, %3$.1fs on average</string>
     <!-- WaveKey: the voice strip (W3.4) -->
     <string name="voice_listening">Listening…</string>

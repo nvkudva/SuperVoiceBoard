@@ -23,6 +23,7 @@ import com.vboard.app.llm.LlmRefinerClient
 import com.vboard.app.llm.RemoteRefiner
 import com.vboard.app.llm.refinerClientOrNull
 import com.vboard.app.settings.SettingsSnapshot
+import com.vboard.core.session.RefinementJournal
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -726,16 +727,37 @@ class VoiceSessionController(
             } ?: return@launch
             host.showRefining()
             VoiceEngines.beginUse()
+            val startedAt = System.currentTimeMillis()
             val refined = try {
                 refiner.refine(text)
             } finally {
                 VoiceEngines.endUse()
             }
+            recordRefinement(text, refined, System.currentTimeMillis() - startedAt)
             showListeningIfListening()
             if (refined != null && refined != text) {
                 host.replaceUtterance(utteranceIndex, refined)
             }
         }
+    }
+
+    /**
+     * Journals the pair when the user asked for it. The rejection reason lives
+     * in the refiner process and does not cross the binder, so a refinement the
+     * validator turned down is recorded as rejected with no reason attached.
+     */
+    private fun recordRefinement(spoken: String, refined: String?, elapsedMs: Long) {
+        if (!settings.refinementJournalEnabled) return
+        app.refinementJournal.record(
+            RefinementJournal.Entry(
+                atMillis = System.currentTimeMillis(),
+                spoken = spoken,
+                refined = refined,
+                accepted = refined != null,
+                reason = null,
+                elapsedMs = elapsedMs,
+            ),
+        )
     }
 
     // ---------------------------------------------------------------- effects

@@ -98,6 +98,44 @@ class RefinementValidatorTest {
     }
 
     @Test
+    fun `a mangled spoken phone number is rejected`() {
+        assertEquals(
+            RejectReason.DROPPED_ENTITY,
+            reject(
+                "call me at five five five one two three four after 3 pm",
+                "Call me at 5:55:12 three four after 3 pm.",
+            ),
+        )
+    }
+
+    @Test
+    fun `a spoken phone number written as digits is accepted`() {
+        assertEquals(
+            "Call me at 5551234 after 3 pm.",
+            RefinementValidator.validate(
+                "call me at five five five one two three four after 3 pm",
+                "Call me at 5551234 after 3 pm.",
+            ).text(),
+        )
+    }
+
+    @Test
+    fun `short spoken digit runs are counting, not a number`() {
+        assertEquals(
+            emptyList<String>(),
+            RefinementValidator.spokenDigitRuns("bring two three apples"),
+        )
+    }
+
+    @Test
+    fun `a spoken digit run survives oh for zero`() {
+        assertEquals(
+            listOf("07700"),
+            RefinementValidator.spokenDigitRuns("ring oh seven seven oh oh now"),
+        )
+    }
+
+    @Test
     fun `a dropped email address is rejected`() {
         assertEquals(
             RejectReason.DROPPED_ENTITY,

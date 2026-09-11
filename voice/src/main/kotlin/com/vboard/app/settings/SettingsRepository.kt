@@ -47,6 +47,7 @@ data class SettingsSnapshot(
      * and it never leaves the device — see PLAN.md R24.
      */
     val telemetryEnabled: Boolean = false,
+    val refinementJournalEnabled: Boolean = false,
 ) {
     fun cleanupOptions(): CleanupOptions =
         if (rawTranscriptMode) {
@@ -87,6 +88,8 @@ class SettingsRepository(private val prefs: SharedPreferences) {
         const val PROVISIONAL_COMMIT = "voice_provisional_commit"
         const val SILENCE_TIMEOUT = "voice_silence_timeout"
         const val TELEMETRY = "voice_telemetry"
+        const val REFINEMENT_JOURNAL = "voice_refinement_journal"
+        const val REFINEMENT_JOURNAL_COPY = "voice_refinement_journal_copy"
     }
 
     object Defaults {
@@ -101,6 +104,7 @@ class SettingsRepository(private val prefs: SharedPreferences) {
         const val PROVISIONAL_COMMIT = true
         val SILENCE_TIMEOUT: SilenceTimeout = SilenceTimeout.DEFAULT
         const val TELEMETRY = false
+        const val REFINEMENT_JOURNAL = false
     }
 
     /** Read on the dictation path; cheap, and never blocks on IO after first load. */
@@ -116,6 +120,7 @@ class SettingsRepository(private val prefs: SharedPreferences) {
         provisionalCommit = prefs.getBoolean(Keys.PROVISIONAL_COMMIT, Defaults.PROVISIONAL_COMMIT),
         silenceTimeout = silenceTimeout(),
         telemetryEnabled = prefs.getBoolean(Keys.TELEMETRY, Defaults.TELEMETRY),
+        refinementJournalEnabled = prefs.getBoolean(Keys.REFINEMENT_JOURNAL, Defaults.REFINEMENT_JOURNAL),
     )
 
     private fun silenceTimeout(): SilenceTimeout {

@@ -188,9 +188,6 @@ val refinerAbiSupported: Boolean
 
 /** Null when no refiner pack is installed; the model path is readable from any process. */
 fun refinerClientOrNull(context: Context, host: RefinerModelHost): LlmRefinerClient? {
-    // The refiner process cannot run below API 24 (LiteRT-LM); binding to a
-    // service that will always answer null is worse than not offering it.
-    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) return null
     if (!refinerAbiSupported) return null
     host.refinerModelPath() ?: return null
     return LlmRefinerClient(context)

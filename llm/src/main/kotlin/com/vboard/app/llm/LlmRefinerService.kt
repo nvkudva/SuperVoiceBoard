@@ -2,7 +2,6 @@ package com.vboard.app.llm
 
 import android.app.Service
 import android.content.Intent
-import android.os.Build
 import android.os.Bundle
 import android.os.IBinder
 import android.util.Log
@@ -88,8 +87,6 @@ class LlmRefinerService : Service() {
         refiner?.let { return it }
         // WaveKey: the hosting Application is HeliBoard's, so the model
         // path arrives through an interface instead of a concrete app class.
-        // MediaPipe's LLM inference needs API 24; the keyboard supports 21.
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) return null
         val host = application as? RefinerModelHost ?: return null
         val path = host.refinerModelPath() ?: run {
             Log.i(TAG, "no refiner pack installed")

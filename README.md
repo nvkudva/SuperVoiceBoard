@@ -182,26 +182,39 @@ upstream.
 
 ## Status
 
-Working today: dictation, on-device cleanup, the AI fix key, sentence rescoring, and
-model download and install from settings. CI runs `core` and app unit tests, a debug
-assemble, Android lint, and an emulator UI QA suite.
+**1.0-beta.** Working today: dictation, on-device cleanup, the AI fix key, sentence
+rescoring, and model download and install from settings.
 
-Known gaps, from a code review of `voice/`, `llm/` and the voice code in `app/`
-(`REVIEW.md`):
+Verified on the current tree:
 
-- The refiner model is fetched from a mutable Hugging Face `main` ref with `sha256 = ""`,
-  which the installer treats as "skip verification". TLS is the only integrity control on
-  a file the LLM runtime then executes.
-- Late refinement can delete characters typed after a commit — `replaceUtterance` does not
-  check what it is about to remove.
-- `llm/` has no unit tests, and `voice/` — which holds most of the fork's concurrency —
-  is only starting to get them: the root rules, the level meter, the silence timeout and
-  idle release are covered; the session controller is not.
-- A timed-out `bindService` leaves the binding in place, pinning the `:llm` process.
-- No coroutine exception handler on the IME-process scopes.
+| | |
+|---|---|
+| Unit tests | `core` 932 · `voice` 72 · `app` 214 — all passing |
+| Android lint | 0 errors |
+| Release build | assembles and signs |
+| Model integrity | both packs pinned to an immutable revision and a SHA-256 the installer checks |
 
-Nothing about speed, accuracy or battery has been measured. Dictation is English only,
-and there is no published build — debug APKs come from CI artifacts.
+CI runs the `core` and app unit tests, a debug assemble, Android lint, and an emulator
+UI QA suite.
+
+### Known gaps
+
+Honest ones, from a code review of `voice/`, `llm/` and the voice code in `app/`:
+
+- **Late refinement can delete characters typed after a commit.** `replaceUtterance`
+  removes `previous.length` characters before the cursor without checking that they are
+  still the text it committed.
+- **`llm/` has no unit tests**, and `voice/` — which holds most of the fork's
+  concurrency — is only part-way there: the root rules, the level meter, the silence
+  timeout and idle release are covered; `VoiceSessionController` is not.
+- **A timed-out `bindService` leaves the binding in place**, pinning the `:llm` process
+  and its model until something else tears it down.
+- **No coroutine exception handler on the IME-process scopes**, so an uncaught throw in
+  a finalize, refine or fix coroutine reaches the default handler and takes the keyboard
+  with it.
+
+Nothing about speed, accuracy or battery has been measured, and dictation is English
+only.
 
 ## License
 

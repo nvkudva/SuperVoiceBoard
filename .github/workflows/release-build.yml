@@ -86,10 +86,10 @@ jobs:
         if: env.SIGNED != 'true'
         run: ./gradlew :app:assembleDebug -Pabi=arm64-v8a --no-daemon
 
-      # Gradle bakes versionName into the filename (app/build.gradle.kts:121), so
-      # assembleDebug emits WaveKey_4.1-debug-arm64-v8a.apk whatever the
-      # tag says. Rename here rather than bumping versionName: 4.1 is the
-      # HeliBoard base version and belongs to whoever owns app source.
+      # Gradle bakes versionName into the filename, so assembleDebug emits
+      # WaveKey_1.0-beta-debug-arm64-v8a.apk whatever the tag says. The asset is
+      # named after the tag instead, so a hotfix tag does not ship a file named
+      # after the version it was cut from.
       - name: Name the asset after the tag
         id: asset
         run: |
@@ -151,7 +151,7 @@ jobs:
           # docs/release-process.md says to tag with -a.
           git tag -l --format='%(contents)' "$GITHUB_REF_NAME" >> body.md
           if [ "$SIGNED" != "true" ]; then
-            printf '\nBuilt from %s. Based on HeliBoard 4.1 (versionCode 4101) — the 4.1 in the manifest is the upstream base, not this release.\n' \
+            printf '\nBuilt from %s. Unsigned debug build.\n' \
               "$GITHUB_SHA" >> body.md
           fi
 

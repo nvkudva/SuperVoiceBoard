@@ -35,8 +35,11 @@ android {
         applicationId = "com.supervoiceboard.app" // WaveKey: rebrand; namespace stays helium314.keyboard.* for upstream rebaseability
         minSdk = 23
         targetSdk = 36
-        versionCode = 4101
-        versionName = "4.1"
+        // WaveKey's own numbering, not HeliBoard's. The fork carries upstream
+        // 4.1 as its base (see README), but what a user installs and what the
+        // release page names is this.
+        versionCode = 10000
+        versionName = "1.0-beta"
         ndk {
             abiFilters.clear()
             // Left empty when -Pabi narrowed the build: AGP rejects an ABI named

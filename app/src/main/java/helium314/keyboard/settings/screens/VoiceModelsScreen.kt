@@ -60,6 +60,8 @@ import com.vboard.core.model.ModelKind
 import helium314.keyboard.latin.utils.prefs
 import helium314.keyboard.latin.utils.Theme
 import helium314.keyboard.latin.utils.previewDark
+import helium314.keyboard.latin.utils.getActivity
+import helium314.keyboard.settings.SettingsActivity
 import helium314.keyboard.settings.SearchSettingsScreen
 import helium314.keyboard.settings.dialogs.ConfirmationDialog
 import helium314.keyboard.settings.initPreview
@@ -403,8 +405,19 @@ private fun PreviewScreen() {
     }
 }
 
-/** Whether an installed pack is the one currently doing the work. */
+/**
+ * Whether an installed pack is the one currently doing the work.
+ *
+ * Composable, and it reads `prefChanged` on purpose. Switching engine or
+ * turning refinement off writes a preference, which is not Compose state:
+ * without something observable in this scope the line kept its old text until
+ * the screen was left and entered again, which is what made a live setting
+ * look broken.
+ */
+@Composable
 private fun inUseLine(context: android.content.Context, pack: ModelPack): String? {
+    val changed = (context.getActivity() as? SettingsActivity)?.prefChanged?.collectAsState()
+    if ((changed?.value ?: 0) < 0) return null
     val prefs = context.prefs()
     return when (pack.kind) {
         ModelKind.FINAL_ASR, ModelKind.STREAMING_ASR ->

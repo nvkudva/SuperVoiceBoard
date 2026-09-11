@@ -63,9 +63,30 @@ class PackInstaller(
             val markedVersion = runCatching {
                 Files.readAllBytes(marker).decodeToString().trim().toInt()
             }.getOrNull()
-            if (markedVersion == pack.version) return PackState.Installed
+            // The marker says an install finished; the files say it survived.
+            // Without this second half a pack whose payload was deleted or
+            // truncated underneath us still reads Installed, the UI offers no
+            // repair, and the failure only surfaces when the engine tries to
+            // load it - by which time the user is holding an open mic.
+            if (markedVersion == pack.version && filesPresent(pack)) return PackState.Installed
         }
         return PackState.NotInstalled
+    }
+
+    /**
+     * Every declared non-archive file of [pack] is present.
+     *
+     * Presence, not size: a pack may legitimately declare a zero-byte file,
+     * and calling that corrupt would refuse to install it.
+     *
+     * Archives are skipped deliberately: ModelStore unpacks one and then
+     * reclaims the space, so a correctly installed speech pack has no archive
+     * on disk and checking for it would report every one of them missing.
+     * Their extracted state is ModelStore's to track.
+     */
+    private fun filesPresent(pack: ModelPack): Boolean {
+        val dir = finalDir(pack)
+        return pack.files.none { !it.archive && !Files.isRegularFile(dir.resolve(it.relativePath)) }
     }
 
     /** Directory containing the activated pack files, or null unless [PackState.Installed]. */

@@ -81,6 +81,26 @@ class ModelInstallerQaTest {
         override suspend fun contentLength(url: String) = bodies[url]?.size?.toLong() ?: -1L
     }
 
+    // -------------------------------------------------------- payload went away
+
+    @Test
+    fun `a pack whose payload was deleted stops reading as installed`() = runTest {
+        val body = "weights".toByteArray()
+        val spec = ModelFileSpec("model.bin", url("model.bin"), sha256Hex(body), body.size.toLong())
+        val fetcher = FakeFetcher().apply { bodies[url("model.bin")] = body }
+        val installer = PackInstaller(root, fetcher)
+        val p = pack(listOf(spec))
+
+        assertEquals(PackState.Installed, installer.install(p))
+
+        // The marker survives; the file it vouches for does not. Trusting the
+        // marker alone left the UI offering no repair for a pack the engine
+        // could no longer load.
+        Files.delete(installer.installedDir(p)!!.resolve("model.bin"))
+
+        assertEquals(PackState.NotInstalled, installer.stateOf(p))
+    }
+
     // ------------------------------------------------------------ zero-byte files
 
     @Test

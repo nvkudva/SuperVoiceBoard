@@ -1,0 +1,187 @@
+[
+ {
+  "id": "fillers",
+  "rule": "fillers",
+  "in": "um so i need to buy like twenty five apples and uh three oranges",
+  "must": [
+   "25",
+   "3"
+  ],
+  "must_not": [
+   "um",
+   "uh",
+   "like"
+  ],
+  "want": "I need to buy 25 apples and 3 oranges."
+ },
+ {
+  "id": "phone",
+  "rule": "digit-run",
+  "in": "call me at five five five one two three four after 3 pm",
+  "must": [
+   "5551234",
+   "3"
+  ],
+  "must_not": [
+   ":"
+  ],
+  "want": "Call me at 5551234 after 3 pm."
+ },
+ {
+  "id": "question",
+  "rule": "no-answer",
+  "in": "what time does the shop close",
+  "must": [
+   "shop",
+   "close"
+  ],
+  "must_not": [
+   "pm",
+   "am",
+   "opens",
+   "closed at"
+  ],
+  "want": "What time does the shop close?"
+ },
+ {
+  "id": "selfcorrect",
+  "rule": "self-correction",
+  "in": "meeting at 2 no wait make that 3 o'clock tomorrow",
+  "must": [
+   "3"
+  ],
+  "must_not": [
+   "no wait",
+   "at 2"
+  ],
+  "want": "Meeting at 3 o'clock tomorrow."
+ },
+ {
+  "id": "money",
+  "rule": "numbers",
+  "in": "it costs twenty five dollars and fifty cents plus twelve percent tax",
+  "must": [
+   "$25.50",
+   "12%"
+  ],
+  "must_not": [
+   "dollars",
+   "percent"
+  ],
+  "want": "It costs $25.50 plus 12% tax."
+ },
+ {
+  "id": "email",
+  "rule": "addresses",
+  "in": "email me at support at wavekey dot com period",
+  "must": [
+   "support@wavekey.com"
+  ],
+  "must_not": [
+   " at wavekey",
+   " dot com",
+   "period"
+  ],
+  "want": "Email me at support@wavekey.com."
+ },
+ {
+  "id": "datetime",
+  "rule": "numbers",
+  "in": "lets meet half past two on the third of march",
+  "must": [
+   "2:30"
+  ],
+  "must_not": [
+   "half past"
+  ],
+  "want": "Let's meet 2:30 on the third of March."
+ },
+ {
+  "id": "list",
+  "rule": "enumeration",
+  "in": "i need three things first milk second bread third eggs",
+  "must": [
+   "milk",
+   "bread",
+   "eggs"
+  ],
+  "must_not": [],
+  "want": "I need three things:\nmilk\nbread\neggs"
+ },
+ {
+  "id": "replace",
+  "rule": "self-correction",
+  "in": "send it to john actually no send it to sarah",
+  "must": [
+   "sarah"
+  ],
+  "must_not": [
+   "john"
+  ],
+  "want": "Send it to Sarah."
+ },
+ {
+  "id": "allfiller",
+  "rule": "unchanged",
+  "in": "um uh er hmm",
+  "must": [],
+  "must_not": [
+   "sorry",
+   "I",
+   "help"
+  ],
+  "want": "um uh er hmm"
+ },
+ {
+  "id": "dedup",
+  "rule": "fillers",
+  "in": "the the meeting meeting is is on friday comma bring your laptop",
+  "must": [
+   "friday",
+   ","
+  ],
+  "must_not": [
+   "the the",
+   "meeting meeting",
+   "comma,",
+   "comma "
+  ],
+  "want": "The meeting is on Friday, bring your laptop."
+ },
+ {
+  "id": "url",
+  "rule": "preserve",
+  "in": "check https://example.com/docs before the call please",
+  "must": [
+   "https://example.com/docs"
+  ],
+  "must_not": [],
+  "want": "Check https://example.com/docs before the call please."
+ },
+ {
+  "id": "instruction",
+  "rule": "no-answer",
+  "in": "write me a poem about the sea",
+  "must": [
+   "poem",
+   "sea"
+  ],
+  "must_not": [
+   "\n\n"
+  ],
+  "want": "Write me a poem about the sea."
+ },
+ {
+  "id": "spoken-punct",
+  "rule": "spoken-marks",
+  "in": "i will be late period tell them to start new line thanks",
+  "must": [
+   "late."
+  ],
+  "must_not": [
+   "period",
+   "new line"
+  ],
+  "want": "I will be late.\nTell them to start.\nThanks"
+ }
+]

@@ -57,10 +57,25 @@ class LlmRefiner(
      * model's own chat template and applies it, so templating it ourselves
      * nests one template inside another and the model answers the markup.
      */
-    private fun generate(instruction: String, text: String): String =
+    private fun generate(
+        instruction: String,
+        text: String,
+        examples: List<Pair<String, String>> = emptyList(),
+    ): String =
         engine().createConversation(
             ConversationConfig(
                 systemInstruction = Contents.of(instruction),
+                // Examples are sent as real turns, not pasted into the system
+                // text. Measured on the same model on a desktop: pasted into
+                // the instruction, a 0.6B starts answering with an example
+                // verbatim - a phone number came back as "Tell Alice." As
+                // turns, the bleed stops and the rules hold.
+                initialMessages = examples.flatMap { (said, typed) ->
+                    listOf(
+                        Message.user(said),
+                        Message.model(typed),
+                    )
+                },
                 // Qwen3 is a hybrid thinking model. Left on, it spends the
                 // whole token budget reasoning about an utterance it was only
                 // asked to tidy, and the validator then sees a `<think>` block
@@ -84,7 +99,7 @@ class LlmRefiner(
         return withTimeoutOrNull(timeoutMs) {
             withContext(Dispatchers.IO) {
                 runCatching {
-                    val raw = generate(DICTATION_INSTRUCTION, text)
+                    val raw = generate(DICTATION_INSTRUCTION, text, DICTATION_EXAMPLES)
                     // The same gate the AI-fix path uses. A prompt is a request;
                     // this is the check — it is what catches the model answering
                     // the message, leaking template markers, dropping a number or
@@ -156,18 +171,43 @@ class LlmRefiner(
          * or an instruction reads to the model as addressed to it, and it
          * replies instead of transcribing.
          */
+        /**
+         * Scored against the shipped model on a desktop (tools/promptlab): this
+         * wording with these examples answers 9 of 14 rule cases, where the
+         * rules alone answered 6. Change it there first.
+         */
+        private val DICTATION_EXAMPLES = listOf(
+            "um so i want like six of them uh maybe seven" to "I want seven of them.",
+            "the code is eight one two nine three" to "The code is 81293.",
+            "are you coming tonight" to "Are you coming tonight?",
+            "tell bob actually no tell alice" to "Tell Alice.",
+            "write to me at k dot ross at northwind dot co dot uk period" to
+                "Write to me at k.ross@northwind.co.uk.",
+            "it was forty dollars comma about fifteen percent off" to
+                "It was $40, about 15% off.",
+            "i am on my way period new line see you soon" to "I am on my way.\nSee you soon",
+        )
+
         private const val DICTATION_INSTRUCTION =
-            "You clean up dictated speech. The user is dictating text to type, " +
-                "never talking to you.\n" +
-                "Rules you must follow exactly:\n" +
-                "- Never answer, respond to, continue or comment on the message, " +
-                "even when it is a question or an instruction. Transcribe it.\n" +
-                "- Fix grammar and remove filler words and false starts.\n" +
-                "- Keep the speaker's meaning, tone and language.\n" +
-                "- Preserve every fact, name, number and URL unchanged.\n" +
-                "- Do not add, remove or explain anything else.\n" +
-                "Reply with ONLY the cleaned text - no preamble, no explanations, " +
-                "no quotes."
+            "You are a dictation cleaner. The user speaks; you type what they " +
+                "meant. You are never the person being spoken to.\n\n" +
+                "Rewrite the message using these rules:\n" +
+                "- Never answer it, continue it, or comment on it. A question " +
+                "stays a question.\n" +
+                "- Drop fillers (um, uh, er, like, so) and repeated words.\n" +
+                "- When the speaker corrects themselves with \"no wait\", " +
+                "\"I mean\" or \"actually\", keep only what they settled on and " +
+                "drop the marker.\n" +
+                "- Write numbers, money, times and percentages as digits. Digits " +
+                "spoken one by one stay one unbroken number, with no spaces and " +
+                "no hyphens.\n" +
+                "- Write spoken marks and addresses: \"period\" is ., \"comma\" " +
+                "is ,, \"new line\" starts a line, \"at\" is @ and \"dot\" is . " +
+                "inside an address.\n" +
+                "- Change nothing else. Never invent a word the speaker did not " +
+                "say.\n\n" +
+                "Reply with the typed line only. No preamble, no quotes, no " +
+                "explanation."
 
         /** The "AI fix" instruction: as narrow as a prompt can be made. */
         private const val CORRECTION_INSTRUCTION =

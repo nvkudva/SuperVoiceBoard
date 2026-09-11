@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    WaveKey: the mic key's ground. A rounded square on the same 10dp radius as
+    every other toolbar key, so the mic reads as one of the row rather than as a
+    different kind of control — it keeps the spectrum fill, which is what marks
+    it out instead.
+    SPDX-License-Identifier: GPL-3.0-only
+-->
+<inset xmlns:android="http://schemas.android.com/apk/res/android"
+    android:inset="@dimen/config_toolbar_key_inset">
+    <shape android:shape="rectangle">
+        <corners android:radius="10dp" />
+        <gradient
+            android:type="linear"
+            android:angle="0"
+            android:startColor="#FB7185"
+            android:centerColor="#A855F7"
+            android:endColor="#22D3EE" />
+    </shape>
+</inset>

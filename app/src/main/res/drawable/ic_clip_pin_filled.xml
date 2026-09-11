@@ -1,0 +1,11 @@
+<!--
+    WaveKey: the pin on a clip that is kept until it is unpinned. Filled, so the
+    two states differ in weight and not only in tint.
+    SPDX-License-Identifier: GPL-3.0-only
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="20dp" android:height="20dp"
+    android:viewportWidth="24" android:viewportHeight="24">
+    <path android:fillColor="#FFF"
+        android:pathData="M13.9,2.5 C14.3,2.1 14.9,2.1 15.3,2.5 L21.5,8.7 C21.9,9.1 21.9,9.7 21.5,10.1 C21.1,10.5 20.5,10.5 20.1,10.1 L19.7,9.7 L16.5,12.9 C16.7,14.4 16.2,16 15.1,17.1 C14.7,17.5 14.1,17.5 13.7,17.1 L11.5,14.9 L7.2,19.2 C6.8,19.6 6.2,19.6 5.8,19.2 C5.4,18.8 5.4,18.2 5.8,17.8 L10.1,13.5 L6.9,10.3 C6.5,9.9 6.5,9.3 6.9,8.9 C8,7.8 9.6,7.3 11.1,7.5 L14.3,4.3 L13.9,3.9 C13.5,3.5 13.5,2.9 13.9,2.5 Z"/>
+</vector>

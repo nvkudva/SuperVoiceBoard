@@ -91,6 +91,15 @@ object RefinementValidator {
     private val EMAIL_PATTERN = Regex("""[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,}""")
     private val NUMBER_PATTERN = Regex("""\d+(?:[.,:/\-]\d+)*""")
 
+    private val SPOKEN_DIGITS = mapOf(
+        "zero" to "0", "oh" to "0", "o" to "0", "nought" to "0",
+        "one" to "1", "two" to "2", "three" to "3", "four" to "4", "five" to "5",
+        "six" to "6", "seven" to "7", "eight" to "8", "nine" to "9",
+    )
+
+    /** Shortest run of spoken digits treated as one number rather than counting. */
+    private const val MIN_DIGIT_RUN = 4
+
     /** Trailing sentence punctuation that is not part of a URL. */
     private const val URL_TRAILING = ".,!?;:)]}\"'"
 
@@ -106,8 +115,15 @@ object RefinementValidator {
             return RefinementVerdict.reject(RejectReason.COMMENTARY)
         }
 
-        if (original.isNotEmpty()) {
-            val ratio = cleaned.length.toDouble() / original.length
+        // Length and similarity are measured against the input with spoken digit
+        // runs already collapsed. Writing "five five five one two three four" as
+        // 5551234 is the rule working, and it halves the character count; judged
+        // against the spoken form it reads as the model having eaten the
+        // sentence.
+        val baseline = collapseSpokenDigits(original)
+
+        if (baseline.isNotEmpty()) {
+            val ratio = cleaned.length.toDouble() / baseline.length
             if (ratio < MIN_LENGTH_RATIO) return RefinementVerdict.reject(RejectReason.TOO_SHORT)
             if (ratio > MAX_LENGTH_RATIO) return RefinementVerdict.reject(RejectReason.TOO_LONG)
         }
@@ -118,8 +134,19 @@ object RefinementValidator {
             }
         }
 
-        if (original.length >= SIMILARITY_MIN_INPUT_CHARS &&
-            similarity(original, cleaned) < MIN_SIMILARITY
+        // Spoken digit runs are invisible to `entities`: "five five five one two
+        // three four" holds no digit for it to find, so a model that answers
+        // "5:55:12 three four" passes every check above. The run is the one place
+        // where the refiner is allowed to write digits the input did not contain
+        // and the exact grouping still matters.
+        for (run in spokenDigitRuns(original)) {
+            if (!cleaned.contains(run)) {
+                return RefinementVerdict.reject(RejectReason.DROPPED_ENTITY)
+            }
+        }
+
+        if (baseline.length >= SIMILARITY_MIN_INPUT_CHARS &&
+            similarity(baseline, cleaned) < MIN_SIMILARITY
         ) {
             return RefinementVerdict.reject(RejectReason.DIVERGED)
         }
@@ -156,6 +183,57 @@ object RefinementValidator {
         EMAIL_PATTERN.findAll(text).forEach { found.add(it.value) }
         NUMBER_PATTERN.findAll(text).forEach { found.add(it.value) }
         return found.filter { it.isNotEmpty() }
+    }
+
+    /**
+     * Digit strings the speaker dictated one digit at a time — phone numbers,
+     * card numbers, codes, PINs. Only runs of [MIN_DIGIT_RUN] or more count: two
+     * or three in a row are ordinary counting ("three four apples"), while seven
+     * are a number the reader will try to dial.
+     */
+    fun spokenDigitRuns(text: String): List<String> {
+        val words = text.lowercase().split(Regex("[^a-z0-9]+")).filter { it.isNotEmpty() }
+        val runs = mutableListOf<String>()
+        val current = StringBuilder()
+        for (word in words) {
+            val digit = SPOKEN_DIGITS[word]
+            if (digit != null) {
+                current.append(digit)
+            } else {
+                if (current.length >= MIN_DIGIT_RUN) runs.add(current.toString())
+                current.clear()
+            }
+        }
+        if (current.length >= MIN_DIGIT_RUN) runs.add(current.toString())
+        return runs
+    }
+
+    /**
+     * [text] with every spoken digit run rewritten as digits, so the length and
+     * similarity checks compare like with like.
+     */
+    fun collapseSpokenDigits(text: String): String {
+        val out = StringBuilder()
+        val run = mutableListOf<String>()
+        val digits = StringBuilder()
+
+        fun flush() {
+            if (digits.length >= MIN_DIGIT_RUN) out.append(digits) else out.append(run.joinToString(""))
+            run.clear()
+            digits.clear()
+        }
+
+        for (token in Regex("[A-Za-z0-9]+|[^A-Za-z0-9]+").findAll(text).map { it.value }) {
+            val digit = SPOKEN_DIGITS[token.lowercase()]
+            when {
+                digit != null -> { run.add(token); digits.append(digit) }
+                // Whitespace inside a run keeps the run open; anything else ends it.
+                digits.isNotEmpty() && token.isBlank() -> run.add(token)
+                else -> { flush(); out.append(token) }
+            }
+        }
+        flush()
+        return out.toString()
     }
 
     /**

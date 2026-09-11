@@ -23,6 +23,7 @@ import com.vboard.app.llm.LlmRefinerClient
 import com.vboard.app.llm.RemoteRefiner
 import com.vboard.app.llm.refinerClientOrNull
 import com.vboard.app.settings.SettingsSnapshot
+import com.vboard.core.session.RefinementJournal
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -150,6 +151,12 @@ class VoiceSessionController(
     private var latestAmplitude = 0f
 
     private var lastSpeechAt = 0L
+
+    /**
+     * Whether anything has been said since the last endpoint. Without it a quiet
+     * room would finalize an empty utterance once a second, forever.
+     */
+    private var speechSinceEndpoint = false
 
     @Volatile
     private var lastChunkAt = 0L
@@ -385,6 +392,20 @@ class VoiceSessionController(
                 val dropped = pipe.drainDroppedSamples()
                 if (dropped > 0) dispatch(Event.AudioOverrun(dropped))
 
+                // W: a pause ends an utterance, it does not end the session. The
+                // sentence just spoken is transcribed and typed while the mic
+                // stays live, so a long dictation lands in pieces as it is
+                // spoken instead of all at once when the user finally stops.
+                // The session still ends only on the close key (or the much
+                // longer silence timeout below).
+                if (endpointingEnabled && speechSinceEndpoint &&
+                    machine.state is DictationStateMachine.State.Listening &&
+                    System.currentTimeMillis() - lastSpeechAt > ENDPOINT_SILENCE_MS
+                ) {
+                    speechSinceEndpoint = false
+                    dispatch(Event.EndpointDetected)
+                }
+
                 if (tick % WATCHDOG_EVERY_N_TICKS != 0) continue
                 // A call can take the microphone without a focus callback ever
                 // arriving (or before it does), and a silent AudioRecord looks
@@ -434,7 +455,10 @@ class VoiceSessionController(
                     // The streaming decoder used to say when speech happened. With
                     // it gone the level meter is the only speech signal left, so
                     // the silence timeout reads it directly.
-                    if (level > SPEECH_LEVEL) lastSpeechAt = now
+                    if (level > SPEECH_LEVEL) {
+                        lastSpeechAt = now
+                        speechSinceEndpoint = true
+                    }
                     // Never lost for the final pass; may be dropped (and counted)
                     // for the streaming decoder if it has fallen behind.
                     pipe.offer(samples)
@@ -703,16 +727,37 @@ class VoiceSessionController(
             } ?: return@launch
             host.showRefining()
             VoiceEngines.beginUse()
+            val startedAt = System.currentTimeMillis()
             val refined = try {
                 refiner.refine(text)
             } finally {
                 VoiceEngines.endUse()
             }
+            recordRefinement(text, refined, System.currentTimeMillis() - startedAt)
             showListeningIfListening()
             if (refined != null && refined != text) {
                 host.replaceUtterance(utteranceIndex, refined)
             }
         }
+    }
+
+    /**
+     * Journals the pair when the user asked for it. The rejection reason lives
+     * in the refiner process and does not cross the binder, so a refinement the
+     * validator turned down is recorded as rejected with no reason attached.
+     */
+    private fun recordRefinement(spoken: String, refined: String?, elapsedMs: Long) {
+        if (!settings.refinementJournalEnabled) return
+        app.refinementJournal.record(
+            RefinementJournal.Entry(
+                atMillis = System.currentTimeMillis(),
+                spoken = spoken,
+                refined = refined,
+                accepted = refined != null,
+                reason = null,
+                elapsedMs = elapsedMs,
+            ),
+        )
     }
 
     // ---------------------------------------------------------------- effects
@@ -814,6 +859,13 @@ class VoiceSessionController(
 
         /** Mic-health, call and silence checks run every 500ms. */
         private const val WATCHDOG_EVERY_N_TICKS = 5
+
+        /**
+         * How long the room has to stay quiet before the utterance is treated as
+         * finished. Short enough that a sentence lands while the user is drawing
+         * breath for the next one; long enough not to cut them off mid-thought.
+         */
+        private const val ENDPOINT_SILENCE_MS = 1_000L
 
         /** Serializes AudioRecord construction and release; see [AudioCapture]. */
         private val audioDispatcher: CoroutineDispatcher =

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    WaveKey: a clip. White on purpose — Colors tints it with the key background,
+    so the card follows whatever theme the keyboard carries.
+    SPDX-License-Identifier: GPL-3.0-only
+-->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+    <solid android:color="@android:color/white" />
+    <corners android:radius="14dp" />
+</shape>

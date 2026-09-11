@@ -6,6 +6,12 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <string name="voice_telemetry">Measure how well dictation works</string>
     <string name="voice_telemetry_summary">Counts how often dictated text is sent without editing, and how long that takes. No text, ever, and nothing leaves this device</string>
+    <string name="voice_refinement_journal">Keep a record of what the AI changed</string>
+    <string name="voice_refinement_journal_summary">Stores each dictated sentence next to what the AI made of it, so the cleanup can be judged on your own speech. This one does keep your words. Nothing leaves this device, and turning it off erases it</string>
+    <string name="voice_refinement_journal_kept">%1$d refinements recorded. Tap and hold to copy them, then turn this off to erase</string>
+    <string name="voice_refinement_journal_copy">Copy the record</string>
+    <string name="voice_refinement_journal_copy_summary">Puts every recorded sentence and its refinement on the clipboard</string>
+    <string name="voice_refinement_journal_copied">Copied %1$d refinements</string>
     <string name="voice_telemetry_measured">%1$d%% of %2$d dictations sent unedited, %3$.1fs on average</string>
     <!-- WaveKey: the voice strip (W3.4) -->
     <string name="voice_listening">Listening…</string>
@@ -95,4 +101,24 @@
     <!-- The minimize control on the listening strip -->
     <string name="voice_minimize_key">Show the minimize key while dictating</string>
     <string name="voice_minimize_key_summary">Hides the keyboard but keeps listening. Off by default: it sits next to the stop button and is easy to hit by mistake</string>
+    <!-- WaveKey: one choice of what runs dictation, in place of a switch that
+         could disagree with the models above it -->
+    <string name="wk_engine_title">AI Correction</string>
+    <string name="wk_engine_ondevice">On this phone</string>
+    <string name="wk_engine_ondevice_ready">Uses the model above. No audio leaves the device.</string>
+    <string name="wk_engine_ondevice_missing">Download the transcription model above to use this.</string>
+    <string name="wk_engine_in_use">In use for dictation</string>
+    <string name="wk_engine_not_in_use">Not in use — Google voice typing is on</string>
+    <string name="wk_refiner_in_use">In use for AI refinement</string>
+    <string name="wk_refiner_not_in_use">Not in use — AI refinement is off</string>
+    <string name="wk_cat_voice_to_text">Voice to Text</string>
+    <string name="wk_cat_other">Other</string>
+    <string name="wk_engine_google_local">Your phone\'s own recognizer. Nothing leaves the device.</string>
+    <string name="wk_engine_google_network">Your phone\'s recognizer. No offline pack is installed, so audio is sent to Google.</string>
+    <string name="wk_cat_cleanup">Text cleanup</string>
+    <string name="wk_cleanup_off_raw">Off while the raw transcript is on</string>
+    <string name="wk_models_removed">Removed · frees %1$s</string>
+    <string name="wk_models_remove_message">Remove this model? It frees %1$s, and you will have to download it again to use it.</string>
+    <string name="wk_models_remove_required">Remove this model? Dictation stops working on this phone until you download it again. It frees %1$s.</string>
+    <string name="wk_models_retry">Retry</string>
 </resources>

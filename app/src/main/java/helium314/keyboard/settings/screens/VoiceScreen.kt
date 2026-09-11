@@ -6,13 +6,17 @@
 // the dictation path cannot disagree about what a switch means.
 package helium314.keyboard.settings.screens
 
+import android.content.ClipData
+import android.content.ClipboardManager
 import android.content.Context
+import android.widget.Toast
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -21,6 +25,14 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.collectAsState
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.selection.selectableGroup
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.semantics.Role
+import androidx.core.content.edit
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -30,11 +42,14 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import com.vboard.app.settings.SettingsRepository.Defaults as VoiceDefaults
 import com.vboard.app.settings.SettingsRepository.Keys as VoiceKeys
+import com.vboard.app.llm.refinerAbiSupported
 import com.vboard.app.voice.voiceRuntimeOrNull
 import com.vboard.core.model.ByteSize
 import com.vboard.core.model.ModelCatalog
+import com.vboard.core.model.ModelKind
 import com.vboard.core.session.SilenceTimeout
 import helium314.keyboard.latin.R
+import helium314.keyboard.voice.GoogleVoiceSession
 import helium314.keyboard.voice.VoiceStripView
 import helium314.keyboard.latin.utils.Log
 import helium314.keyboard.latin.utils.NextScreenIcon
@@ -43,6 +58,10 @@ import helium314.keyboard.latin.utils.getActivity
 import helium314.keyboard.latin.utils.previewDark
 import helium314.keyboard.latin.utils.prefs
 import helium314.keyboard.settings.SearchSettingsScreen
+import helium314.keyboard.settings.SettingsSections
+import helium314.keyboard.settings.preferences.PreferenceCategory
+import helium314.keyboard.settings.preferences.PreferenceGroup
+import helium314.keyboard.settings.preferences.PreferenceGroupDivider
 import helium314.keyboard.settings.Setting
 import helium314.keyboard.settings.SettingsActivity
 import helium314.keyboard.settings.SettingsDestination
@@ -63,32 +82,146 @@ fun VoiceScreen(
     // Raw mode is the verbatim escape hatch: with it on, none of the cleanup
     // switches below do anything, so they are hidden rather than left lying.
     val raw = prefs.getBoolean(VoiceKeys.RAW_TRANSCRIPT, VoiceDefaults.RAW_TRANSCRIPT)
-    val items = listOfNotNull(
-        // The models are the first thing this screen is about: without them
-        // every switch below is describing something that cannot run.
-        SettingsWithoutKey.VOICE_MODELS,
-        R.string.voice_category_dictation,
-        VoiceStripView.SHOW_MINIMIZE_KEY,
+    // Grouped by what each setting acts on: the speech-to-text half, then the
+    // clean-up half, then the two rows that belong to neither.
+    val speech = listOfNotNull(
         VoiceKeys.SILENCE_TIMEOUT,
         VoiceKeys.PROVISIONAL_COMMIT,
-        R.string.voice_category_transcript,
-        VoiceKeys.RAW_TRANSCRIPT,
-        if (raw) null else VoiceKeys.REMOVE_FILLERS,
-        if (raw) null else VoiceKeys.AGGRESSIVE_FILLERS,
-        if (raw) null else VoiceKeys.SELF_CORRECTIONS,
-        if (raw) null else VoiceKeys.AUTO_PUNCTUATE,
-        if (raw) null else VoiceKeys.AUTO_CAP,
-        if (raw) null else VoiceKeys.SPOKEN_COMMANDS,
-        R.string.voice_category_refinement,
-        VoiceKeys.LLM_REFINE,
-        R.string.voice_category_privacy,
-        VoiceKeys.TELEMETRY,
+        VoiceStripView.SHOW_MINIMIZE_KEY,
     )
+    // LiteRT-LM has no 32-bit ARM build, so on those installs the refiner can
+    // never run. Offering a switch that silently does nothing is worse than
+    // offering none.
+    val correction = listOfNotNull(
+        VoiceKeys.LLM_REFINE.takeIf { refinerAbiSupported },
+        VoiceKeys.REFINEMENT_JOURNAL.takeIf { refinerAbiSupported },
+        VoiceKeys.REFINEMENT_JOURNAL_COPY.takeIf { refinerAbiSupported },
+    )
+    // Raw transcript overrides every switch below it. It used to sit at the
+    // bottom of the screen and delete them, so rows vanished with no visible
+    // cause; it leads them now, and they read as unavailable instead.
+    val cleanup = listOf(
+        VoiceKeys.RAW_TRANSCRIPT,
+        VoiceKeys.AUTO_CAP,
+        VoiceKeys.SELF_CORRECTIONS,
+        VoiceKeys.REMOVE_FILLERS,
+        VoiceKeys.AGGRESSIVE_FILLERS,
+        VoiceKeys.AUTO_PUNCTUATE,
+        VoiceKeys.SPOKEN_COMMANDS,
+    )
+    val other = listOf(VoiceKeys.TELEMETRY)
     SearchSettingsScreen(
         onClickBack = onClickBack,
         title = stringResource(R.string.settings_screen_voice),
-        settings = items,
+        // Registered so the settings search resolves them, even though the
+        // screen draws its own layout rather than a plain list.
+        settings = speech + correction + cleanup + other,
+        content = {
+            Column(
+                Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(bottom = 24.dp)
+            ) {
+                // What turns speech into text: the model that does it, the engine
+                // choice between it and Google's, and how dictation behaves.
+                PreferenceCategory(stringResource(R.string.wk_cat_voice_to_text))
+                // The model and the engine that uses it are one decision, so they
+                // share one container: two groups stacked flush met at a shared
+                // edge and their radii read as a pinch, not as two cards.
+                PreferenceGroup {
+                    VoiceModelsSection(only = ModelKind.FINAL_ASR, inOwnGroup = false)
+                    PreferenceGroupDivider()
+                    EngineChoice()
+                }
+                SettingsSections(speech)
+
+                // What happens to the text afterwards, under the model that does it.
+                // The model and the switch that uses it. The cleanup below is
+                // deterministic and runs with no model at all, so it does not
+                // belong under a heading that implies a download gates it.
+                PreferenceCategory(stringResource(R.string.wk_engine_title))
+                PreferenceGroup {
+                    VoiceModelsSection(only = ModelKind.REFINER_LLM, inOwnGroup = false)
+                    PreferenceGroupDivider()
+                    SettingsSections(correction, inOwnGroup = false)
+                }
+
+                PreferenceCategory(stringResource(R.string.wk_cat_cleanup))
+                PreferenceGroup {
+                    SettingsSections(listOf(VoiceKeys.RAW_TRANSCRIPT), inOwnGroup = false)
+                    PreferenceGroupDivider()
+                    Dimmed(!raw) {
+                        SettingsSections(cleanup.drop(1), inOwnGroup = false)
+                    }
+                }
+
+                PreferenceCategory(stringResource(R.string.wk_cat_other))
+                SettingsSections(other)
+            }
+        },
     )
+}
+
+/**
+ * WaveKey: which recognizer runs, as one choice rather than as a switch.
+ *
+ * The two engines are one boolean apart, so exclusivity is structural: turning
+ * one on cannot leave the other on, and there is no state where neither runs.
+ */
+@Composable
+private fun EngineChoice() {
+    val ctx = LocalContext.current
+    val prefs = ctx.prefs()
+    val google = PrivacyBreakingSettings.googleVoiceEnabled(prefs)
+    val runtime = voiceRuntimeOrNull(ctx)
+    val ready = runtime?.modelStore?.dictationReady(runtime.packInstaller) == true
+    Column(Modifier.selectableGroup()) {
+        EngineOption(
+            name = stringResource(R.string.privacy_breaking_google_voice),
+            // The system recognizer runs locally when the platform has an offline
+            // pack and goes to Google when it does not, so the row says which.
+            description = stringResource(
+                if (GoogleVoiceSession.onDeviceAvailable(ctx)) R.string.wk_engine_google_local
+                else R.string.wk_engine_google_network
+            ),
+            selected = google,
+        ) { prefs.edit { putBoolean(PrivacyBreakingSettings.PREF_GOOGLE_VOICE, true) } }
+        EngineOption(
+            name = stringResource(R.string.wk_engine_ondevice),
+            description = stringResource(
+                if (ready) R.string.wk_engine_ondevice_ready else R.string.wk_engine_ondevice_missing
+            ),
+            selected = !google,
+            // Selecting an engine whose model is not installed picks a keyboard
+            // that cannot dictate; the row says why rather than going quiet.
+            enabled = ready,
+        ) { prefs.edit { putBoolean(PrivacyBreakingSettings.PREF_GOOGLE_VOICE, false) } }
+    }
+}
+
+@Composable
+private fun EngineOption(
+    name: String,
+    description: String,
+    selected: Boolean,
+    enabled: Boolean = true,
+    onClick: () -> Unit,
+) {
+    Row(
+        Modifier.fillMaxWidth()
+            .selectable(selected, enabled = enabled, role = Role.RadioButton, onClick = onClick)
+            .alpha(if (enabled) 1f else 0.5f)
+            .padding(horizontal = 16.dp, vertical = 10.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        RadioButton(selected = selected, enabled = enabled, onClick = null)
+        Column(Modifier.weight(1f).padding(start = 4.dp)) {
+            Text(name, style = MaterialTheme.typography.bodyLarge)
+            Text(
+                description,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+    }
 }
 
 fun createVoiceSettings(context: Context) = listOf(
@@ -182,6 +315,57 @@ fun createVoiceSettings(context: Context) = listOf(
     },
     Setting(context, VoiceKeys.LLM_REFINE, R.string.voice_llm_refine, R.string.voice_llm_refine_summary) {
         SwitchPreference(it, VoiceDefaults.LLM_REFINE)
+    },
+    Setting(
+        context,
+        VoiceKeys.REFINEMENT_JOURNAL,
+        R.string.voice_refinement_journal,
+        R.string.voice_refinement_journal_summary,
+    ) { setting ->
+        val ctx = LocalContext.current
+        val journal = voiceRuntimeOrNull(ctx)?.refinementJournal
+        val kept = journal?.size ?: 0
+        SwitchPreference(
+            name = setting.title,
+            key = setting.key,
+            default = VoiceDefaults.REFINEMENT_JOURNAL,
+            description = if (kept == 0) setting.description else ctx.getString(
+                R.string.voice_refinement_journal_kept,
+                kept,
+            ),
+            // Off means gone. A record of what you said is not something to
+            // leave sitting in memory after you have said to stop keeping it.
+            onCheckedChange = { enabled -> if (!enabled) journal?.clear() },
+        )
+    },
+    Setting(
+        context,
+        VoiceKeys.REFINEMENT_JOURNAL_COPY,
+        R.string.voice_refinement_journal_copy,
+        R.string.voice_refinement_journal_copy_summary,
+    ) { setting ->
+        val ctx = LocalContext.current
+        val journal = voiceRuntimeOrNull(ctx)?.refinementJournal
+        val kept = journal?.size ?: 0
+        Preference(
+            name = setting.title,
+            description = if (kept == 0) setting.description else ctx.getString(
+                R.string.voice_refinement_journal_kept,
+                kept,
+            ),
+            onClick = {
+                if (journal != null && kept > 0) {
+                    ctx.getSystemService(ClipboardManager::class.java)?.setPrimaryClip(
+                        ClipData.newPlainText("WaveKey refinements", journal.export()),
+                    )
+                    Toast.makeText(
+                        ctx,
+                        ctx.getString(R.string.voice_refinement_journal_copied, kept),
+                        Toast.LENGTH_SHORT,
+                    ).show()
+                }
+            },
+        )
     },
     Setting(context, VoiceKeys.TELEMETRY, R.string.voice_telemetry, R.string.voice_telemetry_summary) { setting ->
         val ctx = LocalContext.current

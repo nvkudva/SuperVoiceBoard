@@ -38,6 +38,8 @@
     <string name="wk_models_download">About %1$s to download, kept on this device</string>
     <string name="wk_now">%1$s — what you are in now</string>
     <string name="wk_category_data">Data</string>
+    <!-- Heading over the privacy settings, now shown on the main screen -->
+    <string name="wk_category_privacy">Privacy</string>
     <string name="wk_day">Day</string>
     <string name="wk_night">Night</string>
     <string name="wk_category_key_behaviour">Key behaviour</string>
@@ -75,4 +77,69 @@
     <string name="wk_hint_source">Which popup letter to show</string>
     <string name="wk_save_log">Save a diagnostic log</string>
     <string name="wk_emoji_version">Emoji set version</string>
+    <!-- Look & feel, redesigned: the merged rows and the orientation chips -->
+    <string name="wk_look_auto">Auto</string>
+    <string name="wk_look_theme">Theme</string>
+    <string name="wk_look_key_style">Key style</string>
+    <string name="wk_look_key_style_summary">Shape, borders and icons</string>
+    <string name="wk_look_background">Background</string>
+    <string name="wk_look_portrait">Portrait</string>
+    <string name="wk_look_folded_landscape">Folded · landscape</string>
+    <string name="wk_look_split_this">Split this orientation</string>
+    <string name="wk_look_emoji">Emoji</string>
+    <string name="wk_look_emoji_summary">Font, key fit, skin tone</string>
+    <string name="wk_look_orientation_hint">One context for every slider below.</string>
+    <!-- Toolbar & keys, redesigned: the strip is the canvas -->
+    <string name="wk_toolbar_fit">%1$d fit on this phone · %2$d spill over</string>
+    <string name="wk_toolbar_fit_all">All %1$d fit on this phone</string>
+    <string name="wk_toolbar_drag_hint">Drag a key to arrange it, drag it out of the row to switch it off, long-press it for everything else.</string>
+    <string name="wk_toolbar_overflow">Hatched keys sit behind the chevron at the end of the strip.</string>
+    <string name="wk_key_locked">Always on the strip — cannot be removed</string>
+    <string name="wk_key_pinned">Keep visible when the toolbar collapses</string>
+    <string name="wk_key_lights_up">Lights up</string>
+    <string name="wk_key_take_off">Take off strip</string>
+    <string name="wk_key_position">%1$d of %2$d on this strip</string>
+    <string name="wk_group_wavekey">WaveKey keys</string>
+    <string name="wk_group_editing">Editing</string>
+    <string name="wk_group_cursor">Cursor</string>
+    <string name="wk_group_system">System</string>
+    <string name="wk_lights_incognito">While incognito mode is on</string>
+    <string name="wk_lights_one_handed">While one-handed mode is on</string>
+    <string name="wk_lights_split">While the keyboard is split</string>
+    <string name="wk_lights_autocorrect">While autocorrect is on</string>
+    <string name="wk_lights_gathering">While background gathering is on</string>
+    <string name="wk_lights_asr">While cloud dictation is active</string>
+    <string name="wk_lights_ai_fix">While a fix is running</string>
+    <string name="wk_lights_resize">While resize mode is open</string>
+    <string name="wk_lights_none">This key has no on and off state</string>
+    <string name="wk_key_about_ai_fix">Rewrites the last thing you said.</string>
+    <string name="wk_key_about_asr_engine">Switches dictation between on-device and cloud.</string>
+    <string name="wk_key_about_resize">Drag the keyboard\'s own edges for height and padding.</string>
+    <!-- Toolbar mode, chosen from pictures of the strip -->
+    <string name="wk_mode_expandable_summary">Suggestions, with the keys a tap away</string>
+    <string name="wk_mode_toolbar_keys_summary">The strip is always the toolbar</string>
+    <string name="wk_mode_suggestion_strip_summary">Words, no toolbar keys</string>
+    <string name="wk_mode_hidden_summary">An extra row of screen back</string>
+    <!-- Settings re-grouping, 2026-09-10 -->
+    <string name="wk_screen_keys_input">Keys &amp; input</string>
+    <string name="wk_cat_keys">Keys</string>
+    <string name="wk_cat_extra_keys">Extra keys</string>
+    <string name="wk_cat_feedback">Feedback</string>
+    <string name="wk_cat_after_switch">After a layout switch</string>
+    <string name="wk_screen_gestures">Gestures</string>
+    <string name="wk_screen_gestures_summary">Swipe typing, space bar and delete</string>
+    <string name="wk_cat_spacebar_delete">Space bar and delete</string>
+    <string name="wk_screen_clipboard">Clipboard</string>
+    <string name="wk_screen_clipboard_summary">History, pinning and what gets suggested</string>
+    <!-- Clipboard panel -->
+    <string name="wk_clip_pin">Keep this clip</string>
+    <string name="wk_clip_unpin">Stop keeping this clip</string>
+    <string name="wk_clip_kind_link">Link</string>
+    <string name="wk_clip_kind_image">Image</string>
+    <string name="wk_clip_kind_phone">Phone</string>
+    <string name="wk_clip_kind_text">Text</string>
+    <string name="wk_clip_kept">Kept until you unpin</string>
+    <string name="wk_clip_chars">%1$d characters</string>
+    <string name="wk_clip_empty_title">Nothing copied yet</string>
+    <string name="wk_clip_empty_body">Anything you copy lands here. Tap the pin on a clip to keep it for good.</string>
 </resources>

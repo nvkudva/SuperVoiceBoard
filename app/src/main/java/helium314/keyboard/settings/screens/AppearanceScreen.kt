@@ -2,6 +2,30 @@
 package helium314.keyboard.settings.screens
 
 import android.content.Context
+import android.content.res.Configuration
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Slider
+import androidx.compose.material3.Text
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.unit.dp
+import helium314.keyboard.latin.settings.createPrefKeyForBooleanSettings
+import helium314.keyboard.latin.settings.findIndexOfDefaultSetting
+import helium314.keyboard.latin.utils.NextScreenIcon
+import helium314.keyboard.latin.utils.ResourceUtils
+import helium314.keyboard.settings.preferences.PreferenceCategory
+import helium314.keyboard.settings.preferences.PreferenceGroup
 import android.os.Build
 import androidx.compose.foundation.layout.Column
 import androidx.compose.material3.Surface
@@ -48,61 +72,248 @@ import helium314.keyboard.latin.settings.Settings
 import helium314.keyboard.latin.utils.FoldableUtils
 import helium314.keyboard.settings.dialogs.ThreeButtonAlertDialog
 
+/**
+ * WaveKey: Look & feel, rebuilt on the mock's "one screen, board on top".
+ *
+ * The board is pinned above the settings instead of parked in a footer nobody
+ * scrolls to, so every slider is judged against the thing it changes. Three
+ * theme rows become one control plus one row; four key-shape rows become one
+ * door; and the six size dialogs that each re-asked which orientation you meant
+ * become one chip row over inline sliders.
+ */
 @Composable
 fun AppearanceScreen(
     onClickBack: () -> Unit,
 ) {
     val ctx = LocalContext.current
     val prefs = ctx.prefs()
-    val b = (LocalContext.current.getActivity() as? SettingsActivity)?.prefChanged?.collectAsState()
+    val b = (ctx.getActivity() as? SettingsActivity)?.prefChanged?.collectAsState()
     if ((b?.value ?: 0) < 0)
         Log.v("irrelevant", "stupid way to trigger recomposition on preference change")
-    val dayNightMode = Build.VERSION.SDK_INT >= Build.VERSION_CODES.P && prefs.getBoolean(Settings.PREF_THEME_DAY_NIGHT, Defaults.PREF_THEME_DAY_NIGHT)
-    val items = listOf(
-        R.string.settings_screen_theme,
-        Settings.PREF_THEME_STYLE,
-        Settings.PREF_ICON_STYLE,
-        Settings.PREF_CUSTOM_ICON_NAMES,
-        Settings.PREF_THEME_KEY_BORDERS,
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P)
-            Settings.PREF_THEME_DAY_NIGHT else null,
-        Settings.PREF_THEME_COLORS,
-        if (dayNightMode) Settings.PREF_THEME_COLORS_NIGHT else null,
-        Settings.PREF_NAVBAR_COLOR,
-        SettingsWithoutKey.BACKGROUND_IMAGE,
-        SettingsWithoutKey.BACKGROUND_IMAGE_LANDSCAPE,
-        R.string.wk_category_size,
-        Settings.PREF_ENABLE_SPLIT_KEYBOARD,
-        if (prefs.getBoolean(Settings.PREF_ENABLE_SPLIT_KEYBOARD_LANDSCAPE, Defaults.PREF_ENABLE_SPLIT_KEYBOARD)
-            || prefs.getBoolean(Settings.PREF_ENABLE_SPLIT_KEYBOARD, Defaults.PREF_ENABLE_SPLIT_KEYBOARD)
-            || prefs.getBoolean(Settings.PREF_ENABLE_SPLIT_KEYBOARD_FOLDED, Defaults.PREF_ENABLE_SPLIT_KEYBOARD)
-            || prefs.getBoolean(Settings.PREF_ENABLE_SPLIT_KEYBOARD_FOLDED_LANDSCAPE, Defaults.PREF_ENABLE_SPLIT_KEYBOARD)
-            )
-            Settings.PREF_SPLIT_SPACER_SCALE_PREFIX else null,
-        if (prefs.getBoolean(Settings.PREF_THEME_KEY_BORDERS, Defaults.PREF_THEME_KEY_BORDERS))
-            Settings.PREF_KEY_GAP_SCALE_PREFIX else null,
-        Settings.PREF_KEYBOARD_HEIGHT_SCALE_PREFIX,
-        Settings.PREF_BOTTOM_ROW_SCALE_PREFIX,
-        Settings.PREF_BOTTOM_PADDING_SCALE_PREFIX,
-        Settings.PREF_SIDE_PADDING_SCALE_PREFIX,
-        R.string.wk_category_text,
-        Settings.PREF_SPACE_BAR_TEXT,
-        SettingsWithoutKey.CUSTOM_FONT,
-        Settings.PREF_FONT_SCALE,
-        if (prefs.getBoolean(Settings.PREF_SHOW_HINTS, Defaults.PREF_SHOW_HINTS)) Settings.PREF_HINT_FONT_SCALE else null,
-        SettingsWithoutKey.CUSTOM_EMOJI_FONT,
-        Settings.PREF_EMOJI_FONT_SCALE,
-        if (prefs.getFloat(Settings.PREF_EMOJI_FONT_SCALE, Defaults.PREF_EMOJI_FONT_SCALE) != 1f)
-            Settings.PREF_EMOJI_KEY_FIT else null,
-        if (prefs.getInt(Settings.PREF_EMOJI_MAX_SDK, 0) >= 24)
-            Settings.PREF_EMOJI_SKIN_TONE else null,
-    )
+    val canDayNight = Build.VERSION.SDK_INT >= Build.VERSION_CODES.P
+    val autoDayNight = canDayNight && prefs.getBoolean(Settings.PREF_THEME_DAY_NIGHT, Defaults.PREF_THEME_DAY_NIGHT)
+    // Which half of the pair the Theme row edits. Starts on the one in use.
+    var editNight by rememberSaveable { mutableStateOf(ResourceUtils.isNight(ctx.resources) && autoDayNight) }
+    if (!autoDayNight && editNight) editNight = false
+
     SearchSettingsScreen(
         onClickBack = onClickBack,
         title = stringResource(R.string.settings_door_look),
-        settings = items,
-        footer = { KeyboardPreview() }
+        settings = emptyList(),
+        content = {
+            Column(Modifier.fillMaxSize()) {
+                KeyboardPreview()
+                Column(
+                    Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(bottom = 24.dp)
+                ) {
+                    PreferenceCategory(stringResource(R.string.settings_screen_theme))
+                    PreferenceGroup {
+                        DayNightChips(canDayNight, autoDayNight, editNight) { editNight = it }
+                        ThemeRow(editNight)
+                        SettingsActivity.settingsContainer[Settings.PREF_NAVBAR_COLOR]?.Preference()
+                        Preference(
+                            name = stringResource(R.string.wk_look_key_style),
+                            description = stringResource(R.string.wk_look_key_style_summary),
+                            onClick = { SettingsDestination.navigateTo(SettingsDestination.KeyStyle) }
+                        ) { NextScreenIcon() }
+                    }
+
+                    PreferenceCategory(stringResource(R.string.wk_look_background))
+                    PreferenceGroup {
+                        SettingsActivity.settingsContainer[SettingsWithoutKey.BACKGROUND_IMAGE]?.Preference()
+                        SettingsActivity.settingsContainer[SettingsWithoutKey.BACKGROUND_IMAGE_LANDSCAPE]?.Preference()
+                    }
+
+                    PreferenceCategory(stringResource(R.string.wk_category_size))
+                    SizeAndSpacing()
+
+                    PreferenceCategory(stringResource(R.string.wk_category_text))
+                    PreferenceGroup {
+                        SettingsActivity.settingsContainer[SettingsWithoutKey.CUSTOM_FONT]?.Preference()
+                        SettingsActivity.settingsContainer[Settings.PREF_FONT_SCALE]?.Preference()
+                        // Stays mounted when hints are off: a row that reads
+                        // unavailable is easier to find again than one that vanished.
+                        Dimmed(prefs.getBoolean(Settings.PREF_SHOW_HINTS, Defaults.PREF_SHOW_HINTS)) {
+                            SettingsActivity.settingsContainer[Settings.PREF_HINT_FONT_SCALE]?.Preference()
+                        }
+                        SettingsActivity.settingsContainer[Settings.PREF_SPACE_BAR_TEXT]?.Preference()
+                    }
+
+                    PreferenceGroup(Modifier.padding(top = 16.dp)) {
+                        Preference(
+                            name = stringResource(R.string.wk_look_emoji),
+                            description = stringResource(R.string.wk_look_emoji_summary),
+                            onClick = { SettingsDestination.navigateTo(SettingsDestination.Emoji) }
+                        ) { NextScreenIcon() }
+                    }
+                }
+            }
+        }
     )
+}
+
+/** Auto pairs a day and a night theme; Day and Night say which of the pair the Theme row edits. */
+@Composable
+private fun DayNightChips(canDayNight: Boolean, auto: Boolean, editNight: Boolean, onEditNight: (Boolean) -> Unit) {
+    if (!canDayNight) return
+    val prefs = LocalContext.current.prefs()
+    Row(
+        Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        FilterChip(
+            selected = auto,
+            onClick = {
+                prefs.edit { putBoolean(Settings.PREF_THEME_DAY_NIGHT, !auto) }
+                if (auto) onEditNight(false)
+                KeyboardSwitcher.getInstance().setThemeNeedsReload()
+            },
+            label = { Text(stringResource(R.string.wk_look_auto)) }
+        )
+        FilterChip(
+            selected = auto && !editNight,
+            enabled = auto,
+            onClick = { onEditNight(false) },
+            label = { Text(stringResource(R.string.wk_day)) }
+        )
+        FilterChip(
+            selected = auto && editNight,
+            enabled = auto,
+            onClick = { onEditNight(true) },
+            label = { Text(stringResource(R.string.wk_night)) }
+        )
+    }
+}
+
+/** One row for what used to be Colors and Colors (night), following the chips. */
+@Composable
+private fun ThemeRow(editNight: Boolean) {
+    val ctx = LocalContext.current
+    val prefs = ctx.prefs()
+    val name = (if (editNight) prefs.getString(Settings.PREF_THEME_COLORS_NIGHT, Defaults.PREF_THEME_COLORS_NIGHT)
+        else prefs.getString(Settings.PREF_THEME_COLORS, Defaults.PREF_THEME_COLORS))!!
+    Preference(
+        name = stringResource(R.string.wk_look_theme),
+        description = name.getStringResourceOrName("theme_name_", ctx),
+        onClick = {
+            SettingsDestination.navigateTo(
+                if (editNight) SettingsDestination.ThemePickerNight else SettingsDestination.ThemePicker
+            )
+        }
+    ) { NextScreenIcon() }
+}
+
+/** A row that is unavailable right now: shown, but visibly not in play. */
+@Composable
+fun Dimmed(enabled: Boolean, content: @Composable () -> Unit) {
+    Box(Modifier.alpha(if (enabled) 1f else 0.38f)) { content() }
+}
+
+/** Portrait, landscape and — on a foldable — the two folded variants. */
+private enum class Orientation(val landscape: Boolean, val folded: Boolean) {
+    PORTRAIT(false, false), LANDSCAPE(true, false), FOLDED(false, true), FOLDED_LANDSCAPE(true, true);
+
+    val splitKey get() = if (landscape)
+        (if (folded) Settings.PREF_ENABLE_SPLIT_KEYBOARD_FOLDED_LANDSCAPE else Settings.PREF_ENABLE_SPLIT_KEYBOARD_LANDSCAPE)
+    else (if (folded) Settings.PREF_ENABLE_SPLIT_KEYBOARD_FOLDED else Settings.PREF_ENABLE_SPLIT_KEYBOARD)
+}
+
+/**
+ * The six size dialogs, inlined. Upstream asked which orientation you meant once
+ * per setting, inside each dialog; here the question is asked once, at the top,
+ * and every slider below answers for that orientation.
+ */
+@Composable
+private fun SizeAndSpacing() {
+    val ctx = LocalContext.current
+    val prefs = ctx.prefs()
+    val orientations = Orientation.entries.filter { FoldableUtils.isFoldable || !it.folded }
+    val here = Orientation.entries.first {
+        it.landscape == (ctx.resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) &&
+                it.folded == (FoldableUtils.isFoldable && FoldableUtils.isFolded)
+    }
+    var orientation by rememberSaveable { mutableStateOf(if (here in orientations) here else Orientation.PORTRAIT) }
+    val index = findIndexOfDefaultSetting(orientation.landscape, orientation.folded)
+    val split = prefs.getBoolean(orientation.splitKey, Defaults.PREF_ENABLE_SPLIT_KEYBOARD)
+    val bordered = prefs.getBoolean(Settings.PREF_THEME_KEY_BORDERS, Defaults.PREF_THEME_KEY_BORDERS)
+
+    Row(
+        Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()).padding(horizontal = 16.dp, vertical = 4.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        orientations.forEach { o ->
+            FilterChip(
+                selected = o == orientation,
+                onClick = { orientation = o },
+                label = {
+                    Text(when (o) {
+                        Orientation.PORTRAIT -> stringResource(R.string.wk_look_portrait)
+                        Orientation.LANDSCAPE -> stringResource(R.string.landscape)
+                        Orientation.FOLDED -> stringResource(R.string.folded)
+                        Orientation.FOLDED_LANDSCAPE -> stringResource(R.string.wk_look_folded_landscape)
+                    })
+                }
+            )
+        }
+    }
+    PreferenceGroup {
+        ScaleSlider(stringResource(R.string.prefs_keyboard_height_scale), Settings.PREF_KEYBOARD_HEIGHT_SCALE_PREFIX,
+            2, index, Defaults.PREF_KEYBOARD_HEIGHT_SCALE[index], 0.3f..1.5f)
+        ScaleSlider(stringResource(R.string.prefs_bottom_row_scale), Settings.PREF_BOTTOM_ROW_SCALE_PREFIX,
+            2, index, Defaults.PREF_BOTTOM_ROW_SCALE[index], 0.5f..2f)
+        // Side padding is the one scale that also depends on split, so its key
+        // carries the split state of the orientation chosen above.
+        ScaleSlider(stringResource(R.string.prefs_side_padding_scale), Settings.PREF_SIDE_PADDING_SCALE_PREFIX,
+            3, findIndexOfDefaultSetting(orientation.landscape, split, orientation.folded),
+            Defaults.PREF_SIDE_PADDING_SCALE[findIndexOfDefaultSetting(orientation.landscape, split, orientation.folded)], 0f..3f)
+        ScaleSlider(stringResource(R.string.prefs_bottom_padding_scale), Settings.PREF_BOTTOM_PADDING_SCALE_PREFIX,
+            2, index, Defaults.PREF_BOTTOM_PADDING_SCALE[index], 0f..5f)
+        Dimmed(bordered) {
+            ScaleSlider(stringResource(R.string.prefs_key_gap_scale), Settings.PREF_KEY_GAP_SCALE_PREFIX,
+                2, index, Defaults.PREF_KEY_GAP_SCALE[index], 0.5f..2.5f, enabled = bordered)
+        }
+        SwitchPreference(
+            name = stringResource(R.string.wk_look_split_this),
+            key = orientation.splitKey,
+            default = Defaults.PREF_ENABLE_SPLIT_KEYBOARD,
+        ) { KeyboardSwitcher.getInstance().setThemeNeedsReload() }
+        Dimmed(split) {
+            ScaleSlider(stringResource(R.string.wk_split_spacer), Settings.PREF_SPLIT_SPACER_SCALE_PREFIX,
+                2, index, Defaults.PREF_SPLIT_SPACER_SCALE[index], 0.5f..2f, enabled = split)
+        }
+    }
+}
+
+/** One scale pref, for one orientation, shown as a slider rather than behind a dialog. */
+@Composable
+private fun ScaleSlider(
+    name: String,
+    baseKey: String,
+    dimensionCount: Int,
+    index: Int,
+    default: Float,
+    range: ClosedFloatingPointRange<Float>,
+    enabled: Boolean = true,
+) {
+    val prefs = LocalContext.current.prefs()
+    val key = createPrefKeyForBooleanSettings(baseKey, index, dimensionCount)
+    var position by remember(key) { mutableFloatStateOf(prefs.getFloat(key, default)) }
+    Column(Modifier.padding(horizontal = 16.dp, vertical = 4.dp)) {
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+            Text(name, style = MaterialTheme.typography.bodyLarge)
+            Text("${(100 * position).toInt()}%", color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+        Slider(
+            value = position,
+            enabled = enabled,
+            onValueChange = { position = it },
+            onValueChangeFinished = {
+                if (position == default) prefs.edit { remove(key) } else prefs.edit { putFloat(key, position) }
+                KeyboardSwitcher.getInstance().setThemeNeedsReload()
+            },
+            valueRange = range,
+        )
+    }
 }
 
 fun createAppearanceSettings(context: Context) = listOf(

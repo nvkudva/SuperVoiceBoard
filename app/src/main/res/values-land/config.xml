@@ -32,7 +32,7 @@
     <fraction name="config_key_letter_ratio_holo">65%</fraction>
     <fraction name="config_key_letter_ratio_lxx">65%</fraction>
     <fraction name="config_key_large_letter_ratio_holo">74%</fraction>
-    <fraction name="config_key_large_letter_ratio_lxx">90%</fraction>
+    <fraction name="config_key_large_letter_ratio_lxx">70%</fraction>
     <fraction name="config_key_label_ratio_holo">40%</fraction>
     <fraction name="config_key_label_ratio_lxx">40%</fraction>
     <fraction name="config_key_hint_letter_ratio_holo">30%</fraction>
@@ -43,8 +43,8 @@
     <fraction name="config_key_shifted_letter_hint_ratio_lxx">40%</fraction>
     <fraction name="config_language_on_spacebar_text_ratio">40.000%</fraction>
 
-    <dimen name="config_suggestions_strip_height">36dp</dimen>
-    <dimen name="config_suggestions_strip_edge_key_width">48dp</dimen>
+    <dimen name="config_suggestions_strip_height">48dp</dimen>
+    <dimen name="config_suggestions_strip_edge_key_width">40dp</dimen>
     <dimen name="config_more_suggestions_row_height">36dp</dimen>
     <integer name="config_max_more_suggestions_row">2</integer>
     <fraction name="config_min_more_suggestions_width">60%</fraction>
@@ -58,10 +58,16 @@
     <!-- Emoji keyboard -->
     <fraction name="config_emoji_keyboard_key_width">8.33%p</fraction>
     <fraction name="config_emoji_keyboard_row_height">41%p</fraction>
-    <fraction name="config_emoji_keyboard_key_letter_size">78%p</fraction>
-    <fraction name="config_emoji_keyboard_key_label_size">78%p</fraction>
+    <fraction name="config_emoji_keyboard_key_letter_size">39%p</fraction>
+    <fraction name="config_emoji_keyboard_key_label_size">39%p</fraction>
     <integer name="config_emoji_keyboard_max_recents_key_count">32</integer>
 
     <!-- Clipboard keyboard -->
     <integer name="config_clipboard_keyboard_col_count">3</integer>
+    <!-- WaveKey: the toolbar key box is square (it is the strip height), so a
+         centred tile of this size leaves the same 5dp on all four sides. -->
+    <dimen name="config_toolbar_key_tile">30dp</dimen>
+    <!-- Clear air under the spectrum rail, so the keys are not sitting on it. -->
+    <dimen name="config_toolbar_rail_gap">8dp</dimen>
+    <dimen name="config_toolbar_key_inset">5dp</dimen>
 </resources>

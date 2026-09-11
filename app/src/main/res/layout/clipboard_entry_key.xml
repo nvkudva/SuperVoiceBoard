@@ -1,46 +1,71 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
+    WaveKey: one clip card. The pin is a real tap target in the corner rather
+    than an unlabelled long-press, the meta line says what the clip is and how
+    long it has left, and the meter under it drains toward the retention time —
+    a pinned clip has no meter, which is the contrast that explains pinning.
     SPDX-License-Identifier: GPL-3.0-only
 -->
 <LinearLayout
         xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal">
+        android:orientation="vertical"
+        android:paddingHorizontal="10dp"
+        android:paddingTop="6dp"
+        android:paddingBottom="4dp">
 
-    <ImageView
-            android:id="@+id/clipboard_entry_pinned_icon"
-            android:contentDescription="@string/clipboard_history_pinned_first"
-            android:layout_width="@dimen/config_clipboard_pinned_icon_size"
-            android:layout_height="@dimen/config_clipboard_pinned_icon_size"
-            android:layout_marginVertical="8dp"
-            android:layout_marginStart="4dp"/>
-
-    <!-- Provide audio and haptic feedback by ourselves based on the keyboard settings.
-         We just need to ignore the system's audio and haptic feedback settings. -->
     <LinearLayout
-        android:layout_width="0dp"
-        android:layout_weight="1"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="4dp"
-        android:layout_marginBottom="6dp"
-        android:layout_marginHorizontal="8dp"
-        android:hapticFeedbackEnabled="false"
-        android:soundEffectsEnabled="false"
-        android:orientation="vertical">
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
         <ImageView
-            android:id="@+id/clipboard_entry_image_content"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal"
-            android:adjustViewBounds="true"
-            android:visibility="gone"/>
+            android:id="@+id/clipboard_entry_type_icon"
+            android:layout_width="14dp"
+            android:layout_height="14dp"
+            android:layout_marginEnd="5dp"
+            android:contentDescription="@null" />
         <TextView
-            android:id="@+id/clipboard_entry_text_content"
-            android:layout_width="match_parent"
+            android:id="@+id/clipboard_entry_meta"
+            android:layout_width="0dp"
+            android:layout_weight="1"
             android:layout_height="wrap_content"
+            android:maxLines="1"
             android:ellipsize="end"
-            android:maxLines="4"/>
+            android:textSize="10sp" />
+        <!-- Provide audio and haptic feedback by ourselves based on the keyboard
+             settings, so the system's are ignored here as everywhere else. -->
+        <ImageView
+            android:id="@+id/clipboard_entry_pinned_icon"
+            android:layout_width="28dp"
+            android:layout_height="28dp"
+            android:padding="4dp"
+            android:layout_marginEnd="-4dp"
+            android:hapticFeedbackEnabled="false"
+            android:soundEffectsEnabled="false"
+            android:contentDescription="@string/wk_clip_pin" />
     </LinearLayout>
 
+    <ImageView
+        android:id="@+id/clipboard_entry_image_content"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="4dp"
+        android:adjustViewBounds="true"
+        android:visibility="gone"/>
+    <TextView
+        android:id="@+id/clipboard_entry_text_content"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="2dp"
+        android:ellipsize="end"
+        android:maxLines="4"/>
+
+    <View
+        android:id="@+id/clipboard_entry_meter"
+        android:layout_width="match_parent"
+        android:layout_height="2dp"
+        android:layout_marginTop="6dp" />
 </LinearLayout>

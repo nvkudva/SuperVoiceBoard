@@ -51,8 +51,8 @@ object Defaults {
         val style = prefs.getString(Settings.PREF_THEME_STYLE, PREF_THEME_STYLE)!!
         return if (style in KeyboardTheme.ICON_STYLES) style else KeyboardTheme.STYLE_MATERIAL
     }
-    const val PREF_THEME_COLORS = KeyboardTheme.THEME_LIGHT
-    const val PREF_THEME_COLORS_NIGHT = KeyboardTheme.THEME_DARK
+    const val PREF_THEME_COLORS = KeyboardTheme.THEME_WAVEKEY
+    const val PREF_THEME_COLORS_NIGHT = KeyboardTheme.THEME_WAVEKEY
     const val PREF_THEME_KEY_BORDERS = true
     @JvmField
     val PREF_THEME_DAY_NIGHT = Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q
@@ -82,7 +82,10 @@ object Defaults {
     const val PREF_BLOCK_POTENTIALLY_OFFENSIVE = true
     const val PREF_SHOW_LANGUAGE_SWITCH_KEY = false
     const val PREF_LANGUAGE_SWITCH_KEY = "internal"
-    const val PREF_SHOW_EMOJI_KEY = false
+    // WaveKey: an emoji key in the bottom row by default, where every other
+    // keyboard puts it. The toolbar already overflows a 390dp phone, so the
+    // entry point goes next to the space bar rather than onto the strip.
+    const val PREF_SHOW_EMOJI_KEY = true
     const val PREF_VARIABLE_TOOLBAR_DIRECTION = true
     const val PREF_ADDITIONAL_SUBTYPES = "de${Separators.SET}${ExtraValue.KEYBOARD_LAYOUT_SET}=MAIN:qwerty${Separators.SETS}" +
             "fr${Separators.SET}${ExtraValue.KEYBOARD_LAYOUT_SET}=MAIN:qwertz${Separators.SETS}" +

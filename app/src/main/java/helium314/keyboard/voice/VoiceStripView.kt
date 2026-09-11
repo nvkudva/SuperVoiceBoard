@@ -57,6 +57,9 @@ class VoiceStripView(context: Context, attrs: AttributeSet?) : LinearLayout(cont
     private val minimizeKey: ImageButton
     private val doneKey: ImageButton
 
+    /** Left-hand ballast for whatever the right side currently weighs. */
+    private val balance: View
+
     /** Smoothed 0..1 input level, drawn as a bar behind the status text. */
     private var level = 0f
     private val levelPaint = Paint(Paint.ANTI_ALIAS_FLAG)
@@ -65,23 +68,34 @@ class VoiceStripView(context: Context, attrs: AttributeSet?) : LinearLayout(cont
     private var errorAction: VoiceErrorAction? = null
 
     init {
+        // WaveKey: clear the spectrum meter at the top edge, matching the
+        // suggestion strip so nothing shifts when the two swap.
+        setPadding(
+            paddingLeft,
+            resources.getDimensionPixelSize(helium314.keyboard.latin.R.dimen.config_toolbar_rail_gap),
+            paddingRight,
+            paddingBottom,
+        )
         orientation = HORIZONTAL
         LayoutInflater.from(context).inflate(R.layout.voice_strip, this, true)
         backKey = findViewById(R.id.voice_strip_back)
         statusText = findViewById(R.id.voice_strip_status)
         minimizeKey = findViewById(R.id.voice_strip_minimize)
         doneKey = findViewById(R.id.voice_strip_done)
+        balance = findViewById(R.id.voice_strip_balance)
 
         val colors: Colors = Settings.getValues().mColors
         colors.setBackground(this, ColorType.STRIP_BACKGROUND)
         for (key in listOf(backKey, minimizeKey)) {
             colors.setColor(key, ColorType.TOOL_BAR_KEY)
-            colors.setBackground(key, ColorType.STRIP_BACKGROUND)
+            // WaveKey: the same rounded square every other strip key wears.
+            key.setBackgroundResource(R.drawable.toolbar_key_background)
+            colors.setBackground(key, ColorType.FUNCTIONAL_KEY_BACKGROUND)
         }
         // The stop control sits where the mic was and wears the same spectrum
-        // pill: one target starts dictation and ends it, and it never moves
+        // tile: one target starts dictation and ends it, and it never moves
         // under the finger that just pressed it.
-        doneKey.setBackgroundResource(R.drawable.spectrum_pill)
+        doneKey.setBackgroundResource(R.drawable.spectrum_tile)
         doneKey.setImageResource(R.drawable.ic_close_rounded)
         doneKey.setColorFilter(SuggestionStripView.SPECTRUM_GLYPH)
         doneKey.contentDescription = context.getString(R.string.voice_done)
@@ -137,8 +151,24 @@ class VoiceStripView(context: Context, attrs: AttributeSet?) : LinearLayout(cont
         // and it could not be removed before because it is not a toolbar key.
         minimizeKey.isVisible = showDone && context.prefs()
             .getBoolean(SHOW_MINIMIZE_KEY, DEFAULT_SHOW_MINIMIZE_KEY)
+        rebalance()
         statusText.contentDescription = status
         announceForAccessibility(status)
+    }
+
+    /**
+     * Match the left of the row to the right of it, so the status text's box is
+     * centred on the strip and lands under the rail rather than beside it.
+     */
+    private fun rebalance() {
+        val key = resources.getDimensionPixelSize(R.dimen.config_suggestions_strip_edge_key_width)
+        var right = 0
+        if (doneKey.isVisible) right += key
+        if (minimizeKey.isVisible) right += key
+        val want = (right - key).coerceAtLeast(0) // the back key already holds one
+        if (balance.layoutParams.width != want) {
+            balance.layoutParams = balance.layoutParams.also { it.width = want }
+        }
     }
 
     /** Called on the audio callback's cadence; smoothed here rather than there. */
@@ -180,7 +210,7 @@ class VoiceStripView(context: Context, attrs: AttributeSet?) : LinearLayout(cont
         // keyboard that stopped listening.
         val span = half * (0.34f + 0.66f * level)
         levelPaint.alpha = 255
-        canvas.drawRect(half - span, height - h, half + span, height.toFloat(), levelPaint)
+        canvas.drawRect(half - span, 0f, half + span, h, levelPaint)
     }
 
     companion object {

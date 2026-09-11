@@ -8,7 +8,7 @@ import kotlin.test.assertTrue
 class ModelReadinessTest {
 
     private val parakeet = ModelCatalog.byId("parakeet-tdt-0.6b-v2")!!
-    private val refiner = ModelCatalog.byId("qwen25-05b-refiner")!!
+    private val refiner = ModelCatalog.byId("qwen3-06b-refiner")!!
 
     // ------------------------------------------------ "enough to dictate"
 

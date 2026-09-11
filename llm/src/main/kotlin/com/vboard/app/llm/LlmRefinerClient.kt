@@ -163,11 +163,21 @@ interface RemoteRefiner {
     }
 }
 
+/**
+ * LiteRT-LM ships `arm64-v8a` and `x86_64` only. On a 32-bit install the
+ * native library is simply absent, so loading the engine would throw
+ * `UnsatisfiedLinkError` deep inside the refiner process rather than failing
+ * a check here. The keyboard still works; it just never offers refinement.
+ */
+val refinerAbiSupported: Boolean
+    get() = Build.SUPPORTED_64_BIT_ABIS.isNotEmpty()
+
 /** Null when no refiner pack is installed; the model path is readable from any process. */
 fun refinerClientOrNull(context: Context, host: RefinerModelHost): LlmRefinerClient? {
-    // The refiner process cannot run below API 24 (MediaPipe); binding to a
+    // The refiner process cannot run below API 24 (LiteRT-LM); binding to a
     // service that will always answer null is worse than not offering it.
     if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) return null
+    if (!refinerAbiSupported) return null
     host.refinerModelPath() ?: return null
     return LlmRefinerClient(context)
 }

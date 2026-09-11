@@ -117,15 +117,15 @@ object ModelCatalog {
     private const val REFINER_REVISION = "main"
 
     private const val REFINER_BASE =
-        "https://huggingface.co/litert-community/Qwen2.5-0.5B-Instruct/resolve"
+        "https://huggingface.co/litert-community/Qwen3-0.6B/resolve"
 
     val packs: List<ModelPack> = listOf(
         ModelPack(
             id = "parakeet-tdt-0.6b-v2",
-            // "(English only)", not "(English)": this is the row title on the models screen,
-            // and it is the last thing a user reads before spending 482 MB. The v2 weights are
-            // English-only, so the title has to say so before the download, not after it.
-            displayName = "High-accuracy transcription (English only)",
+            // The row title on the models screen. It no longer carries "(English only)":
+            // the row's own state line and the download size sit directly under it, and
+            // coverage is declared in `languages` below rather than in the name.
+            displayName = "Parakeet (on-device AI)",
             kind = ModelKind.FINAL_ASR,
             version = 1,
             files = listOf(
@@ -150,27 +150,31 @@ object ModelCatalog {
         ),
         ModelPack(
             // Qwen is used as the default refiner because litert-community hosts
-            // it ungated (a Gemma .task requires a Hugging Face license
+            // it ungated (a Gemma bundle requires a Hugging Face license
             // acceptance + auth token, which a keyboard can't ask for mid-setup).
-            id = "qwen25-05b-refiner",
-            displayName = "Smart cleanup (on-device LLM)",
+            //
+            // Qwen3 replaced Qwen2.5 with the move to LiteRT-LM: the runtime
+            // reads `.litertlm`, not `.task`, so the format change forced a new
+            // pack id and every install re-downloads once.
+            id = "qwen3-06b-refiner",
+            displayName = "Qwen 3 0.6B (on-device LLM)",
             kind = ModelKind.REFINER_LLM,
             version = 1,
             files = listOf(
                 ModelFileSpec(
-                    relativePath = "qwen2.5-0.5b-instruct-q8.task",
+                    relativePath = "qwen3-0.6b-mixed-int4.litertlm",
                     url = "$REFINER_BASE/$REFINER_REVISION/" +
-                        "Qwen2.5-0.5B-Instruct_multi-prefill-seq_q8_ekv1280.task",
+                        "qwen3_0_6b_mixed_int4.litertlm",
                     // Intentionally empty: the digest must be filled in from the release
                     // pipeline, which is the only place that can fetch the artifact and hash
                     // it. Empty means "skip verification" (see ModelFileSpec); a fabricated
                     // hash would fail every install instead of none. Pair it with a pinned
                     // REFINER_REVISION in the same change.
                     sha256 = "",
-                    sizeBytes = 547_000_000L, // estimate; the installer uses the server's length
+                    sizeBytes = 498_000_000L, // estimate; the installer uses the server's length
                 ),
             ),
-            licenseNote = "Qwen2.5, Apache-2.0 (LiteRT community build)",
+            licenseNote = "Qwen3, Apache-2.0 (LiteRT community build)",
             required = false,
             // The refiner's instruction prompt is written in English, so refining French
             // dictation would produce English-flavoured edits to text nobody asked it to

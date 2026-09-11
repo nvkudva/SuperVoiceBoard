@@ -723,6 +723,8 @@ New dictionary:
     <!-- Option for setting navbar to follow keyboard color -->
     <string name="theme_navbar">Color navigation bar</string>
     <!-- Theme name for light theme -->
+    <!-- Theme name for WaveKey's own theme -->
+    <string name="theme_name_wavekey" tools:keep="@string/theme_name_wavekey">WaveKey</string>
     <string name="theme_name_light" tools:keep="@string/theme_name_light">Light</string>
     <!-- Theme name for holo white theme -->
     <string name="theme_name_holo_white" tools:keep="@string/theme_name_holo_white">Holo White</string>

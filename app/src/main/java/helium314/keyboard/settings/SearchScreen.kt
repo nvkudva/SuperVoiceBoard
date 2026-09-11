@@ -54,6 +54,7 @@ import helium314.keyboard.latin.utils.CloseIcon
 import helium314.keyboard.latin.utils.SearchIcon
 import helium314.keyboard.settings.preferences.PreferenceCategory
 import helium314.keyboard.settings.preferences.PreferenceGroup
+import helium314.keyboard.settings.preferences.PreferenceGroupContent
 
 /** One card's worth of a settings screen: the entries between two category headers. */
 private class Section(@StringRes val title: Int?, val keys: List<Any?>)
@@ -80,6 +81,36 @@ private fun sectionsOf(settings: List<Any?>): List<Section> {
     return sections
 }
 
+/**
+ * The rows a settings list turns into: category headers where the list carries a
+ * string resource, a card of preferences between them. Used by the screens that
+ * are only a list, and by the main screen, which now shows some of those lists
+ * inline instead of behind a door.
+ */
+@Composable
+fun SettingsSections(settings: List<Any?>, inOwnGroup: Boolean = true) {
+    sectionsOf(settings).forEach { section ->
+        // screens null out prefs that don't apply, so a whole
+        // section can be hidden: drop its header too, rather than
+        // leaving one standing over an empty card
+        if (section.keys.any { it != null }) {
+            if (section.title != null)
+                PreferenceCategory(stringResource(section.title))
+            val rows: @Composable ColumnScope.() -> Unit = {
+                section.keys.forEach {
+                    // this only animates appearing prefs
+                    // a solution would be using a list(visible to key)
+                    AnimatedVisibility(visible = it != null) {
+                        if (it != null)
+                            SettingsActivity.settingsContainer[it]?.Preference()
+                    }
+                }
+            }
+            if (inOwnGroup) PreferenceGroup(content = rows) else PreferenceGroupContent(content = rows)
+        }
+    }
+}
+
 @Composable
 fun SearchSettingsScreen(
     onClickBack: () -> Unit,
@@ -104,25 +135,7 @@ fun SearchSettingsScreen(
                             .then(Modifier.padding(innerPadding))
                             .padding(bottom = 24.dp)
                     ) {
-                        sectionsOf(settings).forEach { section ->
-                            // screens null out prefs that don't apply, so a whole
-                            // section can be hidden: drop its header too, rather than
-                            // leaving one standing over an empty card
-                            if (section.keys.any { it != null }) {
-                                if (section.title != null)
-                                    PreferenceCategory(stringResource(section.title))
-                                PreferenceGroup {
-                                    section.keys.forEach {
-                                        // this only animates appearing prefs
-                                        // a solution would be using a list(visible to key)
-                                        AnimatedVisibility(visible = it != null) {
-                                            if (it != null)
-                                                SettingsActivity.settingsContainer[it]?.Preference()
-                                        }
-                                    }
-                                }
-                            }
-                        }
+                        SettingsSections(settings)
                     }
                     // A plain Column, not a LazyColumn: the lazy version scrolls
                     // janky here for a while and loads ~50% faster at best.

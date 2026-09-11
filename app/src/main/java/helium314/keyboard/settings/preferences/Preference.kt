@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.LocalTextStyle
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
@@ -63,6 +64,26 @@ fun PreferenceGroup(
     ) {
         Column(Modifier.padding(vertical = 2.dp), content = content)
     }
+}
+
+/**
+ * The contents of a [PreferenceGroup] without its surface, for callers that are
+ * building one group out of several pieces. Two adjacent groups meet at a shared
+ * edge and their radii read as a pinch rather than as two cards; things that
+ * belong to one decision should share one container instead.
+ */
+@Composable
+fun PreferenceGroupContent(content: @Composable ColumnScope.() -> Unit) {
+    Column(Modifier.fillMaxWidth().padding(vertical = 2.dp), content = content)
+}
+
+/** The hairline between two pieces inside a shared [PreferenceGroup]. */
+@Composable
+fun PreferenceGroupDivider() {
+    HorizontalDivider(
+        Modifier.padding(start = 16.dp, end = 16.dp, top = 4.dp, bottom = 4.dp),
+        color = MaterialTheme.colorScheme.outlineVariant,
+    )
 }
 
 @Composable

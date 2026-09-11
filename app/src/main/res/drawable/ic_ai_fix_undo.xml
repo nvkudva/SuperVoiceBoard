@@ -1,0 +1,20 @@
+<!--
+    WaveKey: the AI fix key once a fix has landed — the same hook-up-left arrow
+    the undo toolbar key uses, with the fix key's sparkle on it, so the key says
+    "undo the thing I just did" rather than turning into a general undo.
+
+    Arrow: Fluent UI System Icons (Regular 24) - Copyright (c) Microsoft
+    Corporation, MIT License (ic_fluent_arrow_hook_up_left_24_regular), scaled
+    and shifted to leave room for the sparkle.
+    SPDX-License-Identifier: MIT
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp" android:height="24dp"
+    android:viewportWidth="24" android:viewportHeight="24">
+    <group android:scaleX="0.86" android:scaleY="0.86" android:translateX="-1.2" android:translateY="1.4">
+        <path
+            android:pathData="M7 19.25C7 19.664 7.336 20 7.75 20H14c1.979 0 3.504-0.823 4.52-2.074 1-1.233 1.48-2.846 1.48-4.426s-0.48-3.193-1.48-4.426C17.504 7.823 15.979 7 14 7H7.56l2.47-2.47c0.293-0.293 0.293-0.767 0-1.06-0.293-0.293-0.767-0.293-1.06 0L5.22 7.22c-0.293 0.293-0.293 0.767 0 1.06l3.75 3.75c0.293 0.293 0.767 0.293 1.06 0 0.293-0.293 0.293-0.767 0-1.06L7.56 8.5H14c1.521 0 2.62 0.615 3.355 1.52 0.75 0.923 1.145 2.185 1.145 3.48s-0.396 2.557-1.145 3.48C16.621 17.886 15.521 18.5 14 18.5H7.75C7.336 18.5 7 18.836 7 19.25z"
+            android:fillColor="#FFF"/>
+    </group>
+    <path android:fillColor="#FFF" android:pathData="M18.60,2.60 C18.60,5.13 19.87,6.40 22.40,6.40 C19.87,6.40 18.60,7.67 18.60,10.20 C18.60,7.67 17.33,6.40 14.80,6.40 C17.33,6.40 18.60,5.13 18.60,2.60 Z"/>
+</vector>

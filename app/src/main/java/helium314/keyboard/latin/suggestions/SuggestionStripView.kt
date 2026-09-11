@@ -60,6 +60,7 @@ import helium314.keyboard.latin.utils.getPinnedToolbarKeys
 import helium314.keyboard.latin.utils.prefs
 import helium314.keyboard.latin.utils.removeFirst
 import helium314.keyboard.latin.utils.removePinnedKey
+import helium314.keyboard.latin.utils.setToolbarButtonsActivatedState
 import helium314.keyboard.latin.utils.setToolbarButtonsActivatedStateOnPrefChange
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.math.abs
@@ -130,6 +131,14 @@ class SuggestionStripView(context: Context, attrs: AttributeSet?, defStyle: Int)
     // expanded, and this one must survive every state of the strip (W3.2).
     private val micKey = findViewById<ImageButton>(R.id.supervoiceboard_mic_key)
 
+    /**
+     * WaveKey: AI fix in a fixed slot, like the mic. It used to ride the
+     * scrolling toolbar, which hid it whenever the toolbar was shut (pinned keys
+     * only) or scrolled past (toolbar open) — the fork's own key, one gesture
+     * away at best. [AiFixKey] finds it by tag, the same as any toolbar key.
+     */
+    private val aiFixKey = findViewById<ImageButton>(R.id.wavekey_ai_fix_key)
+
     /** Set by LatinIME; null until the IME has built its voice controller. */
     var onMicClick: (() -> Unit)? = null
 
@@ -156,13 +165,27 @@ class SuggestionStripView(context: Context, attrs: AttributeSet?, defStyle: Int)
     private val enabledToolKeyBackground = GradientDrawable()
     private var direction = 1 // 1 if LTR, -1 if RTL
 
+    // WaveKey: the toolbar row does not scroll. Its keys share the width with a
+    // weight, so they land on fixed positions and the gaps stay even however
+    // many keys are enabled; the tile behind each one is a fixed square, so a
+    // wider key grows its gap rather than its container.
     private val toolbarKeyLayoutParams = LinearLayout.LayoutParams(
-        resources.getDimensionPixelSize(R.dimen.config_suggestions_strip_edge_key_width),
+        0,
         LinearLayout.LayoutParams.MATCH_PARENT
     )
 
     init {
         val colors = Settings.getValues().mColors
+
+        // WaveKey: the spectrum rail runs along the top edge, so everything else
+        // starts below it. The keys keep an even margin inside the box that is
+        // left, which is why the box stays square and the strip grew instead.
+        setPadding(
+            paddingLeft,
+            resources.getDimensionPixelSize(R.dimen.config_toolbar_rail_gap),
+            paddingRight,
+            paddingBottom,
+        )
 
         // expand key
         // weird way of setting size (default is config_suggestions_strip_edge_key_width)
@@ -170,18 +193,28 @@ class SuggestionStripView(context: Context, attrs: AttributeSet?, defStyle: Int)
         val toolbarHeight = min(toolbarExpandKey.layoutParams.height, resources.getDimension(R.dimen.config_suggestions_strip_height).toInt())
         toolbarExpandKey.layoutParams.height = toolbarHeight
         toolbarExpandKey.layoutParams.width = toolbarHeight // we want it square
+        // WaveKey: same container as the keys it opens.
+        toolbarExpandKey.setBackgroundResource(R.drawable.toolbar_key_background)
         colors.setBackground(toolbarExpandKey, ColorType.STRIP_BACKGROUND) // necessary because background is re-used for defaultToolbarBackground
         colors.setColor(toolbarExpandKey, ColorType.TOOL_BAR_EXPAND_KEY)
         colors.setColor(toolbarExpandKey.background, ColorType.TOOL_BAR_EXPAND_KEY_BACKGROUND)
 
+        aiFixKey.tag = ToolbarKey.AI_FIX
+        aiFixKey.scaleType = android.widget.ImageView.ScaleType.CENTER
+        aiFixKey.setImageDrawable(KeyboardIconsSet.instance.getNewDrawable(ToolbarKey.AI_FIX.name, context))
+        setupKey(aiFixKey, colors)
+        // setupKey stretches scrolling toolbar keys; this one holds a fixed slot.
+        (aiFixKey.layoutParams as LinearLayout.LayoutParams).weight = 0f
+
         // WaveKey: mic key styling, matching the toolbar keys around it
         micKey.scaleType = android.widget.ImageView.ScaleType.CENTER
         micKey.setImageDrawable(KeyboardIconsSet.instance.getNewDrawable(ToolbarKey.VOICE.name, context))
-        // WaveKey: the mic is the one saturated thing on the strip — a
-        // spectrum pill with a dark glyph, so the way in to dictation is legible
+        // WaveKey: the mic is the one saturated thing on the strip — the
+        // spectrum fill with a dark glyph, so the way in to dictation is legible
         // at a glance and in the corner of the eye. It keeps the strip's own
-        // colours out of it deliberately: this is the brand mark, not a key.
-        micKey.setBackgroundResource(R.drawable.spectrum_pill)
+        // colours out of it deliberately: this is the brand mark, not a key. The
+        // shape is the toolbar's rounded square, so it still sits in the row.
+        micKey.setBackgroundResource(R.drawable.spectrum_tile)
         micKey.setColorFilter(SPECTRUM_GLYPH)
         micKey.setOnClickListener { onMicClick?.invoke() }
         setUpMicHold()
@@ -342,6 +375,12 @@ class SuggestionStripView(context: Context, attrs: AttributeSet?, defStyle: Int)
         setToolbarButtonsActivatedStateOnPrefChange(toolbar, key)
         if (key == Settings.PREF_ALWAYS_INCOGNITO_MODE)
             GlobalScope.launch { delay(10); withContext(Dispatchers.Main) { updateKeys() } }
+    }
+
+    /** WaveKey: for the toggles whose state is not a preference, such as resize mode. */
+    fun refreshToolbarActivatedState() {
+        setToolbarButtonsActivatedState(pinnedKeys)
+        setToolbarButtonsActivatedState(toolbar)
     }
 
     override fun onVisibilityChanged(view: View, visibility: Int) {
@@ -595,7 +634,7 @@ class SuggestionStripView(context: Context, attrs: AttributeSet?, defStyle: Int)
     }
 
     /**
-     * WaveKey: a spectrum hairline along the bottom of the strip, dim
+     * WaveKey: a spectrum hairline along the top of the strip, dim
      * while idle. It is the same object the dictation meter moves, so the strip
      * gains a live state without gaining a widget.
      */
@@ -613,13 +652,18 @@ class SuggestionStripView(context: Context, attrs: AttributeSet?, defStyle: Int)
         }
         railPaint.alpha = 87 // idle: present, not shouting
         val h = RAIL_DP * resources.displayMetrics.density
-        canvas.drawRect(0f, height - h, width.toFloat(), height.toFloat(), railPaint)
+        canvas.drawRect(0f, 0f, width.toFloat(), h, railPaint)
     }
 
     fun updateVoiceKey() {
-        // WaveKey: the strip's own mic is the only mic — VOICE is not a
-        // toolbar key here — and it follows the voice-input-key setting (W3.2).
-        micKey.isVisible = Settings.getValues().mShowsVoiceInputKey
+        // WaveKey: the strip's own mic is the only mic — VOICE is not a toolbar
+        // key here — and it is there in every field but one. It used to follow
+        // the editor's voice-input flag (W3.2), which also turns the mic off for
+        // email fields and whenever the *system* recognizer shortcut is not
+        // ready; this fork dictates on device, so neither says anything about
+        // this mic. A password field does: dictating a password speaks it, and
+        // with the cloud engine selected it leaves the phone as well.
+        micKey.isVisible = !Settings.getValues().mInputAttributes.mIsPasswordField
     }
 
     private fun updateKeys() {
@@ -661,7 +705,11 @@ class SuggestionStripView(context: Context, attrs: AttributeSet?, defStyle: Int)
         view.setOnLongClickListener(this)
         (view.layoutParams as LinearLayout.LayoutParams).weight = 1f
         colors.setColor(view, ColorType.TOOL_BAR_KEY)
-        colors.setBackground(view, ColorType.STRIP_BACKGROUND)
+        // WaveKey: a rounded square behind every toolbar key, the same container
+        // the settings editor draws, tinted with the functional-key colour so it
+        // follows the theme like the keys below it.
+        view.setBackgroundResource(R.drawable.toolbar_key_background)
+        colors.setBackground(view, ColorType.FUNCTIONAL_KEY_BACKGROUND)
     }
 
     companion object {

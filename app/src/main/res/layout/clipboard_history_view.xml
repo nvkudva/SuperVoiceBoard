@@ -17,14 +17,32 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
-        <TextView
+        <!-- WaveKey: the one screen guaranteed to be seen before a clip exists,
+             so it is where the retention window and the pin get named. -->
+        <LinearLayout
             android:id="@+id/clipboard_empty_view"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:visibility="invisible"
-            android:text="¯\\_(ツ)_/¯"
-            tools:ignore="HardcodedText" />
+            android:orientation="vertical"
+            android:gravity="center"
+            android:paddingHorizontal="32dp"
+            android:visibility="invisible">
+            <TextView
+                android:id="@+id/clipboard_empty_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="15sp"
+                android:text="@string/wk_clip_empty_title" />
+            <TextView
+                android:id="@+id/clipboard_empty_body"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:gravity="center"
+                android:textSize="12sp"
+                android:text="@string/wk_clip_empty_body" />
+        </LinearLayout>
 
         <helium314.keyboard.keyboard.clipboard.ClipboardHistoryRecyclerView
             android:id="@+id/clipboard_list"

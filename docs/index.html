@@ -1,0 +1,773 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>WaveKey — your voice never leaves the phone</title>
+<meta name="description" content="An Android keyboard that transcribes, cleans up and rewrites your speech with two AI models running entirely on the device. No account, no API key, no network.">
+<meta property="og:title" content="WaveKey — your voice never leaves the phone">
+<meta property="og:description" content="On-device dictation with Parakeet TDT 0.6B and Qwen 3 0.6B. Dictate and edit at the same time. Nothing is uploaded, ever.">
+<meta property="og:type" content="website">
+<meta name="theme-color" content="#0A0D22">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' x2='1'%3E%3Cstop offset='0' stop-color='%23FB7185'/%3E%3Cstop offset='.5' stop-color='%23A855F7'/%3E%3Cstop offset='1' stop-color='%2322D3EE'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='32' height='32' rx='9' fill='%230A0D22'/%3E%3Cpath d='M5 16c2.5 0 2.5-7 5-7s2.5 14 5 14 2.5-11 5-11 2.2 4 2.6 4H27' fill='none' stroke='url(%23g)' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#0A0D22;
+  --ink-2:#0E1230;
+  --ink-3:#141A3D;
+  --line:rgba(168,85,247,.16);
+  --line-2:rgba(255,255,255,.07);
+  --text:#EDEAFB;
+  --muted:#9C9CC4;
+  --rose:#FB7185;
+  --violet:#A855F7;
+  --cyan:#22D3EE;
+  --spectrum:linear-gradient(90deg,#FB7185 0%,#A855F7 52%,#22D3EE 100%);
+  --radius:18px;
+  --max:1120px;
+  --ease:cubic-bezier(.22,.61,.36,1);
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html{scroll-behavior:smooth}
+body{
+  margin:0;background:var(--ink);color:var(--text);
+  font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+  font-size:17px;line-height:1.65;-webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+}
+h1,h2,h3{line-height:1.08;letter-spacing:-.03em;margin:0}
+p{margin:0}
+a{color:inherit}
+img{max-width:100%}
+code,kbd{font-family:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.9em}
+
+/* ---------- ambient background ---------- */
+.aurora{position:fixed;inset:0;z-index:-2;overflow:hidden;pointer-events:none}
+.aurora i{
+  position:absolute;display:block;border-radius:50%;filter:blur(90px);opacity:.30;
+  animation:drift 26s var(--ease) infinite alternate;
+}
+.aurora i:nth-child(1){width:52vw;height:52vw;left:-12vw;top:-14vw;background:#A855F7}
+.aurora i:nth-child(2){width:44vw;height:44vw;right:-10vw;top:6vw;background:#22D3EE;animation-delay:-8s}
+.aurora i:nth-child(3){width:40vw;height:40vw;left:22vw;top:52vw;background:#FB7185;animation-delay:-15s;opacity:.2}
+@keyframes drift{
+  from{transform:translate3d(0,0,0) scale(1)}
+  to{transform:translate3d(6vw,-5vw,0) scale(1.22)}
+}
+.grid-bg{
+  position:fixed;inset:0;z-index:-1;pointer-events:none;
+  background-image:linear-gradient(var(--line-2) 1px,transparent 1px),linear-gradient(90deg,var(--line-2) 1px,transparent 1px);
+  background-size:64px 64px;
+  mask-image:radial-gradient(ellipse 90% 60% at 50% 0%,#000 20%,transparent 75%);
+  -webkit-mask-image:radial-gradient(ellipse 90% 60% at 50% 0%,#000 20%,transparent 75%);
+  opacity:.7;
+}
+
+/* ---------- shell ---------- */
+.wrap{width:100%;max-width:var(--max);margin-inline:auto;padding-inline:24px}
+section{position:relative;padding:clamp(72px,11vw,140px) 0}
+.eyebrow{
+  display:inline-flex;align-items:center;gap:9px;font-size:12.5px;font-weight:600;
+  letter-spacing:.14em;text-transform:uppercase;color:var(--muted);
+  border:1px solid var(--line);border-radius:100px;padding:7px 15px;background:rgba(168,85,247,.06);
+}
+.eyebrow::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--spectrum)}
+.lede{color:var(--muted);font-size:clamp(17px,2vw,20px);max-width:60ch}
+.spectrum-text{background:var(--spectrum);-webkit-background-clip:text;background-clip:text;color:transparent}
+
+/* ---------- nav ---------- */
+header{position:sticky;top:0;z-index:50;backdrop-filter:blur(14px);background:rgba(10,13,34,.72);border-bottom:1px solid var(--line-2)}
+nav{display:flex;align-items:center;gap:14px;height:66px}
+.brand{display:flex;align-items:center;gap:11px;font-weight:800;letter-spacing:-.02em;font-size:18px;text-decoration:none}
+.brand svg{width:28px;height:28px;flex:none}
+nav .links{display:flex;gap:26px;margin-left:auto;font-size:15px;color:var(--muted)}
+nav .links a{text-decoration:none;transition:color .2s}
+nav .links a:hover{color:var(--text)}
+@media(max-width:760px){nav .links{display:none}}
+
+/* ---------- buttons ---------- */
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:10px;
+  padding:15px 26px;border-radius:14px;font-weight:650;font-size:16px;
+  text-decoration:none;border:1px solid transparent;cursor:pointer;
+  transition:transform .18s var(--ease),box-shadow .3s,background .3s,border-color .3s;
+}
+.btn-primary{
+  color:#0A0D22;background:var(--spectrum);background-size:200% 100%;
+  box-shadow:0 10px 34px -12px rgba(168,85,247,.85);
+  animation:sheen 7s linear infinite;
+}
+@keyframes sheen{to{background-position:200% 0}}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 18px 46px -14px rgba(168,85,247,1)}
+.btn-ghost{border-color:var(--line);color:var(--text);background:rgba(255,255,255,.02)}
+.btn-ghost:hover{border-color:rgba(168,85,247,.45);background:rgba(168,85,247,.08);transform:translateY(-2px)}
+.btn small{display:block;font-size:11.5px;font-weight:500;opacity:.72;letter-spacing:.04em}
+
+/* ---------- hero ---------- */
+.hero{padding-top:clamp(56px,8vw,104px);padding-bottom:clamp(40px,6vw,72px)}
+.hero h1{font-size:clamp(42px,7.4vw,84px);font-weight:900;margin:26px 0 0}
+.hero h1 .line{display:block;white-space:nowrap}
+.hero .lede{margin-top:26px}
+.cta{display:flex;flex-wrap:wrap;gap:14px;margin-top:38px;align-items:center}
+.hero-note{font-size:13.5px;color:var(--muted);margin-top:20px;display:flex;gap:18px;flex-wrap:wrap}
+.hero-note span{display:inline-flex;align-items:center;gap:7px}
+.dot{width:6px;height:6px;border-radius:50%;background:var(--cyan);box-shadow:0 0 10px var(--cyan)}
+
+/* ---------- phone mock ---------- */
+.stage{display:grid;grid-template-columns:1.05fr .95fr;gap:56px;align-items:center}
+@media(max-width:900px){.stage{grid-template-columns:1fr;gap:44px}}
+.phone{
+  /* Proportioned to a current Pixel Pro: 1280x2856 at ~20:9, with the thin even
+     bezel and the deep corner radius that go with it. */
+  position:relative;width:min(322px,74vw);margin-inline:auto;
+  border-radius:44px;padding:8px;background:linear-gradient(160deg,#2a3060,#0c0f26);
+  box-shadow:0 50px 120px -40px rgba(168,85,247,.6),0 0 0 1px rgba(255,255,255,.09) inset;
+  animation:float 8s var(--ease) infinite alternate;
+}
+/* the polished rail around the glass */
+.phone::after{
+  content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;
+  background:linear-gradient(150deg,rgba(255,255,255,.35),transparent 28%,transparent 72%,rgba(255,255,255,.18));
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
+  -webkit-mask-composite:xor;mask-composite:exclude;padding:1.5px;opacity:.5;
+}
+/* hole-punch camera */
+.phone .cam{
+  position:absolute;top:20px;left:50%;transform:translateX(-50%);
+  width:9px;height:9px;border-radius:50%;background:#04060d;z-index:3;
+  box-shadow:0 0 0 1px rgba(255,255,255,.08);
+}
+@keyframes float{from{transform:translateY(0) rotate(-.5deg)}to{transform:translateY(-16px) rotate(.5deg)}}
+.screen{
+  border-radius:37px;background:#05070f;overflow:hidden;display:flex;flex-direction:column;
+  aspect-ratio:1280/2856;
+}
+.screen .app{flex:1;min-height:0;display:flex;flex-direction:column;font-size:13.5px;line-height:1.45;overflow:hidden}
+
+/* messages-app chrome */
+.app-bar{
+  display:flex;align-items:center;gap:9px;padding:34px 14px 10px;flex:none;
+  border-bottom:1px solid rgba(255,255,255,.05);background:rgba(255,255,255,.02);
+}
+.app-bar .chev{color:#8B8BB5;font-size:16px;line-height:1}
+.avatar{
+  width:26px;height:26px;border-radius:50%;flex:none;display:grid;place-items:center;
+  background:var(--spectrum);color:#0A0D22;font-weight:800;font-size:11.5px;
+}
+.app-bar .who{font-weight:650;font-size:13.5px;letter-spacing:-.01em}
+.app-bar .who small{display:block;font-weight:400;font-size:10.5px;color:#7DDCA4;letter-spacing:.02em}
+.app-bar .dots{margin-left:auto;color:#8B8BB5;letter-spacing:2px;font-size:13px}
+
+.thread{flex:1;min-height:0;padding:14px 12px 10px;display:flex;flex-direction:column;gap:7px;justify-content:flex-end}
+.bubble{max-width:78%;padding:8px 12px;border-radius:16px;word-break:break-word}
+.bubble.them{align-self:flex-start;background:#1a2049;border-bottom-left-radius:6px;color:#DAD8F0}
+.bubble.me{
+  align-self:flex-end;border-bottom-right-radius:6px;color:#fff;
+  background:linear-gradient(135deg,#8B5CF6,#7C3AED);
+}
+.stamp{font-size:10px;color:#6F6F9B;text-align:center;margin-bottom:2px}
+
+/* the composer: where the dictation lands */
+.composer{
+  flex:none;display:flex;align-items:flex-end;gap:8px;padding:8px 10px 10px;
+  border-top:1px solid rgba(255,255,255,.05);
+}
+.field{
+  flex:1;min-height:34px;border-radius:18px;background:#11163a;border:1px solid rgba(255,255,255,.07);
+  padding:8px 13px;display:flex;align-items:center;
+}
+.send{
+  flex:none;width:32px;height:32px;border-radius:50%;display:grid;place-items:center;
+  background:var(--spectrum);color:#0A0D22;font-size:14px;font-weight:800;
+  opacity:.35;transition:opacity .3s var(--ease),transform .3s var(--ease);
+}
+.send.on{opacity:1;transform:scale(1.05)}
+.typed{width:100%;white-space:pre-wrap;word-break:break-word;color:#EDEAFB;min-height:1.4em}
+.typed:empty::before{content:"Message";color:#6F6F9B}
+.typed .bad{color:#FCA5A5;text-decoration:underline wavy rgba(251,113,133,.55);text-underline-offset:4px}
+.typed .good{color:#A7F3D0}
+.caret{display:inline-block;width:2px;height:1.05em;vertical-align:-3px;background:var(--violet);animation:blink 1.05s steps(1) infinite}
+@keyframes blink{50%{opacity:0}}
+
+/* keyboard mock */
+.kb{
+  background:#0d1230;padding:9px 7px 16px;border-top:1px solid rgba(255,255,255,.06);
+  flex:none;
+}
+/* The rail the real strip draws along its top edge: full width and static
+   while you type, and a centred level meter once the mic is open. */
+.rail{height:3px;border-radius:3px;background:var(--spectrum);width:100%;margin:0 auto 9px;
+  transition:width .12s linear,opacity .3s;opacity:.55}
+.rail.live{opacity:1}
+/* One row, two faces. The real keyboard swaps the suggestion strip out for the
+   voice bar in place — it does not stack a second row underneath. */
+.swap{position:relative;height:32px;margin-bottom:9px}
+.swap > *{
+  position:absolute;inset:0;display:flex;align-items:center;gap:6px;
+  transition:opacity .22s var(--ease),transform .28s var(--ease);
+}
+.swap > *[hidden]{display:flex!important;opacity:0;pointer-events:none}
+.strip[hidden]{transform:translateY(-6px)}
+.status[hidden]{transform:translateY(6px)}
+.key{
+  flex:1;height:32px;border-radius:9px;background:#171d45;display:grid;place-items:center;
+  color:#B9B7DE;font-size:14px;
+}
+.key.tile{background:var(--spectrum);color:#0A0D22;font-weight:700;flex:none;width:32px;position:relative}
+.key.tile.working::after{
+  content:"";position:absolute;inset:-3px;border-radius:12px;padding:2px;
+  background:conic-gradient(from var(--a,0deg),#FB7185,#A855F7,#22D3EE,#FB7185);
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
+  -webkit-mask-composite:xor;mask-composite:exclude;
+  animation:spin 1s linear infinite;
+}
+@keyframes spin{to{--a:360deg}}
+@property --a{syntax:'<angle>';initial-value:0deg;inherits:false}
+.rows{display:grid;gap:6px}
+.row{display:flex;gap:5px;justify-content:center}
+.row b{
+  flex:1;height:40px;border-radius:8px;background:#171d45;display:grid;place-items:center;
+  font-weight:500;font-size:14px;color:#CFCDEB;
+}
+.row b.w{flex:2.4}
+.row b.accent{background:linear-gradient(180deg,#8B5CF6,#7C3AED);color:#fff}
+.status{justify-content:center;font-size:14px;color:#CFCDEB}
+.status span{flex:1;text-align:center}
+.status .x{flex:none;width:30px;height:30px;border-radius:9px;background:var(--spectrum);display:grid;place-items:center;color:#0A0D22;font-weight:800;font-size:14px;margin-left:auto}
+.status .back{flex:none;width:30px;height:30px;border-radius:9px;background:#171d45;display:grid;place-items:center;color:#B9B7DE;font-size:14px}
+
+/* ---------- feature cards ---------- */
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:18px;margin-top:52px}
+.card{
+  position:relative;border:1px solid var(--line-2);border-radius:var(--radius);
+  background:linear-gradient(180deg,rgba(255,255,255,.035),rgba(255,255,255,.012));
+  padding:28px;overflow:hidden;transition:transform .35s var(--ease),border-color .35s,box-shadow .35s;
+}
+.card::before{
+  content:"";position:absolute;inset:0;border-radius:inherit;padding:1px;opacity:0;transition:opacity .35s;
+  background:var(--spectrum);
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
+  -webkit-mask-composite:xor;mask-composite:exclude;
+}
+.card:hover{transform:translateY(-5px);box-shadow:0 26px 60px -34px rgba(168,85,247,.9)}
+.card:hover::before{opacity:.75}
+.card .ic{width:42px;height:42px;border-radius:12px;display:grid;place-items:center;background:rgba(168,85,247,.14);border:1px solid var(--line);margin-bottom:18px}
+.card h3{font-size:20px;margin-bottom:9px;letter-spacing:-.02em}
+.card p{color:var(--muted);font-size:15.5px}
+.card.wide{grid-column:span 2}
+@media(max-width:900px){.card.wide{grid-column:span 1}}
+
+/* ---------- models ---------- */
+.models{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:52px}
+@media(max-width:820px){.models{grid-template-columns:1fr}}
+.model{
+  border:1px solid var(--line-2);border-radius:var(--radius);padding:30px;
+  background:radial-gradient(120% 100% at 0% 0%,rgba(168,85,247,.14),transparent 62%);
+}
+.model.cy{background:radial-gradient(120% 100% at 100% 0%,rgba(34,211,238,.14),transparent 62%)}
+.model .tag{font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);font-weight:650}
+.model h3{font-size:27px;margin:12px 0 4px}
+.model .sub{color:var(--muted);font-size:15px}
+.spec{list-style:none;padding:0;margin:24px 0 0;display:grid;gap:11px;font-size:14.5px}
+.spec li{display:flex;justify-content:space-between;gap:16px;padding-bottom:11px;border-bottom:1px dashed var(--line-2)}
+.spec li:last-child{border-bottom:0;padding-bottom:0}
+.spec span:first-child{color:var(--muted)}
+.spec span:last-child{font-weight:600}
+
+/* ---------- privacy ---------- */
+.procs{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:52px}
+@media(max-width:820px){.procs{grid-template-columns:1fr}}
+.proc{border:1px solid var(--line-2);border-radius:var(--radius);padding:26px;background:rgba(255,255,255,.02);text-align:center}
+.proc h4{margin:0 0 6px;font-size:17px;letter-spacing:-.01em}
+.proc p{font-size:14px;color:var(--muted)}
+.proc .badge{display:inline-block;margin-top:16px;font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;font-weight:700;padding:5px 12px;border-radius:100px}
+.no-net{background:rgba(251,113,133,.14);color:#FDA4AF;border:1px solid rgba(251,113,133,.3)}
+.net{background:rgba(34,211,238,.12);color:#67E8F9;border:1px solid rgba(34,211,238,.3)}
+.proof{margin-top:26px;border:1px solid var(--line-2);border-radius:14px;padding:18px 20px;background:#070a18;font-size:14px;color:var(--muted);overflow-x:auto}
+.proof code{color:#C4B5FD}
+
+/* ---------- steps ---------- */
+.steps{counter-reset:s;display:grid;gap:14px;margin-top:48px}
+.step{display:flex;gap:20px;align-items:flex-start;border:1px solid var(--line-2);border-radius:var(--radius);padding:24px 26px;background:rgba(255,255,255,.02)}
+.step::before{
+  counter-increment:s;content:counter(s);flex:none;width:36px;height:36px;border-radius:11px;
+  display:grid;place-items:center;font-weight:800;font-size:15px;color:#0A0D22;background:var(--spectrum);
+}
+.step h4{margin:0 0 5px;font-size:17.5px}
+.step p{color:var(--muted);font-size:15px}
+
+/* ---------- download ---------- */
+.download{
+  border:1px solid var(--line);border-radius:26px;padding:clamp(36px,6vw,66px);text-align:center;
+  background:radial-gradient(120% 130% at 50% 0%,rgba(168,85,247,.2),rgba(10,13,34,0) 62%),rgba(255,255,255,.02);
+}
+.download h2{font-size:clamp(32px,5vw,54px);font-weight:900}
+.download .lede{margin:20px auto 0}
+.pill{display:inline-flex;gap:9px;align-items:center;font-size:13px;color:var(--muted);border:1px solid var(--line-2);border-radius:100px;padding:7px 15px;margin-top:28px}
+
+/* ---------- footer ---------- */
+footer{border-top:1px solid var(--line-2);padding:44px 0;color:var(--muted);font-size:14px}
+footer .row{display:flex;flex-wrap:wrap;gap:18px;align-items:center;justify-content:space-between}
+footer a{text-decoration:none;color:var(--muted);transition:color .2s}
+footer a:hover{color:var(--text)}
+
+/* ---------- reveal ---------- */
+.rv{opacity:0;transform:translateY(22px);transition:opacity .8s var(--ease),transform .8s var(--ease)}
+.rv.in{opacity:1;transform:none}
+@media(prefers-reduced-motion:reduce){
+  *{animation:none!important;transition:none!important}
+  .rv{opacity:1;transform:none}
+}
+</style>
+</head>
+<body>
+
+<div class="aurora"><i></i><i></i><i></i></div>
+<div class="grid-bg"></div>
+
+<header>
+  <div class="wrap">
+    <nav>
+      <a class="brand" href="#top">
+        <svg viewBox="0 0 32 32" aria-hidden="true">
+          <defs><linearGradient id="bg1" x1="0" x2="1"><stop offset="0" stop-color="#FB7185"/><stop offset=".5" stop-color="#A855F7"/><stop offset="1" stop-color="#22D3EE"/></linearGradient></defs>
+          <rect width="32" height="32" rx="9" fill="#11163a"/>
+          <path d="M5 16c2.5 0 2.5-7 5-7s2.5 14 5 14 2.5-11 5-11 2.2 4 2.6 4H27" fill="none" stroke="url(#bg1)" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        WaveKey
+      </a>
+      <div class="links">
+        <a href="#features">Features</a>
+        <a href="#models">Models</a>
+        <a href="#privacy">Privacy</a>
+        <a href="#install">Install</a>
+        <a href="https://github.com/nvkudva/WaveKey">GitHub</a>
+      </div>
+    </nav>
+  </div>
+</header>
+
+<main id="top">
+
+<!-- HERO -->
+<section class="hero">
+  <div class="wrap stage">
+    <div>
+      <span class="eyebrow">On-device · Android keyboard</span>
+      <h1>
+        <span class="line">Speak.</span>
+        <span class="line spectrum-text">It writes.</span>
+        <span class="line">Nothing leaves.</span>
+      </h1>
+      <p class="lede">
+        WaveKey transcribes your voice, cleans it up and rewrites it with two AI models
+        that run <strong>entirely on your phone</strong>. No account. No API key. No server.
+        The keyboard has no network permission at all — and the build fails if anyone adds one.
+      </p>
+      <div class="cta">
+        <a class="btn btn-primary" href="https://github.com/nvkudva/WaveKey/releases/latest" id="download">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M4 21h16"/></svg>
+          <span>Download APK<small>Release coming soon</small></span>
+        </a>
+        <a class="btn btn-ghost" href="https://github.com/nvkudva/WaveKey">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5C5.7.5.5 5.7.5 12c0 5.1 3.3 9.4 7.9 10.9.6.1.8-.2.8-.6v-2c-3.2.7-3.9-1.5-3.9-1.5-.5-1.3-1.3-1.7-1.3-1.7-1-.7.1-.7.1-.7 1.1.1 1.7 1.2 1.7 1.2 1 1.8 2.7 1.2 3.4.9.1-.8.4-1.3.7-1.6-2.6-.3-5.3-1.3-5.3-5.7 0-1.3.4-2.3 1.2-3.1-.1-.3-.5-1.5.1-3.1 0 0 1-.3 3.2 1.2a11 11 0 0 1 5.8 0C17.2 4.2 18.2 4.5 18.2 4.5c.6 1.6.2 2.8.1 3.1.8.8 1.2 1.8 1.2 3.1 0 4.4-2.7 5.4-5.3 5.7.4.4.8 1.1.8 2.2v3.3c0 .4.2.7.8.6 4.6-1.5 7.9-5.8 7.9-10.9C23.5 5.7 18.3.5 12 .5z"/></svg>
+          Source code
+        </a>
+      </div>
+      <div class="hero-note">
+        <span><i class="dot"></i> Android 5.0+</span>
+        <span><i class="dot"></i> English dictation</span>
+        <span><i class="dot"></i> GPL-3.0</span>
+      </div>
+    </div>
+
+    <!-- animated phone -->
+    <div class="phone" aria-hidden="true">
+      <span class="cam"></span>
+      <div class="screen">
+        <div class="app">
+          <div class="app-bar">
+            <span class="chev">‹</span>
+            <span class="avatar">SK</span>
+            <span class="who">Sam<small>online</small></span>
+            <span class="dots">•••</span>
+          </div>
+          <div class="thread">
+            <div class="stamp">Today 6:41 PM</div>
+            <div class="bubble them">still on for 7?</div>
+            <div class="bubble me">yep — table's booked 🙌</div>
+            <div class="bubble them">perfect. you driving or shall I?</div>
+          </div>
+          <div class="composer">
+            <div class="field"><div class="typed" id="typed"></div></div>
+            <div class="send" id="send">↑</div>
+          </div>
+        </div>
+        <div class="kb">
+          <div class="rail" id="rail"></div>
+          <div class="swap">
+          <div class="strip" id="strip">
+            <div class="key back">‹</div>
+            <div class="key">⚙</div>
+            <div class="key">📋</div>
+            <div class="key">↶</div>
+            <div class="key">↷</div>
+            <div class="key">☺</div>
+            <div class="key tile" id="fixkey">✦</div>
+            <div class="key tile">🎙</div>
+          </div>
+          <div class="status" id="status" hidden>
+            <div class="back">‹</div>
+            <span id="statusText">Listening…</span>
+            <div class="x">✕</div>
+          </div>
+          </div>
+          <div class="rows">
+            <div class="row"><b>q</b><b>w</b><b>e</b><b>r</b><b>t</b><b>y</b><b>u</b><b>i</b><b>o</b><b>p</b></div>
+            <div class="row"><b>a</b><b>s</b><b>d</b><b>f</b><b>g</b><b>h</b><b>j</b><b>k</b><b>l</b></div>
+            <div class="row"><b>⇧</b><b>z</b><b>x</b><b>c</b><b>v</b><b>b</b><b>n</b><b>m</b><b>⌫</b></div>
+            <div class="row"><b>?123</b><b>,</b><b>☺</b><b class="w">space</b><b>.</b><b class="accent">↵</b></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section id="features">
+  <div class="wrap">
+    <span class="eyebrow rv">What makes it different</span>
+    <h2 class="rv" style="font-size:clamp(32px,5vw,56px);font-weight:900;margin-top:22px">
+      A keyboard that <span class="spectrum-text">thinks on the device</span>
+    </h2>
+    <p class="lede rv" style="margin-top:20px">
+      Everything below happens between the microphone and the text field. There is no round trip,
+      so there is no round trip to leak.
+    </p>
+
+    <div class="cards">
+      <div class="card wide rv">
+        <div class="ic">
+          <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#C4B5FD" stroke-width="2" stroke-linecap="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><path d="M12 19v3"/></svg>
+        </div>
+        <h3>Dictate and edit at the same time</h3>
+        <p>
+          The microphone stays live while your words land in the field. A pause ends the
+          <em>sentence</em>, not the session — so you can speak, watch it commit, fix a word with
+          your thumb, and keep talking. The mic even opens the instant you press it, buffering
+          audio while the model is still loading, so the first words of a cold start are never lost.
+        </p>
+      </div>
+
+      <div class="card rv">
+        <div class="ic">
+          <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#C4B5FD" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 1.9 4.6L18.5 9.5l-4.6 1.9L12 16l-1.9-4.6L5.5 9.5l4.6-1.9z"/><path d="M19 15l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8z"/></svg>
+        </div>
+        <h3>AI fix, one key away</h3>
+        <p>
+          A deterministic rules pass runs first — spacing, casing, duplicated words, terminal
+          punctuation. Then the LLM takes a turn at the phrasing. A spectrum border runs around
+          the key while it works, and pressing it again undoes the whole thing.
+        </p>
+      </div>
+
+      <div class="card rv">
+        <div class="ic">
+          <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#C4B5FD" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16"/><path d="M4 12h10"/><path d="M4 17h7"/><path d="m16 15 2 2 4-4"/></svg>
+        </div>
+        <h3>Fixing while you type</h3>
+        <p>
+          Finished sentences are quietly rescored against the words the decoder ranked second.
+          When a better word wins, the swap is <em>shown</em> to you — lifted out and settled in
+          its place — rather than slipped past you.
+        </p>
+      </div>
+
+      <div class="card rv">
+        <div class="ic">
+          <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#C4B5FD" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M7 9h10M7 13h6"/></svg>
+        </div>
+        <h3>A clipboard you can scan</h3>
+        <p>
+          Clips are typed — link, image, phone, text — each with a glyph, a host or a file size,
+          and how long it has left. Pinned clips wear the accent so permanence is visible.
+        </p>
+      </div>
+
+      <div class="card rv">
+        <div class="ic">
+          <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#C4B5FD" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg>
+        </div>
+        <h3>Airplane mode changes nothing</h3>
+        <p>
+          After the one-time model download, WaveKey works identically with the radios off.
+          That is the test: if a feature stops working offline, it was never on-device.
+        </p>
+      </div>
+
+      <div class="card rv">
+        <div class="ic">
+          <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#C4B5FD" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 17V7a3 3 0 0 1 3-3h10a3 3 0 0 1 3 3v10a3 3 0 0 1-3 3H7a3 3 0 0 1-3-3z"/><path d="M8 12h8M12 8v8"/></svg>
+        </div>
+        <h3>Built on HeliBoard</h3>
+        <p>
+          Typing, glide, layouts, dictionaries and themes are HeliBoard's, unchanged and
+          battle-tested. WaveKey adds the voice and AI layer on top — and keeps it in its own
+          modules, so it could be mounted in another keyboard entirely.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MODELS -->
+<section id="models">
+  <div class="wrap">
+    <span class="eyebrow rv">Two models, zero servers</span>
+    <h2 class="rv" style="font-size:clamp(32px,5vw,56px);font-weight:900;margin-top:22px">
+      One listens. <span class="spectrum-text">One writes.</span>
+    </h2>
+    <p class="lede rv" style="margin-top:20px">
+      Downloaded once from settings, then never contacted again. Both run on the CPU of the
+      phone in your hand.
+    </p>
+
+    <div class="models">
+      <div class="model rv">
+        <div class="tag">Speech recognition</div>
+        <h3>Parakeet TDT 0.6B</h3>
+        <p class="sub">
+          NVIDIA's transducer, int8-quantised, running under sherpa-onnx. It transcribes each
+          utterance once — when you stop speaking — instead of streaming guesses that rewrite
+          themselves under your eyes.
+        </p>
+        <ul class="spec">
+          <li><span>Runtime</span><span>sherpa-onnx · ONNX int8</span></li>
+          <li><span>Download</span><span>~482 MB · required</span></li>
+          <li><span>Runs in</span><span>the keyboard process</span></li>
+          <li><span>Licence</span><span>CC-BY-4.0</span></li>
+        </ul>
+      </div>
+
+      <div class="model cy rv">
+        <div class="tag">Rewriting</div>
+        <h3>Qwen 3 0.6B</h3>
+        <p class="sub">
+          A mixed-int4 build on LiteRT-LM, isolated in its own <code>:llm</code> process behind an
+          AIDL boundary — so a native out-of-memory takes the refiner down and leaves your
+          keyboard standing.
+        </p>
+        <ul class="spec">
+          <li><span>Runtime</span><span>LiteRT-LM · mixed int4</span></li>
+          <li><span>Download</span><span>~498 MB · optional</span></li>
+          <li><span>Runs in</span><span>a separate process</span></li>
+          <li><span>Licence</span><span>Apache-2.0</span></li>
+        </ul>
+      </div>
+    </div>
+    <p class="lede rv" style="margin-top:28px;font-size:16px">
+      The refiner is optional. Skip it and you still get dictation and the full deterministic
+      cleanup — and when the smart pass cannot run, the keyboard says so plainly instead of
+      pretending it did.
+    </p>
+  </div>
+</section>
+
+<!-- PRIVACY -->
+<section id="privacy">
+  <div class="wrap">
+    <span class="eyebrow rv">Privacy</span>
+    <h2 class="rv" style="font-size:clamp(32px,5vw,56px);font-weight:900;margin-top:22px">
+      Not a policy. <span class="spectrum-text">A process split.</span>
+    </h2>
+    <p class="lede rv" style="margin-top:20px">
+      WaveKey runs in three processes, and only one of them can reach the network. That
+      boundary is asserted by a unit test, so it cannot quietly erode.
+    </p>
+
+    <div class="procs">
+      <div class="proc rv">
+        <h4>keyboard</h4>
+        <p>The IME, audio capture and speech recognition. Everything you say is decoded here.</p>
+        <span class="badge no-net">No network</span>
+      </div>
+      <div class="proc rv">
+        <h4>:llm</h4>
+        <p>Qwen 3 and nothing else. Isolated so a model crash can never take the keyboard with it.</p>
+        <span class="badge no-net">No network</span>
+      </div>
+      <div class="proc rv">
+        <h4>:ui</h4>
+        <p>Settings and the one-time model download. The only place <code>INTERNET</code> lives.</p>
+        <span class="badge net">Internet</span>
+      </div>
+    </div>
+
+    <div class="proof rv">
+      <code>ManifestProcessSplitTest</code> — fails the build if a component holding
+      <code>INTERNET</code> ever moves out of <code>:ui</code>. Audio is never written to disk,
+      never uploaded, and the utterance buffer is cleared when the session ends.
+    </div>
+  </div>
+</section>
+
+<!-- INSTALL -->
+<section id="install">
+  <div class="wrap">
+    <span class="eyebrow rv">Getting started</span>
+    <h2 class="rv" style="font-size:clamp(32px,5vw,56px);font-weight:900;margin-top:22px">Four steps</h2>
+
+    <div class="steps">
+      <div class="step rv"><div><h4>Install the APK</h4><p>Grab the release build, or clone the repo and run <code>./gradlew :app:assembleDebug</code>. ABI splits produce one APK per architecture.</p></div></div>
+      <div class="step rv"><div><h4>Enable WaveKey</h4><p>It appears in Android's keyboard list. Enable it, then switch to it from the input-method picker.</p></div></div>
+      <div class="step rv"><div><h4>Download the speech model</h4><p>Open WaveKey's settings and fetch the Parakeet pack — about 1 GB on disk. The mic key stays inert until it is installed.</p></div></div>
+      <div class="step rv"><div><h4>Press the mic and talk</h4><p>Optionally add the Qwen 3 refiner for the smart rewrite tier. Then turn the radios off and watch nothing change.</p></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- DOWNLOAD -->
+<section>
+  <div class="wrap">
+    <div class="download rv">
+      <h2>Your keyboard should <span class="spectrum-text">work for you</span>,<br>not report on you.</h2>
+      <p class="lede" style="text-align:center">
+        WaveKey is free software under the GPL. Read every line that touches your microphone.
+      </p>
+      <div class="cta" style="justify-content:center">
+        <a class="btn btn-primary" href="https://github.com/nvkudva/WaveKey/releases/latest">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M4 21h16"/></svg>
+          <span>Download APK<small>Release coming soon</small></span>
+        </a>
+        <a class="btn btn-ghost" href="https://github.com/nvkudva/WaveKey">Read the source</a>
+      </div>
+      <div class="pill">⚡ Android 5.0+ · English dictation · ~1 GB of models</div>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <div class="wrap row">
+    <div>WaveKey — GPL-3.0-only. A fork of <a href="https://github.com/Helium314/HeliBoard">HeliBoard</a>.</div>
+    <div style="display:flex;gap:22px">
+      <a href="https://github.com/nvkudva/WaveKey">GitHub</a>
+      <a href="https://github.com/nvkudva/WaveKey/issues">Issues</a>
+      <a href="https://github.com/nvkudva/WaveKey/releases">Releases</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+// ---- scroll reveal ----
+const io = new IntersectionObserver((entries) => {
+  for (const e of entries) if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
+}, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+document.querySelectorAll('.rv').forEach((el, i) => { el.style.transitionDelay = (i % 6) * 60 + 'ms'; io.observe(el); });
+
+// ---- the phone demo ----
+(function () {
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    document.getElementById('typed').innerHTML = '<span class="good">Running late — be there in ten minutes.</span>';
+    document.getElementById('send').classList.add('on');
+    return;
+  }
+  const typed = document.getElementById('typed');
+  const rail = document.getElementById('rail');
+  const strip = document.getElementById('strip');
+  const status = document.getElementById('status');
+  const statusText = document.getElementById('statusText');
+  const fixkey = document.getElementById('fixkey');
+
+  const caret = '<span class="caret"></span>';
+  const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+  // the dictated text, as spoken: messy, the way speech actually is
+  const spoken = 'um so im running late ' ;
+  const spoken2 = 'be there in like ten minutes i think';
+  const fixed = 'Running late — be there in ten minutes.';
+
+  let levelTimer = null;
+  function startRail() {
+    rail.classList.add('live');
+    let t = 0;
+    levelTimer = setInterval(() => {
+      t += 0.35;
+      const v = 22 + Math.abs(Math.sin(t) * Math.sin(t * 0.37)) * 68;
+      rail.style.width = v.toFixed(1) + '%';
+    }, 70);
+  }
+  function stopRail() {
+    clearInterval(levelTimer);
+    rail.classList.remove('live');
+    rail.style.width = '100%';
+  }
+
+  async function type(text, cls) {
+    for (let i = 0; i < text.length; i++) {
+      const head = typed.dataset.plain || '';
+      typed.dataset.plain = head + text[i];
+      typed.innerHTML = (typed.dataset.html || '') +
+        '<span class="' + (cls || '') + '">' + (typed.dataset.tail || '') + text[i] + '</span>' + caret;
+      typed.dataset.tail = (typed.dataset.tail || '') + text[i];
+      await sleep(38 + Math.random() * 45);
+    }
+    typed.dataset.html = (typed.dataset.html || '') + '<span class="' + (cls || '') + '">' + typed.dataset.tail + '</span>';
+    typed.dataset.tail = '';
+  }
+
+  const send = document.getElementById('send');
+
+  function reset() {
+    send.classList.remove('on');
+    typed.innerHTML = caret;
+    typed.dataset.plain = ''; typed.dataset.html = ''; typed.dataset.tail = '';
+  }
+
+  async function loop() {
+    while (true) {
+      reset();
+      await sleep(1100);
+
+      // 1. press the mic — the strip becomes the voice bar
+      strip.hidden = true; status.hidden = false;
+      statusText.textContent = 'Listening…';
+      startRail();
+      send.classList.add('on');
+      await sleep(600);
+
+      // 2. speech lands, sentence by sentence — the mic stays live throughout
+      await type(spoken, 'bad');
+      statusText.textContent = 'Transcribing…';
+      await sleep(420);
+      statusText.textContent = 'Listening…';
+      await type(spoken2, 'bad');
+
+      // 3. stop
+      statusText.textContent = 'Cleaning up…';
+      stopRail();
+      await sleep(1100);
+      status.hidden = true; strip.hidden = false;
+      await sleep(620);
+
+      // 4. AI fix runs — the border spins while it works
+      fixkey.classList.add('working');
+      await sleep(1500);
+      typed.innerHTML = '<span class="good">' + fixed + '</span>' + caret;
+      fixkey.classList.remove('working');
+      send.classList.add('on');
+
+      await sleep(3600);
+    }
+  }
+  loop();
+})();
+</script>
+</body>
+</html>

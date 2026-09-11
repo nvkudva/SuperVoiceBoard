@@ -170,7 +170,35 @@ object RefinementValidator {
         ) {
             out = out.substring(1, out.length - 1).trim()
         }
-        return out
+        return unescapeLiterals(out)
+    }
+
+    /**
+     * A model that has seen enough JSON sometimes writes the two characters
+     * `\` and `n` where it means a line break, and that lands in the user's
+     * text field as visible backslash-n. Turning the escape into the character
+     * it names is always closer to what the speaker asked for than typing the
+     * escape; a real backslash the speaker dictated is left alone, since it
+     * would not be followed by one of these letters.
+     */
+    private fun unescapeLiterals(text: String): String {
+        if (!text.contains('\\')) return text
+        return buildString(text.length) {
+            var i = 0
+            while (i < text.length) {
+                val ch = text[i]
+                val next = text.getOrNull(i + 1)
+                if (ch == '\\' && next != null) {
+                    when (next) {
+                        'n' -> { append('\n'); i += 2; continue }
+                        't' -> { append('\t'); i += 2; continue }
+                        'r' -> { i += 2; continue }
+                    }
+                }
+                append(ch)
+                i++
+            }
+        }
     }
 
     /**

@@ -98,6 +98,22 @@ class RefinementValidatorTest {
     }
 
     @Test
+    fun `a literal backslash-n becomes a line break`() {
+        assertEquals(
+            "First line\nsecond line",
+            RefinementValidator.sanitize("First line\\nsecond line"),
+        )
+    }
+
+    @Test
+    fun `a backslash the speaker dictated survives`() {
+        assertEquals(
+            "use C:\\Users for the path",
+            RefinementValidator.sanitize("use C:\\Users for the path"),
+        )
+    }
+
+    @Test
     fun `a mangled spoken phone number is rejected`() {
         assertEquals(
             RejectReason.DROPPED_ENTITY,

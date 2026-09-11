@@ -40,6 +40,18 @@ class LlmRefinerClient(context: Context) : RemoteRefiner {
     /** Serializes binding; the service serializes the calls themselves. */
     private val connectLock = Mutex()
 
+    /**
+     * One transaction at a time, on this side of the boundary.
+     *
+     * The service already serializes on its engine lock, but callers that queue
+     * there do so holding a binder thread each, out of a pool of sixteen shared
+     * with everything else — and a blocking transaction cannot be abandoned, so
+     * every waiting caller also parks an [Dispatchers.IO] thread for the whole
+     * of the generate ahead of it. Waiting for this mutex is cancellable;
+     * waiting in the binder pool is not.
+     */
+    private val callLock = Mutex()
+
     @Volatile
     private var binder: ILlmRefiner? = null
 
@@ -101,15 +113,17 @@ class LlmRefinerClient(context: Context) : RemoteRefiner {
 
     private suspend fun <T> call(block: (ILlmRefiner) -> T): T? {
         val service = connect() ?: return null
-        return withContext(Dispatchers.IO) {
-            try {
-                block(service)
-            } catch (e: RemoteException) {
-                // Includes DeadObjectException: the model process was killed
-                // between binding and answering.
-                Log.w(TAG, "refiner call failed", e)
-                binder = null
-                null
+        return callLock.withLock {
+            withContext(Dispatchers.IO) {
+                try {
+                    block(service)
+                } catch (e: RemoteException) {
+                    // Includes DeadObjectException: the model process was killed
+                    // between binding and answering.
+                    Log.w(TAG, "refiner call failed", e)
+                    binder = null
+                    null
+                }
             }
         }
     }

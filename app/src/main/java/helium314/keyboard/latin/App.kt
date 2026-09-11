@@ -54,6 +54,11 @@ class App : Application(), VoiceRuntimeHost, RefinerModelHost, Configuration.Pro
     override fun onCreate() {
         super.onCreate()
         DebugFlags.init(this)
+        // WaveKey: `:llm` and `:ui` share this Application but none of the
+        // keyboard. Running the bootstrap there would put emoji tables, subtypes
+        // and layouts in front of the refiner's first answer, and would run the
+        // one-shot prefs/file migrations below concurrently in three processes.
+        if (!isMainProcess()) return
         FoldableUtils.init(this)
         Settings.init(this)
         SubtypeSettings.init(this)
@@ -78,6 +83,16 @@ class App : Application(), VoiceRuntimeHost, RefinerModelHost, Configuration.Pro
         transferOldPinnedClips(this) // todo: remove in a few months, maybe end 2026
         app = this
         Defaults.initDynamicDefaults(this)
+    }
+
+    private fun isMainProcess(): Boolean {
+        val name =
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) getProcessName()
+            else runCatching {
+                java.io.File("/proc/self/cmdline").readText().trim { it <= ' ' }
+            }.getOrNull()
+        // Unknown means "assume main": losing the bootstrap is worse than running it twice.
+        return name == null || name == packageName
     }
 
     companion object {

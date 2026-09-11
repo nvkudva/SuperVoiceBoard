@@ -145,6 +145,8 @@ public class LatinIME extends InputMethodService implements
     // because the voice runtime is only reachable once the Application exists.
     private helium314.keyboard.voice.VoiceController mVoiceController;
     private helium314.keyboard.voice.VoiceStripView mVoiceStripView;
+    // WaveKey: the toolbar state to restore when the voice session ends.
+    private boolean mToolbarExpandedBeforeVoice;
     // WaveKey: the correction ghost. Null until the strip is inflated,
     // and null again on every input-view teardown; nothing else depends on it.
     private helium314.keyboard.correct.GhostSwapView mCorrectionGhost;
@@ -839,11 +841,20 @@ public class LatinIME extends InputMethodService implements
                     ((com.vboard.app.voice.VoiceRuntimeHost) getApplicationContext()).getVoiceRuntime();
             mVoiceController = new helium314.keyboard.voice.VoiceController(this, runtime);
             mVoiceController.setOnSessionUiStarted(() -> {
+                // WaveKey: committing the dictated text runs the same auto-hide
+                // path typing does, so the toolbar the user had open would be
+                // collapsed by their own dictation. Remember it and put it back.
+                mToolbarExpandedBeforeVoice = hasSuggestionStripView()
+                        && mSuggestionStripView.isToolbarExpanded();
                 showVoiceStrip(true);
                 return kotlin.Unit.INSTANCE;
             });
             mVoiceController.setOnSessionUiEnded(() -> {
                 showVoiceStrip(false);
+                if (mToolbarExpandedBeforeVoice && hasSuggestionStripView()) {
+                    mSuggestionStripView.setToolbarVisibility(true);
+                }
+                mToolbarExpandedBeforeVoice = false;
                 return kotlin.Unit.INSTANCE;
             });
         }

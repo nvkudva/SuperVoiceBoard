@@ -21,6 +21,12 @@
 # AutoValue/protobuf annotations that are compile-time only.
 -keep class com.google.mediapipe.** { *; }
 -dontwarn com.google.mediapipe.**
+
+# The LiteRT-LM native library reaches back into these classes by name over JNI
+# (ThinkingConfig.getEnableThinking() among them), so R8 renaming one aborts the
+# :llm process with a NoSuchMethodError the moment a refinement runs.
+-keep class com.google.ai.edge.litertlm.** { *; }
+-dontwarn com.google.ai.edge.litertlm.**
 -dontwarn com.google.auto.value.**
 -dontwarn com.google.protobuf.**
 

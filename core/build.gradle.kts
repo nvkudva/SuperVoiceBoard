@@ -35,3 +35,21 @@ tasks.withType<Test> {
         events("passed", "skipped", "failed")
     }
 }
+
+// Lets tools/promptlab pipe utterances through the spoken-form rules the phone
+// actually runs, rather than a Python copy of them.
+tasks.register<JavaExec>("runSpokenFormats") {
+    group = "verification"
+    mainClass.set("com.vboard.core.text.SpokenFormatsCliKt")
+    classpath = sourceSets["main"].runtimeClasspath
+    standardInput = System.`in`
+}
+
+// Same idea as runSpokenFormats: promptlab scores the shipped accept/reject
+// decision, not the model's raw answer.
+tasks.register<JavaExec>("runRefinementValidator") {
+    group = "verification"
+    mainClass.set("com.vboard.core.correct.RefinementValidatorCliKt")
+    classpath = sourceSets["main"].runtimeClasspath
+    standardInput = System.`in`
+}

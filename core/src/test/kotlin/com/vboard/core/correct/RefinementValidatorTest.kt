@@ -266,4 +266,17 @@ class RefinementValidatorTest {
         val rejected = RefinementValidator.validate("the merger with acme", "")
         assertFalse("acme" in rejected.toString().lowercase(), rejected.toString())
     }
+
+    @Test
+    fun `a written address stands the refiner down`() {
+        assertTrue(RefinementValidator.hasWrittenAddress("see https://example.com/docs"))
+        assertTrue(RefinementValidator.hasWrittenAddress("mail support@wavekey.com today"))
+        assertTrue(RefinementValidator.hasWrittenAddress("open /usr/local/bin now"))
+    }
+
+    @Test
+    fun `ordinary speech does not look like an address`() {
+        assertFalse(RefinementValidator.hasWrittenAddress("meet me at three tomorrow"))
+        assertFalse(RefinementValidator.hasWrittenAddress("it costs $25.50 and 12%"))
+    }
 }

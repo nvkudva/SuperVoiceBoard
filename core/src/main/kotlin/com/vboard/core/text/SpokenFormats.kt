@@ -52,6 +52,9 @@ object SpokenFormats {
         // Order matters: email/URL chains first, so "dot" and "at" inside an
         // address are consumed before the money and time rules can see them.
         out = spokenAddresses(out)
+        out = webAddresses(out)
+        out = filePaths(out)
+        out = digitRuns(out)
         out = money(out)
         out = clockTimes(out)
         return out
@@ -76,6 +79,128 @@ object SpokenFormats {
             if (!domain.substringAfterLast('.').all { it.isLetter() }) match.value
             else "$local@$domain"
         }
+    }
+
+    // ------------------------------------------------------- web and paths
+
+    private val SCHEME_PATTERN = Regex(
+        """\b(https?)\s+colon\s+(?:slash\s+slash|double\s+slash)\s+""",
+        RegexOption.IGNORE_CASE,
+    )
+
+    /** Host with its "dot" chain, plus any "slash <word>" steps that follow it. */
+    private val WEB_PATTERN = Regex(
+        """\b([A-Za-z][A-Za-z0-9-]*(?:\s+dot\s+[A-Za-z0-9-]+)+)((?:\s+slash\s+[A-Za-z0-9._-]+)*)""",
+        RegexOption.IGNORE_CASE,
+    )
+
+    /**
+     * Two steps minimum. One step is "pick red slash blue", which is a choice,
+     * not a path; by the second step nobody means "or" any more.
+     */
+    private val ABSOLUTE_PATH = Regex(
+        """(?<![A-Za-z0-9])slash\s+([A-Za-z0-9._-]+)((?:\s+slash\s+[A-Za-z0-9._-]+)+)""",
+        RegexOption.IGNORE_CASE,
+    )
+    private val SLASH_STEP = Regex("""\s+slash\s+""", RegexOption.IGNORE_CASE)
+
+    /** A last label that could be a top-level domain. */
+    private val TLD_SHAPE = Regex("""^[A-Za-z]{2,24}$""")
+
+    /**
+     * "https colon slash slash example dot com slash docs" ->
+     * "https://example.com/docs", and the bare "example dot com" form too.
+     *
+     * Runs after [spokenAddresses], so an email has already been consumed and
+     * what is left with a "dot" chain is a host. The trailing "slash <word>"
+     * steps are taken as the path, which is the part a model gets wrong most
+     * often: asked for one it has not memorised, it invents a plausible one.
+     */
+    private fun webAddresses(text: String): String {
+        val schemed = SCHEME_PATTERN.replace(text) { "${it.groupValues[1].lowercase()}://" }
+        return WEB_PATTERN.replace(schemed) { match ->
+            val host = match.groupValues[1].replace(SPOKEN_DOT, ".")
+            if (!TLD_SHAPE.matches(host.substringAfterLast('.'))) return@replace match.value
+            val path = match.groupValues[2]
+                .replace(SLASH_STEP, "/")
+                .let { if (it.isEmpty()) "" else "/" + it.trimStart('/') }
+            host + path
+        }
+    }
+
+    /**
+     * "slash user slash local slash bin" -> "/user/local/bin".
+     *
+     * A leading "slash" is unambiguous: nobody says it unless they mean one.
+     * Relative paths ("src slash main") are left alone, because "and/or" chains
+     * and fractions are spoken with the same word.
+     */
+    private fun filePaths(text: String): String {
+        return ABSOLUTE_PATH.replace(text) { match ->
+            val tail = match.groupValues[2].replace(SLASH_STEP, "/")
+            "/" + match.groupValues[1] + if (tail.isEmpty()) "" else "/" + tail.trimStart('/')
+        }
+    }
+
+    // ------------------------------------------------------------ digit runs
+
+    /**
+     * Same threshold RefinementValidator uses to call a run a number rather
+     * than counting, which is what keeps "two three apples" out of it.
+     */
+    private const val MIN_DIGIT_RUN = 4
+
+    private val SPOKEN_DIGITS = mapOf(
+        "zero" to '0', "oh" to '0', "nought" to '0',
+        "one" to '1', "two" to '2', "three" to '3', "four" to '4', "five" to '5',
+        "six" to '6', "seven" to '7', "eight" to '8', "nine" to '9',
+    )
+
+    private val WORD_OR_GAP = Regex("""[A-Za-z]+|[^A-Za-z]+""")
+
+    /**
+     * "five five five one two three four" -> "5551234".
+     *
+     * Done here rather than in the prompt because the model is bad at it in a
+     * way that corrupts data: asked to write the digits itself, a 0.6B returned
+     * 5:55:12, and on another run invented 555-123-4567.
+     */
+    private fun digitRuns(text: String): String {
+        val out = StringBuilder(text.length)
+        val digits = StringBuilder()
+        val asSpoken = StringBuilder()
+        // The gap after the last digit word belongs to the sentence, not to the
+        // run: swallowing it is what glued "5551234" to the next word.
+        var pendingGap = ""
+
+        fun flush() {
+            out.append(if (digits.length >= MIN_DIGIT_RUN) digits else asSpoken)
+            digits.setLength(0)
+            asSpoken.setLength(0)
+        }
+
+        for (token in WORD_OR_GAP.findAll(text).map { it.value }) {
+            val digit = SPOKEN_DIGITS[token.lowercase()]
+            when {
+                // A single space holds a run together; anything else ends it.
+                digit != null && (digits.isEmpty() || pendingGap == " ") -> {
+                    asSpoken.append(pendingGap).append(token)
+                    digits.append(digit)
+                    pendingGap = ""
+                }
+                digits.isNotEmpty() && token.isNotEmpty() && !token[0].isLetter() -> {
+                    pendingGap = token
+                }
+                else -> {
+                    flush()
+                    out.append(pendingGap).append(token)
+                    pendingGap = ""
+                }
+            }
+        }
+        flush()
+        out.append(pendingGap)
+        return out.toString()
     }
 
     // ----------------------------------------------------------------- money

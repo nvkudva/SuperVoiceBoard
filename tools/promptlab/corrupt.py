@@ -58,6 +58,56 @@ def spell_number(n):
     return " ".join(ONES[int(d)] for d in str(n))
 
 
+# A bare host needs a real-looking TLD and a letter start, or "gemini 2.5"
+# and "v1.5" arrive as web addresses and the test measures the wrong thing.
+TLDS = ("com|org|net|io|dev|ai|co|uk|in|app|sh|me|gg|xyz|edu|gov")
+URL_RE = re.compile(
+    r"https?://[^\s]+"
+    r"|(?<![\w.])(?:www\.)?[a-z][a-z0-9-]*(?:\.[a-z0-9-]+)*\.(?:" + TLDS + r")(?:/[^\s,]*)?\b",
+    re.I)
+EMAIL_RE = re.compile(r"[\w.+-]+@[\w-]+(?:\.[\w-]+)+")
+PATH_RE = re.compile(r"(?<![\w.])/[A-Za-z0-9._-]+(?:/[A-Za-z0-9._-]+)+")
+PHONE_RE = re.compile(r"(?<!\d)\d{4,10}(?!\d)")
+
+DIGIT_WORD = ["zero", "one", "two", "three", "four", "five", "six", "seven",
+              "eight", "nine"]
+
+
+def say_entity(token):
+    """What a recognizer hands over when someone dictates an address aloud."""
+    said = token
+    said = said.replace("https://", "https colon slash slash ")
+    said = said.replace("http://", "http colon slash slash ")
+    said = said.replace("@", " at ").replace(".", " dot ").replace("/", " slash ")
+    said = said.replace("_", " underscore ").replace("-", " dash ")
+    return " ".join(said.split())
+
+
+def speak_entities(text):
+    """Returns (spoken, [(kind, expected, wrong)]) for addresses and numbers."""
+    marks = []
+
+    def sub(pattern, kind):
+        def repl(m):
+            said = say_entity(m.group(0))
+            if said == m.group(0):
+                return m.group(0)
+            marks.append((kind, m.group(0), said))
+            return said
+        return pattern.sub(repl, text)
+
+    for pattern, kind in ((EMAIL_RE, "email"), (URL_RE, "url"), (PATH_RE, "path")):
+        text = sub(pattern, kind)
+
+    def digits(m):
+        said = " ".join(DIGIT_WORD[int(d)] for d in m.group(0))
+        marks.append(("digit-run", m.group(0), said))
+        return said
+
+    text = PHONE_RE.sub(digits, text)
+    return text, marks
+
+
 def words(text):
     return re.findall(r"\w+|\W+", text)
 
@@ -130,6 +180,8 @@ def main():
     ap.add_argument("--limit", type=int, default=120)
     ap.add_argument("--stride", type=int, default=7)
     ap.add_argument("--seed", type=int, default=11)
+    ap.add_argument("--entities", action="store_true",
+                    help="only speak addresses and numbers aloud; no mishearing")
     args = ap.parse_args()
 
     rng = random.Random(args.seed)
@@ -138,10 +190,17 @@ def main():
     for n, clean in enumerate(corpus):
         if len(cases) >= args.limit:
             break
-        dirty, marks = corrupt(clean, rng)
+        if args.entities:
+            dirty, marks = speak_entities(clean)
+            dirty = dirty.lower().rstrip(".!?")
+        else:
+            dirty, marks = corrupt(clean, rng)
         # Only keep sentences a corruption actually landed on, and only
         # corruptions with something to restore.
         checkable = [m for m in marks if m[1] and m[0] != "dropped-word"]
+        if args.entities:
+            checkable = [m for m in marks if m[0] in
+                         ("email", "url", "path", "digit-run")]
         if not checkable:
             continue
         cases.append({

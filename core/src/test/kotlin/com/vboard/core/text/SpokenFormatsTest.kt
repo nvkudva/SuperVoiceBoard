@@ -133,4 +133,79 @@ class SpokenFormatsTest {
             assertEquals(input, SpokenFormats.apply(input))
         }
     }
+
+    // ------------------------------------------------------- web and paths
+
+    @Test
+    fun `a spoken host becomes a host`() {
+        assertEquals("example.com", SpokenFormats.apply("example dot com"))
+    }
+
+    @Test
+    fun `a spoken url keeps the path that was said`() {
+        assertEquals(
+            "https://example.com/docs/setup",
+            SpokenFormats.apply("https colon slash slash example dot com slash docs slash setup"),
+        )
+    }
+
+    @Test
+    fun `www survives`() {
+        assertEquals("www.bbc.co.uk", SpokenFormats.apply("www dot bbc dot co dot uk"))
+    }
+
+    @Test
+    fun `a sentence that merely contains dot is left alone`() {
+        val said = "connect the dots and then sign off"
+        assertEquals(said, SpokenFormats.apply(said))
+    }
+
+    @Test
+    fun `an email still wins over the host rule`() {
+        assertEquals(
+            "support@wavekey.com",
+            SpokenFormats.apply("support at wavekey dot com"),
+        )
+    }
+
+    @Test
+    fun `an absolute path becomes a path`() {
+        assertEquals(
+            "/usr/local/bin",
+            SpokenFormats.apply("slash usr slash local slash bin"),
+        )
+    }
+
+    @Test
+    fun `a relative path is left spoken, because and-or sounds the same`() {
+        val said = "pick red slash blue"
+        assertEquals(said, SpokenFormats.apply(said))
+    }
+
+    // ------------------------------------------------------------ digit runs
+
+    @Test
+    fun `a spoken phone number becomes digits`() {
+        assertEquals(
+            "call me at 5551234 after work",
+            SpokenFormats.apply("call me at five five five one two three four after work"),
+        )
+    }
+
+    @Test
+    fun `oh is a zero inside a run`() {
+        assertEquals("ring 07700 now", SpokenFormats.apply("ring oh seven seven oh oh now"))
+    }
+
+    @Test
+    fun `a short run is counting, not a number`() {
+        val said = "bring two three apples"
+        assertEquals(said, SpokenFormats.apply(said))
+    }
+
+    @Test
+    fun `a run broken by punctuation is two short runs`() {
+        val said = "one two, three four"
+        assertEquals(said, SpokenFormats.apply(said))
+    }
 }

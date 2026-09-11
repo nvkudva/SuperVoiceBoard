@@ -96,6 +96,9 @@ class LlmRefiner(
      */
     suspend fun refine(text: String, timeoutMs: Long = 3_000): String? {
         if (text.isBlank() || text.length > MAX_INPUT_CHARS) return null
+        // SpokenFormats has already written any address out in full, and the
+        // model's contribution from here is negative - see hasWrittenAddress.
+        if (RefinementValidator.hasWrittenAddress(text)) return null
         return withTimeoutOrNull(timeoutMs) {
             withContext(Dispatchers.IO) {
                 runCatching {

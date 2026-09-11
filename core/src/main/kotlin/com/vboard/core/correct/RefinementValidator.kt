@@ -213,6 +213,24 @@ object RefinementValidator {
         return found.filter { it.isNotEmpty() }
     }
 
+    private val PATH_PATTERN = Regex("""(?<![A-Za-z0-9])/[A-Za-z0-9._-]+(?:/[A-Za-z0-9._-]+)+""")
+
+    /**
+     * True when [text] already carries an address in written form - a URL, an
+     * email, or a path.
+     *
+     * Measured on the shipped model: on utterances containing one, the rules
+     * alone got 48 of 75 right, the model alone 17, and the model running
+     * after the rules 32 - it rewrites addresses the rules had already fixed,
+     * inventing plausible paths. The validator claws most of that back, to 42,
+     * but still lands under doing nothing. So the refiner stands down here:
+     * there is nothing it reliably adds, and one thing it reliably breaks.
+     */
+    fun hasWrittenAddress(text: String): Boolean =
+        URL_PATTERN.containsMatchIn(text) ||
+            EMAIL_PATTERN.containsMatchIn(text) ||
+            PATH_PATTERN.containsMatchIn(text)
+
     /**
      * Digit strings the speaker dictated one digit at a time — phone numbers,
      * card numbers, codes, PINs. Only runs of [MIN_DIGIT_RUN] or more count: two

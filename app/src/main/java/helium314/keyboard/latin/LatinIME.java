@@ -1000,7 +1000,11 @@ public class LatinIME extends InputMethodService implements
         // loaded — releasing them between two dictations is the slowest path
         // there is.
         voiceController().onKeyboardShown();
-        aiFixKey().onStartInput();
+        // WaveKey: only a *new* field abandons the fix run and its undo. Android
+        // restarts input on every full-field rewrite, which is exactly what a fix
+        // is — wiring this to the restart made the fix's own write destroy the
+        // undo it had just recorded, so the key could never take it back.
+        if (!restarting) aiFixKey().onStartInput();
     }
 
     @Override

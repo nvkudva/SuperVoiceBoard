@@ -44,7 +44,10 @@ object Defaults {
     }
 
     private const val DEFAULT_SIZE_SCALE = 1.0f // 100%
-    const val PREF_THEME_STYLE = KeyboardTheme.STYLE_EDGE_LIT
+    // Material shapes the keys; the violet is carried by PREF_THEME_COLORS below,
+    // which is WaveKey's own palette on both sides of the day. Style and colour
+    // are separate settings, so this is Material keys in WaveKey violet.
+    const val PREF_THEME_STYLE = KeyboardTheme.STYLE_MATERIAL
     // Icons follow the keyboard style, except for the two WaveKey styles:
     // they change key shape, not iconography, and carry no icon set of their own.
     fun PREF_ICON_STYLE(prefs: SharedPreferences): String {

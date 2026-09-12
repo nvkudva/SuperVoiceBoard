@@ -42,6 +42,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import helium314.keyboard.settings.SpectrumTile
 import com.vboard.app.models.ModelDownloadService
 import com.vboard.app.voice.VoiceRuntime
 import com.vboard.app.voice.voiceRuntimeOrNull
@@ -257,16 +258,15 @@ private fun PackRow(
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // the pack's own state, so a glance down the list reads as a checklist
-                Icon(
-                    painterResource(
-                        if (state is PackState.Installed) R.drawable.ic_setup_check
-                        else R.drawable.ic_settings_voice
-                    ),
-                    null,
-                    Modifier.size(20.dp),
-                    tint = if (state is PackState.Installed) MaterialTheme.colorScheme.primary
-                        else MaterialTheme.colorScheme.onSurfaceVariant
+                // The key this pack powers, in the colours it wears on the
+                // keyboard: the mic for speech, the AI fix glyph for the refiner.
+                // Whether it is installed is said in words below — a tick here
+                // would have cost the one picture that ties a 482 MB download to
+                // the button the user actually presses.
+                SpectrumTile(
+                    icon = if (pack.kind == ModelKind.REFINER_LLM) R.drawable.ic_ai_fix
+                        else R.drawable.sym_keyboard_voice_rounded,
+                    contentDescription = null,
                 )
                 Text(
                     pack.displayName,

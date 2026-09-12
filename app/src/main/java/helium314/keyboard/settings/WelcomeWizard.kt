@@ -201,6 +201,7 @@ fun WelcomeWizard(
                             // opens the models screen so it can be watched; no finishes
                             // setup, and the models screen can be reached later.
                             OptionalCard(
+                                tiles = listOf(R.drawable.sym_keyboard_voice_rounded, R.drawable.ic_ai_fix),
                                 title = stringResource(R.string.setup_voice_action),
                                 subtitle = stringResource(
                                     R.string.setup_voice_instruction,
@@ -328,6 +329,7 @@ private fun OptionalCard(
     title: String,
     subtitle: String,
     icon: Painter,
+    tiles: List<Int> = emptyList(),
     onClick: () -> Unit,
 ) {
     Card(
@@ -343,10 +345,18 @@ private fun OptionalCard(
             horizontalArrangement = Arrangement.spacedBy(12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Icon(
-                icon, null, Modifier.size(24.dp),
-                tint = MaterialTheme.colorScheme.onSurfaceVariant
-            )
+            // The keys the download switches on, in the colours they wear on the
+            // keyboard — so the thing being paid for has a face before it lands.
+            if (tiles.isEmpty()) {
+                Icon(
+                    icon, null, Modifier.size(24.dp),
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            } else {
+                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    tiles.forEach { SpectrumTile(it, null, size = 30) }
+                }
+            }
             Column(Modifier.weight(1f)) {
                 Text(title, style = MaterialTheme.typography.titleSmall)
                 Text(

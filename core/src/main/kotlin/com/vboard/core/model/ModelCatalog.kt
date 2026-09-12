@@ -129,7 +129,7 @@ object ModelCatalog {
             // The row title on the models screen. It no longer carries "(English only)":
             // the row's own state line and the download size sit directly under it, and
             // coverage is declared in `languages` below rather than in the name.
-            displayName = "Parakeet (on-device AI)",
+            displayName = "Voice recognition AI (Parakeet)",
             kind = ModelKind.FINAL_ASR,
             version = 1,
             files = listOf(
@@ -161,7 +161,7 @@ object ModelCatalog {
             // reads `.litertlm`, not `.task`, so the format change forced a new
             // pack id and every install re-downloads once.
             id = "qwen3-06b-refiner",
-            displayName = "Qwen 3 0.6B (on-device LLM)",
+            displayName = "Text Correction AI (Qwen 3 0.6B)",
             kind = ModelKind.REFINER_LLM,
             version = 1,
             files = listOf(

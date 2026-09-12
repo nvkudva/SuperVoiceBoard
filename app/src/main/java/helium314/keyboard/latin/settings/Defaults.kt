@@ -44,7 +44,7 @@ object Defaults {
     }
 
     private const val DEFAULT_SIZE_SCALE = 1.0f // 100%
-    const val PREF_THEME_STYLE = KeyboardTheme.STYLE_MATERIAL
+    const val PREF_THEME_STYLE = KeyboardTheme.STYLE_EDGE_LIT
     // Icons follow the keyboard style, except for the two WaveKey styles:
     // they change key shape, not iconography, and carry no icon set of their own.
     fun PREF_ICON_STYLE(prefs: SharedPreferences): String {

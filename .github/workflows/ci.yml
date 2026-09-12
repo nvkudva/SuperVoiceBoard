@@ -53,9 +53,10 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
       - name: Assemble debug APK
         run: ./gradlew :app:assembleDebug --no-daemon
-      # runTests is HeliBoard's build variant that skips tests known to fail there.
+      # debugNoMinify is the one variant with tests (android.testBuildType), and
+      # the tests known to fail upstream skip themselves on it.
       - name: Run unit tests
-        run: ./gradlew testRunTestsUnitTest --no-daemon
+        run: ./gradlew testDebugNoMinifyUnitTest --no-daemon
       - name: Lint
         run: ./gradlew :app:lintDebug --no-daemon
 

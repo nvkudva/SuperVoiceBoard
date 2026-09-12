@@ -67,8 +67,13 @@ android {
         }
     }
 
-    // WaveKey: the UI QA suite runs against debugNoMinify — "debug" here
-    // is minified, and R8 renames the very things the tests look for.
+    // WaveKey: both test suites run against debugNoMinify — "debug" here is
+    // minified, and R8 renames the very things the instrumented tests look for.
+    //
+    // AGP 9 made this choose the unit tests too, not just the instrumented ones,
+    // so there is exactly one variant with tests now. HeliBoard's `runTests`
+    // build type existed only to be named by the three tests that skip on CI;
+    // they name this one instead.
     testBuildType = "debugNoMinify"
 
     buildTypes {
@@ -99,11 +104,6 @@ android {
             isMinifyEnabled = true
             isJniDebuggable = false
             applicationIdSuffix = ".debug"
-        }
-        create("runTests") { // build variant for running tests on CI that skips tests known to fail
-            matchingFallbacks += "debug"
-            isMinifyEnabled = false
-            isJniDebuggable = false
         }
         create("debugNoMinify") { // for faster builds in IDE
             matchingFallbacks += "debug"

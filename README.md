@@ -109,7 +109,7 @@ and the utterance buffer is cleared when the session ends.
 Nothing else: no account, no API key, no paid service, and no network after the models
 land.
 
-**To build:** JDK 17+, Android SDK 36. The Gradle 9.6 wrapper and a 4 GB build heap are
+**To build:** JDK 17+ (CI builds on 21), Android SDK 36. The Gradle 9.6 wrapper and a 4 GB build heap are
 configured in the repo.
 
 ## Run it
@@ -118,8 +118,8 @@ configured in the repo.
 git clone https://github.com/nvkudva/WaveKey.git
 cd WaveKey
 ./gradlew :app:assembleDebug
-# ABI splits produce one APK per architecture; install the one matching your device
-adb install app/build/outputs/apk/debug/<arm64-v8a or x86_64 APK>
+# ABI splits produce one APK per architecture; releases ship arm64-v8a
+adb install app/build/outputs/apk/debug/WaveKey_1.0-beta-debug-arm64-v8a.apk
 ```
 
 "WaveKey" then appears in Android's keyboard list. Enable it, switch to it, and open
@@ -169,8 +169,8 @@ Verified on the current tree:
 | Release build | assembles and signs |
 | Model integrity | both packs pinned to an immutable revision and a SHA-256 the installer checks |
 
-CI runs the `core` and app unit tests, a debug assemble, Android lint, and an emulator
-UI QA suite.
+CI runs the `core`, `voice` and app unit tests, a debug assemble, Android lint, and an
+emulator UI QA suite.
 
 ### Known gaps
 

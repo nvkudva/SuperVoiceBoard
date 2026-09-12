@@ -54,9 +54,11 @@ jobs:
       - name: Assemble debug APK
         run: ./gradlew :app:assembleDebug --no-daemon
       # debugNoMinify is the one variant with tests (android.testBuildType), and
-      # the tests known to fail upstream skip themselves on it.
+      # the tests known to fail upstream skip themselves on it. :voice is named
+      # explicitly: it has debug and release only, so the unqualified task above
+      # never reaches it.
       - name: Run unit tests
-        run: ./gradlew testDebugNoMinifyUnitTest --no-daemon
+        run: ./gradlew testDebugNoMinifyUnitTest :voice:test --no-daemon
       - name: Lint
         run: ./gradlew :app:lintDebug --no-daemon
 

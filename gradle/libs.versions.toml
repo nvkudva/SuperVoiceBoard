@@ -5,15 +5,15 @@
 [versions]
 compileSdk = "36"
 minSdk = "24"
-coroutines = "1.10.2"
+coroutines = "1.11.0"
 
 [libraries]
 coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "coroutines" }
 coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "coroutines" }
 coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "coroutines" }
-androidx-core-ktx = { module = "androidx.core:core-ktx", version = "1.17.0" }
-androidx-lifecycle-service = { module = "androidx.lifecycle:lifecycle-service", version = "2.8.7" }
-androidx-datastore-preferences = { module = "androidx.datastore:datastore-preferences", version = "1.1.1" }
+androidx-core-ktx = { module = "androidx.core:core-ktx", version = "1.18.0" }
+androidx-lifecycle-service = { module = "androidx.lifecycle:lifecycle-service", version = "2.9.4" }
+androidx-datastore-preferences = { module = "androidx.datastore:datastore-preferences", version = "1.2.1" }
 sherpa-onnx = { module = "com.github.k2-fsa.sherpa-onnx:sherpa-onnx", version = "v1.13.6" }
-commons-compress = { module = "org.apache.commons:commons-compress", version = "1.27.1" }
+commons-compress = { module = "org.apache.commons:commons-compress", version = "1.28.0" }
 litertlm-android = { module = "com.google.ai.edge.litertlm:litertlm-android", version = "0.17.0" }

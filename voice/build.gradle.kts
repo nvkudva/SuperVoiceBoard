@@ -53,7 +53,7 @@ dependencies {
     implementation(libs.androidx.datastore.preferences)
     implementation(libs.coroutines.android)
     // Model downloads: WorkManager owns the retry/constraint/process-death story.
-    api("androidx.work:work-runtime-ktx:2.10.0")
+    api("androidx.work:work-runtime-ktx:2.11.2")
     // On-device speech recognition (streaming Zipformer + Parakeet TDT).
     implementation(libs.sherpa.onnx)
     // tar.bz2 extraction for downloaded ASR model archives.

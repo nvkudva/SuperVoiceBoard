@@ -56,7 +56,7 @@ future merge pain.
 
 - [x] BUILD `app/build.gradle.kts:80` — `isShrinkResources = false` on `release` and `nouserlib` while 117 locale dirs and the whole Compose resource set ship in every ABI split → enable resource shrinking and `localeFilters` (S)
 - [x] BUILD `gradle.properties:2` — no `org.gradle.parallel`, `org.gradle.caching` or `kotlin.incremental` across a 5-module build producing 5 ABI splits per variant → add them (S)
-- [ ] BUILD `app/build.gradle.kts:90` — `debug` runs R8 plus a per-variant proguard rewrite, and five build types each fan out to 5 ABI outputs → drop `runTests`/`nouserlib` if CI does not use them, keep minification off for local debug (S)
+- [x] BUILD `app/build.gradle.kts:90` — `debug` runs R8 plus a per-variant proguard rewrite, and five build types each fan out to 5 ABI outputs → drop `runTests`/`nouserlib` if CI does not use them, keep minification off for local debug (S)
 - [x] BUILD `build.gradle.kts:12` — no version catalog; compileSdk 36, minSdk 21, JVM 17, Kotlin 2.3.20, coroutines 1.10.2 repeated across four modules → `gradle/libs.versions.toml` plus a convention plugin (M)
 
 ## Not done, and why

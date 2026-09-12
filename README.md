@@ -109,7 +109,7 @@ and the utterance buffer is cleared when the session ends.
 Nothing else: no account, no API key, no paid service, and no network after the models
 land.
 
-**To build:** JDK 17+, Android SDK 36. The Gradle 8.14 wrapper and a 4 GB build heap are
+**To build:** JDK 17+, Android SDK 36. The Gradle 9.6 wrapper and a 4 GB build heap are
 configured in the repo.
 
 ## Run it

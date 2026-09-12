@@ -63,7 +63,7 @@ public final class JniUtils {
         } catch (Exception e) {
             userSuppliedLibrary = null;
         }
-        if (!BuildConfig.BUILD_TYPE.equals("nouserlib") && userSuppliedLibrary != null) {
+        if (userSuppliedLibrary != null) {
             String wantedChecksum = expectedDefaultChecksum();
             try {
                 if (app != null) {

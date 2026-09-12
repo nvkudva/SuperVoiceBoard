@@ -90,14 +90,6 @@ android {
                 signingConfig = signingConfigs.getByName("supervoiceboard")
             }
         }
-        create("nouserlib") { // same as release, but does not allow the user to provide a library
-            // WaveKey: :core/:voice/:llm only have debug and release
-            matchingFallbacks += "release"
-            isMinifyEnabled = true
-            isShrinkResources = true
-            isDebuggable = false
-            isJniDebuggable = false
-        }
         debug {
             // "normal" debug has minify for smaller APK to fit the GitHub 25 MB limit when zipped
             // and for better performance in case users want to install a debug APK

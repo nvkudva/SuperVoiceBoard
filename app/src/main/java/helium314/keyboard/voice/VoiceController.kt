@@ -139,9 +139,13 @@ class VoiceController(
 
     // --------------------------------------------------------------- IME hooks
 
-    fun onStartInputView(editorInfo: EditorInfo?) {
-        // Moving to another field settles whatever was awaiting a verdict.
-        settleTelemetry()
+    fun onStartInputView(editorInfo: EditorInfo?, restarting: Boolean = false) {
+        // Moving to another field settles whatever was awaiting a verdict — but
+        // a restart of the same field is not a move, and one of the things that
+        // restarts input is this class rewriting the field itself (refinement,
+        // or a fix over dictated text). Settling there records "the user did not
+        // edit it" about text they have not yet had the chance to edit.
+        if (!restarting) settleTelemetry()
         // The keyboard is back, so the window can keep the screen awake again.
         minimizedForSession = false
         releaseScreenLock()

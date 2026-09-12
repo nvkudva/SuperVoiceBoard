@@ -995,7 +995,7 @@ public class LatinIME extends InputMethodService implements
         mStatsUtilsManager.onStartInputView();
         // WaveKey: the field decides whether dictation is allowed at all
         // (a password field is not), so the session hears about every focus change.
-        voiceController().onStartInputView(editorInfo);
+        voiceController().onStartInputView(editorInfo, restarting);
         // WaveKey: while the keyboard is up, engines already loaded stay
         // loaded — releasing them between two dictations is the slowest path
         // there is.

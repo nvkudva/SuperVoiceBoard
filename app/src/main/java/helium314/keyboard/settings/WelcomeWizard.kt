@@ -58,6 +58,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
+import com.vboard.app.models.ModelDownloadService
 import com.vboard.core.model.ByteSize
 import com.vboard.core.model.ModelCatalog
 import helium314.keyboard.latin.R
@@ -193,11 +194,12 @@ fun WelcomeWizard(
                                 actionText = stringResource(R.string.setup_step3_action),
                                 action = close,
                             )
-                            // WaveKey: the model download is offered here rather
-                            // than with the microphone step, because it costs a several-
-                            // hundred megabyte download. Setup completes without it; this
-                            // card leads to the models screen, and skipping it is the
-                            // default path (the finish action below is unchanged).
+                            // WaveKey: the model download is offered here rather than
+                            // with the microphone step, because it costs a several-hundred
+                            // megabyte download — which is a question, so it is asked as
+                            // one, with an answer either way. Yes starts the download and
+                            // opens the models screen so it can be watched; no finishes
+                            // setup, and the models screen can be reached later.
                             OptionalCard(
                                 title = stringResource(R.string.setup_voice_action),
                                 subtitle = stringResource(
@@ -208,10 +210,12 @@ fun WelcomeWizard(
                                 ),
                                 icon = painterResource(R.drawable.ic_settings_voice),
                             ) {
+                                ModelCatalog.packs.filter { it.required }
+                                    .forEach { ModelDownloadService.start(ctx, it.id) }
                                 SettingsDestination.navigateTo(SettingsDestination.VoiceModels)
                                 close()
                             }
-                            SecondaryAction(stringResource(R.string.setup_finish_action), finish)
+                            SecondaryAction(stringResource(R.string.setup_voice_skip_action), finish)
                         }
                     }
                 }
